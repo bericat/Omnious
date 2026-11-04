@@ -10,10 +10,29 @@ namespace Ominous
         bool open;
         float smooth = 1f / 60f, worst, worstTimer;
         GUIStyle style;
+        float logSeconds, logTime, logWorst; int logFrames; float started = -1f;
+
+        void Start()
+        {
+            // Medición sin pantalla de por medio: ./Ominous -fpslog 30 escribe en Player.log y sale.
+            var args = System.Environment.GetCommandLineArgs();
+            int i = System.Array.IndexOf(args, "-fpslog");
+            if (i >= 0 && i + 1 < args.Length) float.TryParse(args[i + 1], out logSeconds);
+        }
 
         void Update()
         {
             float dt = Time.unscaledDeltaTime;
+            if (logSeconds > 0f && Time.realtimeSinceStartup > 8f)
+            {
+                if (started < 0f) started = Time.realtimeSinceStartup;
+                logTime += dt; logFrames++; logWorst = Mathf.Max(logWorst, dt);
+                if (Time.realtimeSinceStartup - started >= logSeconds)
+                {
+                    Debug.Log($"FPSLOG media={logFrames / logTime:0.0} peor_ms={logWorst * 1000f:0.0} frames={logFrames} {Screen.width}x{Screen.height} {SystemInfo.graphicsDeviceType}");
+                    Application.Quit();
+                }
+            }
             smooth = Mathf.Lerp(smooth, dt, 0.05f);
             worst = Mathf.Max(worst, dt);
             worstTimer += dt;

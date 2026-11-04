@@ -5,6 +5,7 @@ Shader "Ominous/PSX Lit"
         _BaseMap ("Textura", 2D) = "white" {}
         _BaseColor ("Color", Color) = (1,1,1,1)
         _EmissionColor ("Emisión", Color) = (0,0,0,1)
+        _AmbientBoost ("Ambiente extra (exterior)", Float) = 1
     }
     SubShader
     {
@@ -16,6 +17,7 @@ Shader "Ominous/PSX Lit"
             float4 _BaseMap_ST;
             half4 _BaseColor;
             half4 _EmissionColor;
+            float _AmbientBoost;
         CBUFFER_END
         float4 SnapVertex(float4 clip)
         {
@@ -72,7 +74,7 @@ Shader "Ominous/PSX Lit"
                 float2 uv = lerp(i.uv, i.uvAffine, _PSX_Params.x);
                 half3 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb * _BaseColor.rgb;
                 float3 n = normalize(i.normalWS);
-                half3 light = _PSX_Ambient.rgb;
+                half3 light = _PSX_Ambient.rgb * _AmbientBoost;
 
                 Light mainLight = GetMainLight();
                 light += mainLight.color * mainLight.distanceAttenuation * saturate(dot(n, mainLight.direction));
