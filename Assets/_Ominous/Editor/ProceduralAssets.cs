@@ -269,8 +269,10 @@ namespace Ominous.EditorTools
 
         public static Material Solid(string name, Color color, Color emission = default)
         {
-            var tex = Texture(name, 2, 2, (u, v) => color);
+            // Textura blanca: la emisión se multiplica por ella y no debe apagarse con el color de base.
+            var tex = Texture(name, 2, 2, (u, v) => Color.white);
             var m = Make(name, tex);
+            m.SetColor("_BaseColor", color);
             m.SetColor("_EmissionColor", emission);
             EditorUtility.SetDirty(m);
             return m;

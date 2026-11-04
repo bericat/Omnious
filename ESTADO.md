@@ -19,7 +19,7 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
-- Fase 7: acto 3.
+- Fase 7: prueba de Toni. Con su visto bueno, etiqueta `fase-7-ok`. El acto 3 acaba al subir del sótano y vuelve al menú porque el desenlace no existe.
 - Pendiente de la fase 5: Toni no dijo si el prólogo y el acto 1 dan miedo ni lo ha probado con un tercero; pidió seguir. Revisar el ritmo al tener toda la historia.
 - No hay animaciones ni voces: las figuras se deslizan y Roberta murmura con sonido sintetizado.
 - El sonido se deja para las fases de pulido (decisión de Toni): no perder tiempo en él antes.
@@ -27,6 +27,12 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
+
+## Fase 7: cómo está montada
+- `Scripts/Story/StoryDirector.Act3.cs` y `HouseBuilder.BuildAct3`. El sótano está lejos, en (40, -40, 0), y se llega con un parpadeo; también la puerta de más y la habitación repetida.
+- Pasillo largo: sale por la puerta del fondo, tiene 16 m y solo existe mientras el jugador está en el pasillo. Lleva a `PuertaAlVacio`, cerrada hasta la fase 8.
+- Opción `Reducir efectos`: menos balanceo, pulso de mano, distorsión y variación de exposición.
+- Para probar: `-saltar acto3` tras pulsar Nueva partida.
 
 ## Fase 6: cómo está montada
 - `Scripts/Story/StoryDirector.Act2.cs`: el acto 2 entero, con sus objetos (`Use` en `HouseBuilder.BuildAct2`) y comandos de Yarn.

@@ -743,7 +743,7 @@ namespace Ominous.EditorTools
                 go.transform.SetPositionAndRotation(new Vector3(x, 0, z), Quaternion.Euler(0, yaw, 0));
             }
             Inst("CasaVecinos", 19f, -9.6f, 0f);
-            Inst("CasaVecinos", -13f, 3f, 90f);   // Junto a la ventana oeste
+            Inst("CasaVecinos", -22f, 3f, 90f);   // Junto a la ventana oeste
             Inst("CasaVecinos", 4f, 30f, 180f);   // Detrás del jardín
             Inst("CasaVecinos", 18f, 30f, 180f);
             Instance("Farola", Farola(), street, new Vector3(2f, 0, -2.6f));

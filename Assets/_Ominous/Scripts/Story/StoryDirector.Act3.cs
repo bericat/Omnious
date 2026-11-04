@@ -23,7 +23,7 @@ namespace Ominous
         public Vector3 carSeat = new(16.2f, -0.28f, 2f);
 
         bool repeatedRoom, hallSeen, robertaLaundry, robertaCar, robertaWindow, chechuSeen, basementSeen, notebookRead;
-        bool streetSeen, wasInKitchen;
+        bool streetSeen, wasInKitchen, blinking;
 
         void BeginAct3State()
         {
@@ -141,16 +141,19 @@ namespace Ominous
 
         IEnumerator Blink(System.Action middle)
         {
+            blinking = true;
             FirstPersonController.SetBlocked(this, true);
             yield return GameUI.Instance.Fade(1f, 0.1f);
             middle();
             yield return new WaitForSecondsRealtime(0.14f);
             yield return GameUI.Instance.Fade(0f, 0.16f);
             FirstPersonController.SetBlocked(this, false);
+            blinking = false;
         }
 
         void UpdateAct3()
         {
+            if (blinking) return;
             var dm = DialogueManager.Instance;
             bool corridor = InRoom(-20f, 14f, 4.4f, 6f);
             // El pasillo largo solo existe mientras se está en el pasillo: no se puede ver desde fuera.
