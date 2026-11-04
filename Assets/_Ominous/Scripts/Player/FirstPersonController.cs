@@ -128,6 +128,9 @@ namespace Ominous
             roll = Mathf.Lerp(roll, -move.x * 0.5f + Mathf.Sin(bobTime) * 0.18f * bobWeight, 1f - Mathf.Exp(-6f * Time.deltaTime));
             // Pulso de mano: deriva muy lenta e irregular, también con el jugador quieto.
             float t = Time.time;
+            float motion = OminousOptions.ReduceEffects ? 0.2f : 1f;
+            bobY *= motion;
+            bobX *= motion;
             float handX = (Mathf.PerlinNoise(t * 0.33f, 1.3f) - 0.5f) * 0.55f;
             float handY = (Mathf.PerlinNoise(2.7f, t * 0.27f) - 0.5f) * 0.55f;
             float handZ = (Mathf.PerlinNoise(t * 0.21f, 5.9f) - 0.5f) * 0.4f;
@@ -139,7 +142,7 @@ namespace Ominous
             if (cameraPivot != null && !peeping)
             {
                 cameraPivot.localPosition = new Vector3(bobX, currentHeight - 0.1f + bobY, 0f);
-                cameraPivot.localRotation = Quaternion.Euler(pitch + handX, handY, roll + handZ);
+                cameraPivot.localRotation = Quaternion.Euler(pitch + handX * motion, handY * motion, (roll + handZ) * motion);
             }
         }
     }

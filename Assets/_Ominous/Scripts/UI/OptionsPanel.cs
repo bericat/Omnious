@@ -9,7 +9,7 @@ namespace Ominous
     {
         public static GameObject Build(Transform parent, Action onBack)
         {
-            var root = UIKit.Rect(parent, "Opciones", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(460, 480));
+            var root = UIKit.Rect(parent, "Opciones", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(460, 520));
             UIKit.Panel(root, new Color(0.03f, 0.03f, 0.03f, 0.92f));
             var column = UIKit.Stretch(root, "Columna");
             column.offsetMin = new Vector2(20, 16); column.offsetMax = new Vector2(-20, -16);
@@ -23,6 +23,15 @@ namespace Ominous
                 subsLabel.text = SubsText();
             });
             subsLabel = subs.GetComponentInChildren<TMP_Text>();
+
+            TMP_Text reduceLabel = null;
+            string ReduceText() => $"Reducir efectos: {(OminousOptions.ReduceEffects ? "sí" : "no")}";
+            var reduce = UIKit.Button(column, ReduceText(), () =>
+            {
+                OminousOptions.ReduceEffects = !OminousOptions.ReduceEffects;
+                reduceLabel.text = ReduceText();
+            });
+            reduceLabel = reduce.GetComponentInChildren<TMP_Text>();
 
             UIKit.Slider(column, "Tamaño del texto", 0.8f, 1.6f, OminousOptions.TextSize, v => OminousOptions.TextSize = v);
             UIKit.Slider(column, "Brillo", 0.6f, 1.6f, OminousOptions.Brightness, v => OminousOptions.Brightness = v);

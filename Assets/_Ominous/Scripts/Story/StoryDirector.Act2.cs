@@ -129,6 +129,13 @@ namespace Ominous
             roberta.Show(true);
             roberta.SetPose("depie");
             if (where == "cocina") roberta.Place(new Vector3(9.6f, 0f, 1.25f), 45f);
+            else if (where == "colada") roberta.Place(new Vector3(13.2f, 0f, 8.9f), 225f);
+            else if (where == "ventana_enfrente") roberta.Place(new Vector3(4.4f, 0.45f, -9.5f), 0f);
+            else if (where == "garaje_coche")
+            {
+                roberta.SetPose("sentada");
+                roberta.Place(carSeat, 0f);
+            }
         }
 
         // ---------- objetos ----------
@@ -147,11 +154,12 @@ namespace Ominous
             "agujero_cama" => Current == Step.Hueco && !peeping,
             "agujero_bano" => Current == Step.Hueco && !peeping,
             "puerta_chechu" => Current == Step.SalirCasa,
-            _ => false,
+            _ => CanUseAct3(id),
         };
 
         void OnUseAct2(string id)
         {
+            if (OnUseAct3(id)) return;
             var dm = DialogueManager.Instance;
             switch (id)
             {
@@ -391,7 +399,7 @@ namespace Ominous
                     {
                         Set(Step.RobertaCocina);
                         player.LookAt(roberta.head.position);
-                        dm.Play("Roberta_Cocina", EndDemo);
+                        dm.Play("Roberta_Cocina", StartAct3);
                     }
                     break;
             }

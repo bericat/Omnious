@@ -14,6 +14,9 @@ namespace Ominous
         public static float Sensitivity { get => PlayerPrefs.GetFloat("sensibilidad", 1f); set => Set("sensibilidad", value); }
         public static float CameraEffectIntensity { get => PlayerPrefs.GetFloat("camara", 1f); set => Set("camara", value); }
 
+        /// <summary>Menos balanceo y menos efectos de lente, para quien se marea.</summary>
+        public static bool ReduceEffects { get => PlayerPrefs.GetInt("reducir", 0) == 1; set => Set("reducir", value ? 1 : 0); }
+
         static void Set(string key, int value) { PlayerPrefs.SetInt(key, value); PlayerPrefs.Save(); Changed?.Invoke(); }
         static void Set(string key, float value) { PlayerPrefs.SetFloat(key, value); PlayerPrefs.Save(); Changed?.Invoke(); }
     }

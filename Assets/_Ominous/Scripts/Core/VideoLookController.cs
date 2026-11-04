@@ -38,6 +38,7 @@ namespace Ominous
         {
             if (settings == null) return;
             float i = OminousOptions.CameraEffectIntensity;
+            float motion = OminousOptions.ReduceEffects ? 0.25f : 1f;
             float time = Time.unscaledTime;
 
             // Pequeñas imperfecciones ocasionales: la cámara duda un instante, sin glitches ni líneas.
@@ -49,9 +50,9 @@ namespace Ominous
             imperfection = Mathf.MoveTowards(imperfection, 0f, Time.unscaledDeltaTime * 2.2f);
 
             float drift = (Mathf.PerlinNoise(time * 0.31f, 3.1f) - 0.5f) * 2f + (Mathf.PerlinNoise(time * 2.3f, 7.7f) - 0.5f) * 0.5f;
-            float exposure = settings.brightness * OminousOptions.Brightness * (1f + drift * settings.exposureDrift * i - imperfection * 0.04f * i);
+            float exposure = settings.brightness * OminousOptions.Brightness * (1f + drift * settings.exposureDrift * i * motion - imperfection * 0.04f * i);
 
-            Shader.SetGlobalVector(Optics, new Vector4(settings.distortion * i, settings.aberration * i, settings.softness * i, settings.vignette * i));
+            Shader.SetGlobalVector(Optics, new Vector4(settings.distortion * i * motion, settings.aberration * i, settings.softness * i, settings.vignette * i));
             Shader.SetGlobalVector(Signal, new Vector4(settings.noise * i, exposure, time, imperfection * i));
             Shader.SetGlobalVector(Grade, new Vector4(settings.liftedBlacks * i, Mathf.Lerp(1f, settings.dirtyWhites, i), Mathf.Lerp(1f, settings.saturation, i), settings.contrast));
             Shader.SetGlobalColor(ShadowTint, Color.Lerp(Color.white, settings.shadowTint, i));

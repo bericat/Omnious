@@ -1,6 +1,6 @@
 # Estado de Ominous
 
-**Fase actual:** 6, el acto 2.
+**Fase actual:** 7, lo surrealista (acto 3).
 
 ## Hecho
 - Unity 6.3 LTS (6000.3.28f1) en Steam Deck (Unity Hub en Flatpak), con módulo de build Linux.
@@ -19,7 +19,7 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
-- Fase 6: prueba de Toni. Con su visto bueno, etiqueta `fase-6-ok`. El acto 2 empieza tras mirar por la ventana al final del acto 1 y acaba con Roberta en la cocina, que vuelve al menú porque el acto 3 no existe.
+- Fase 7: acto 3.
 - Pendiente de la fase 5: Toni no dijo si el prólogo y el acto 1 dan miedo ni lo ha probado con un tercero; pidió seguir. Revisar el ritmo al tener toda la historia.
 - No hay animaciones ni voces: las figuras se deslizan y Roberta murmura con sonido sintetizado.
 - El sonido se deja para las fases de pulido (decisión de Toni): no perder tiempo en él antes.
@@ -70,4 +70,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Las puertas abren hacia dentro de las habitaciones. Se corrigió el parpadeo de los marcos (caras coplanarias con paredes y fachada) y se activó SMAA bajo para las líneas finas.
+Pidió pasar a la fase 7 (fase 6 dada por buena).

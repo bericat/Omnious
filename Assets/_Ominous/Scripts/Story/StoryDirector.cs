@@ -10,7 +10,7 @@ namespace Ominous
     public partial class StoryDirector : MonoBehaviour
     {
         public enum Step { Llegada, Tareas, HablarRoberta, Conversacion, ApagarLuces, Deambular, Llamada, EsperaPuerta, Visita, CerrarPuerta, MirarVentana,
-            GrifoArreglar, GrifoRoto, EsperaV2, VisitaV2, CerrarV2, Explorar, FotoCaida, FotoEnMano, EstanteriaCedida, Cuartito, EsperaV3, VisitaV3, CerrarV3, IrDormitorio, Busqueda, ArmarioGolpe, ArmarioFondo, Hueco, SalirCasa, VisitaV4, Volver, RobertaCocina, Fin }
+            GrifoArreglar, GrifoRoto, EsperaV2, VisitaV2, CerrarV2, Explorar, FotoCaida, FotoEnMano, EstanteriaCedida, Cuartito, EsperaV3, VisitaV3, CerrarV3, IrDormitorio, Busqueda, ArmarioGolpe, ArmarioFondo, Hueco, SalirCasa, VisitaV4, Volver, RobertaCocina, Acto3, SotanoPuerta, Sotano, SotanoSalir, Fin }
 
         public static StoryDirector Instance { get; private set; }
         public Step Current { get; private set; }
@@ -66,6 +66,11 @@ namespace Ominous
                 player.Teleport(new Vector3(6f, 0.02f, 1.6f), 0f);
                 DialogueManager.Instance.Play("Acto2_Inicio");
             }
+            if (i >= 0 && i + 1 < args.Length && args[i + 1] == "acto3" && !GameDirector.Instance.Restored)
+            {
+                StartAct3ForTest();
+                player.Teleport(new Vector3(10.4f, 0.02f, 3.2f), 180f);
+            }
         }
 
         void Set(Step step)
@@ -99,6 +104,7 @@ namespace Ominous
             r.AddCommandHandler("mirar", (string who) => LookAtActor(who));
             r.AddCommandHandler("sonido", (string name) => Sfx.Play(name, SoundPosition(name)));
             RegisterAct2Commands(r);
+            RegisterAct3Commands(r);
         }
 
         Vector3 SoundPosition(string name) => name.StartsWith("llamada") ? frontDoor.transform.position + Vector3.up * 1.2f : player.transform.position;
@@ -120,6 +126,7 @@ namespace Ominous
             threshold.SetActive(false);
             frontDoor.locked = false;
             BeginAct2State();
+            BeginAct3State();
             StartMonologue();
             DialogueManager.Instance.Play("Prologo_Coche");
         }
@@ -146,7 +153,7 @@ namespace Ominous
             "cuenco" => !keysLeft && Current >= Step.Tareas && Current <= Step.ApagarLuces,
             "tele" => Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("tele"),
             "nevera" => Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("nevera"),
-            "ventana" => (Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("ventana")) || Current == Step.MirarVentana,
+            "ventana" => (Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("ventana")) || Current == Step.MirarVentana || ((Current == Step.Acto3 || Current == Step.SotanoPuerta) && !(streetSeen && robertaWindow)),
             "vaso" => Current >= Step.Tareas && Current <= Step.MirarVentana && !usedOnce.Contains("vaso"),
             "grifo" => (Current >= Step.Tareas && Current <= Step.MirarVentana && !usedOnce.Contains("grifo")) || Current == Step.GrifoArreglar,
             "mirilla" => (Current == Step.EsperaPuerta || Current == Step.EsperaV2 || Current == Step.EsperaV3) && !peeping,
@@ -197,6 +204,7 @@ namespace Ominous
                     Wander("Acto1_Nevera");
                     break;
                 case "ventana":
+                    if (OnWindowAct3()) break;
                     if (Current == Step.MirarVentana)
                     {
                         Set(Step.GrifoArreglar);
@@ -324,6 +332,7 @@ namespace Ominous
                 if (wanderUses >= 2 && wanderTime > 25f || wanderTime > 180f) Knock();
             }
             UpdateAct2();
+            UpdateAct3();
             if ((Current == Step.EsperaPuerta || Current == Step.EsperaV2 || Current == Step.EsperaV3) && !DialogueManager.Instance.IsBusy && !peeping)
             {
                 knockTimer += Time.deltaTime;
@@ -407,6 +416,7 @@ namespace Ominous
             if (step == Step.EsperaPuerta || step == Step.EsperaV2 || step == Step.EsperaV3) PlaceChechu();
             else chechu.Show(false);
             RestoreAct2(step);
+            RestoreAct3(step);
             GameDirector.Instance.SetObjective(GameDirector.Instance.Night.objective);
         }
     }

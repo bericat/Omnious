@@ -685,7 +685,7 @@ namespace Ominous.EditorTools
 
         static void BuildGarage(Transform f, Transform d, Transform lights)
         {
-            Put("CocheChevas", Coche(carRed, carGlassIn, tireIn), f, 16.6f, 2.2f, 0f);
+            Put("CocheChevas", Coche(carRed, glass, tireIn), f, 16.6f, 2.2f, 0f);
             var shelves = new MeshKit();
             foreach (float y in new[] { 0.3f, 0.95f, 1.6f }) shelves.Box(new Vector3(0, y, 0), new Vector3(1.4f, 0.03f, 0.42f), woodLight);
             foreach (float x in new[] { -0.68f, 0.68f }) shelves.Box(new Vector3(x, 0.95f, -0.18f), new Vector3(0.04f, 1.9f, 0.04f), metal);
@@ -793,7 +793,8 @@ namespace Ominous.EditorTools
             Loop("Viento", AudioGen.Wind(), Vector3.zero, 0.12f, 0f).transform.SetParent(root);
             var tvAudio = Loop("Tele", AudioGen.TvMurmur(), new Vector3(2.15f, 0.8f, 3.85f), 0.3f, 9f);
             tvAudio.transform.SetParent(root);
-            Loop("Grifo", AudioGen.Drip(), new Vector3(9.6f, 0.9f, 7.1f), 0.28f, 5f).transform.SetParent(root);
+            var drip = Loop("Grifo", AudioGen.Drip(), new Vector3(9.6f, 0.9f, 7.1f), 0.28f, 5f);
+            drip.transform.SetParent(root);
             var cars = new GameObject("Coches");
             cars.transform.SetParent(root);
             var src = cars.AddComponent<AudioSource>();
@@ -817,6 +818,7 @@ namespace Ominous.EditorTools
             Add("golpe_armario", AudioGen.Knock(), 0.8f);
             Add("llave_se_parte", AudioGen.Rattle(), 0.85f);
             Add("tuberia_golpe", AudioGen.SoftThud(), 0.7f);
+            Add("risa", AudioGen.Laugh(), 0.75f);
             return tvAudio;
         }
 
@@ -1013,6 +1015,7 @@ namespace Ominous.EditorTools
 
             var dir = story.AddComponent<StoryDirector>();
             BuildAct2(dir, t);
+            BuildAct3(dir, t);
             dir.frontDoor = GameObject.Find("PuertaEntrada").GetComponent<Door>();
             dir.roberta = roberta;
             dir.chechu = chechu;
@@ -1026,6 +1029,134 @@ namespace Ominous.EditorTools
             // Luces al llegar: recibidor y lámpara del salón encendidas, como las dejó Roberta
             var hall = GameObject.Find("Interruptor_Recibidor").GetComponent<LightSwitch>();
             hall.isOn = true;
+        }
+
+        static void BuildAct3(StoryDirector dir, Transform t)
+        {
+            // Reloj parado a las 3:33
+            dir.clockNormal = GameObject.Find("Reloj");
+            var stopped = new MeshKit();
+            stopped.Box(Vector3.zero, new Vector3(0.32f, 0.32f, 0.03f), woodDark);
+            stopped.Box(new Vector3(0, 0, -0.018f), new Vector3(0.27f, 0.27f, 0.004f), paper);
+            stopped.Box(new Vector3(0.04f, 0.005f, -0.023f), new Vector3(0.08f, 0.012f, 0.003f), plastic);   // Horas: las tres y media larga
+            stopped.Box(new Vector3(-0.015f, -0.05f, -0.024f), new Vector3(0.012f, 0.1f, 0.003f), plastic);  // Minutos: y treinta y tres
+            dir.clockStopped = Instance("RelojParado", stopped, t, new Vector3(6.3f, 1.9f, 5.92f), 0f, false);
+
+            // Una puerta de más en el pasillo
+            var fake = new MeshKit();
+            fake.Box(new Vector3(0, 1f, 0), new Vector3(0.86f, 2f, 0.03f), door);
+            fake.Box(new Vector3(0.34f, 0.95f, -0.03f), new Vector3(0.1f, 0.03f, 0.05f), metal);
+            fake.Box(new Vector3(0, 2.03f, 0), new Vector3(1.02f, 0.07f, 0.05f), frame);
+            fake.Box(new Vector3(-0.46f, 1f, 0), new Vector3(0.07f, 2f, 0.05f), frame);
+            fake.Box(new Vector3(0.46f, 1f, 0), new Vector3(0.07f, 2f, 0.05f), frame);
+            var extra = Instance("PuertaDeMas", fake, t, new Vector3(5f, 0f, 5.92f), 0f, false);
+            dir.extraDoor = extra;
+            var extraUse = extra.AddComponent<BoxCollider>();
+            extraUse.center = new Vector3(0, 1f, 0); extraUse.size = new Vector3(0.9f, 2f, 0.15f);
+            var extraStory = extra.AddComponent<StoryObject>();
+            extraStory.id = "puerta_de_mas"; extraStory.prompt = "Abrir";
+
+            // Pasillo largo: sale por la puerta del fondo y sigue donde no debería haber nada
+            var hall = new MeshKit();
+            const float len = 16f;
+            hall.Box(new Vector3(-len / 2, -0.05f, 5.2f), new Vector3(len, 0.1f, 1.72f), floorWood);
+            hall.Box(new Vector3(-len / 2, Height + 0.05f, 5.2f), new Vector3(len, 0.1f, 1.72f), ceiling);
+            hall.Box(new Vector3(-len / 2, Height / 2, 4.4f), new Vector3(len, Height, Thick), wall);
+            hall.Box(new Vector3(-len / 2, Height / 2, 6f), new Vector3(len, Height, Thick), wall);
+            hall.Box(new Vector3(-len, Height / 2, 5.2f), new Vector3(Thick, Height, 1.72f), wall);
+            var hallGo = Instance("PasilloLargo", hall, t, Vector3.zero, 0f, false);
+            hallGo.AddComponent<MeshCollider>();
+            dir.longHall = hallGo;
+            var endDoor = Door(hallGo.transform, "PuertaAlVacio", -len + 0.07f, 4.75f, false, 0f, true);
+            GameObjectUtility.SetStaticEditorFlags(endDoor, 0);
+            var hallLight = SpotLight("LuzPasilloLargo", hallGo.transform, new Vector3(-len / 2, 2.45f, 5.2f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.72f, 0.42f), 1.4f, 5f, 150f, ~0);
+            hallLight.shadows = LightShadows.None;
+            dir.hallDoor = GameObject.Find("PuertaFondoPasillo").GetComponent<Door>();
+            dir.hallDoor.openYaw = -95f;
+
+            // Lo que cambia fuera: falta una farola
+            var street = GameObject.Find("Calle").transform;
+            foreach (Transform child in street)
+                if (child.name == "Farola" && Mathf.Abs(child.position.x - 13f) < 0.5f) dir.streetLampMissing = child.gameObject;
+            foreach (var l in GameObject.Find("Luces").GetComponentsInChildren<Light>())
+                if (l.name == "LuzFarola" && Mathf.Abs(l.transform.position.x - 13f) < 0.5f) dir.streetLampLight = l;
+
+            dir.bathLight = GameObject.Find("Luz_Bano").GetComponent<Light>();
+            dir.dripSound = GameObject.Find("Grifo").GetComponent<AudioSource>();
+
+            // Puerta del sótano en la colada
+            var cellarDoor = Instance("PuertaSotano", fake, t, new Vector3(13.92f, 0f, 6.65f), 90f, false);
+            dir.basementDoor = cellarDoor;
+            var cellarUse = cellarDoor.AddComponent<BoxCollider>();
+            cellarUse.center = new Vector3(0, 1f, 0); cellarUse.size = new Vector3(0.9f, 2f, 0.15f);
+            var cellarStory = cellarDoor.AddComponent<StoryObject>();
+            cellarStory.id = "puerta_sotano"; cellarStory.prompt = "Abrir";
+            
+            // Sótano: copia del dormitorio, muy lejos del resto
+            Vector3 o = new(40f, -40f, 0f);
+            var root = new GameObject("Sotano").transform;
+            root.position = o;
+            var shell = new MeshKit();
+            shell.Box(new Vector3(3f, -0.05f, 8f), new Vector3(6.24f, 0.1f, 4.24f), floorWood);
+            shell.Box(new Vector3(3f, Height + 0.05f, 8f), new Vector3(6.24f, 0.1f, 4.24f), ceiling);
+            shell.Box(new Vector3(0f, Height / 2, 8f), new Vector3(Thick, Height, 4.24f), wall);
+            shell.Box(new Vector3(6f, Height / 2, 8f), new Vector3(Thick, Height, 4.24f), wall);
+            shell.Box(new Vector3(3f, Height / 2, 10f), new Vector3(6.24f, Height, Thick), wall);
+            shell.Box(new Vector3(3f, Height / 2, 6f), new Vector3(6.24f, Height, Thick), wall);
+            var shellGo = Instance("Sotano_Estructura", shell, root, o, 0f, false);
+            shellGo.AddComponent<MeshCollider>();
+            GameObject Copy(string prefab, float x, float z, float yaw, float y = 0f)
+            {
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Ominous/Prefabs/{prefab}.prefab"), root);
+                go.transform.SetPositionAndRotation(o + new Vector3(x, y, z), Quaternion.Euler(0, yaw, 0));
+                return go;
+            }
+            Copy("Cama", 1.1f, 8.1f, 270f);
+            Copy("MesillaLampara", 0.32f, 9.2f, 90f);
+            Copy("Mesilla", 0.32f, 7f, 90f);
+            Copy("ComodaDormitorio", 3.2f, 9.72f, 180f);
+            Copy("AlfombraDormitorio", 2.9f, 7.5f, 0f);
+            // Las mismas cortinas, sobre una pared sin ventana
+            var fakeWindow = new MeshKit();
+            fakeWindow.Box(new Vector3(0, 0, 0), new Vector3(1.4f, 1.2f, 0.01f), wall);
+            foreach (float x in new[] { -0.72f, 0.72f }) fakeWindow.Box(new Vector3(x, -0.1f, -0.03f), new Vector3(0.28f, 1.45f, 0.05f), curtain);
+            fakeWindow.Box(new Vector3(0, 0.7f, -0.04f), new Vector3(2.1f, 0.03f, 0.03f), metal);
+            Instance("CortinasSotano", fakeWindow, root, o + new Vector3(4.2f, 1.5f, 9.93f), 180f, false);
+            var photos = new MeshKit();
+            var rng = new System.Random(3);
+            for (int i = 0; i < 14; i++)
+            {
+                float x = (i % 7 - 3) * 0.32f + (float)rng.NextDouble() * 0.06f, y = (i / 7) * 0.4f + (float)rng.NextDouble() * 0.08f;
+                photos.Box(new Vector3(x, y, 0), new Vector3(0.22f, 0.3f, 0.006f), paper);
+                photos.Box(new Vector3(x, y, -0.004f), new Vector3(0.18f, 0.13f, 0.002f), plastic);
+            }
+            Instance("FotosSotano", photos, root, o + new Vector3(3f, 1.2f, 6.07f), 180f, false);
+            var note = new MeshKit().Box(Vector3.zero, new Vector3(0.14f, 0.012f, 0.2f), paper);
+            Instance("Libreta", note, root, o + new Vector3(0.34f, 0.55f, 9.15f), 10f, false);
+            void UseAt(string id, string prompt, Vector3 p, Vector3 size)
+            {
+                var go = new GameObject("Uso_" + id);
+                go.transform.SetParent(root);
+                go.transform.position = o + p;
+                var c = go.AddComponent<BoxCollider>(); c.isTrigger = true; c.size = size;
+                var s = go.AddComponent<StoryObject>(); s.id = id; s.prompt = prompt;
+            }
+            UseAt("fotos", "Mirar las fotos", new Vector3(3f, 1.4f, 6.1f), new Vector3(2.4f, 1.1f, 0.1f));
+            UseAt("libreta", "Leer la libreta", new Vector3(0.34f, 0.62f, 9.15f), new Vector3(0.4f, 0.25f, 0.45f));
+            // Escalera de vuelta
+            var stairDoor = new GameObject("PuertaEscalera");
+            Copy("PuertaHoja", 5.94f, 8.3f, 0f);
+            Copy("PuertaMarco", 5.94f, 8.75f, 0f);
+            UseAt("salir_sotano", "Subir", new Vector3(5.88f, 1f, 8.75f), new Vector3(0.1f, 2f, 0.9f));
+            Object.DestroyImmediate(stairDoor);
+            var bulb = SpotLight("LuzSotano", root, o + new Vector3(3f, 2.45f, 8f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.72f, 0.42f), 2f, 6f, 165f, ~0);
+            bulb.shadows = LightShadows.Soft;
+            var arrival = new GameObject("LlegadaSotano");
+            arrival.transform.SetParent(root);
+            arrival.transform.SetPositionAndRotation(o + new Vector3(5.3f, 0.02f, 8.75f), Quaternion.Euler(0, 270, 0));
+            dir.basementArrival = arrival.transform;
+            dir.basementRoot = root.gameObject;
+            root.gameObject.SetActive(false);
         }
 
         static void BuildAct2(StoryDirector dir, Transform t)

@@ -129,6 +129,23 @@ namespace Ominous.EditorTools
         public static AudioClip Rattle() => Thuds("PuertaCerrada", new[] { 0f, 0.07f, 0.15f }, 520f, 70f, 0.55f, 0.4f, 74);
         public static AudioClip Click() => Thuds("Interruptor", new[] { 0f }, 1700f, 180f, 0.5f, 0.5f, 75);
         public static AudioClip Keys() => Thuds("Llaves", new[] { 0f, 0.06f, 0.11f, 0.19f, 0.26f }, 3200f, 70f, 0.5f, 0.28f, 76);
+        public static AudioClip Laugh()
+        {
+            // Risa provisional: unas pocas sílabas graves que bajan.
+            var s = new float[Rate * 2];
+            float phase = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = (float)i / Rate;
+                int beat = Mathf.FloorToInt(t / 0.24f);
+                float local = t - beat * 0.24f;
+                float env = beat < 7 ? Mathf.Exp(-local * 11f) * (1f - beat * 0.09f) : 0f;
+                phase += (150f - beat * 8f) / Rate;
+                s[i] = (Mathf.Repeat(phase, 1f) * 2f - 1f) * env * 0.6f;
+            }
+            return Save("Risa", s);
+        }
+
         public static AudioClip Step() => Thuds("Paso", new[] { 0f }, 90f, 42f, 0.45f, 0.5f, 77);
 
         public static AudioClip Drip()

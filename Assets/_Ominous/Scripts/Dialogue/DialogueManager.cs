@@ -20,16 +20,16 @@ namespace Ominous
         // Comandos del guion que aún no hacen nada: los implementan las fases 5 a 8.
         static readonly string[] PendingNoArgs =
         {
-            "reloj_parado",
+            
             "chechu_entrega_tornillo", 
-            "chechu_desaparece", "chechu_desaparece_riendo", "pasillo_alargado", "esperar_salto_jugador", "caida",
+            "chechu_desaparece", "pasillo_alargado", "esperar_salto_jugador", "caida",
             "reiniciar_noche", "puerta_se_abre", "corte_negro", "creditos", 
             
         };
 
         static readonly string[] PendingOneArg =
         {
-            "chechu_aparece", "fundido_negro",
+            "fundido_negro",
         };
 
         void Awake()
