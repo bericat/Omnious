@@ -70,4 +70,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Terminar toda la historia y pulir los gráficos después. Pidió pasar a la fase 6.
+Las puertas abren hacia dentro de las habitaciones. Se corrigió el parpadeo de los marcos (caras coplanarias con paredes y fachada) y se activó SMAA bajo para las líneas finas.

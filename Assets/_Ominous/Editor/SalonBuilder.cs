@@ -120,7 +120,7 @@ namespace Ominous.EditorTools
         /// <summary>Marco y cortinas de una ventana.</summary>
         static void WindowDressing(MeshKit kit, Vector3 center, float width, float height, bool alongX, float inward)
         {
-            const float bar = 0.05f, depth = 0.16f;
+            const float bar = 0.05f, depth = 0.19f;
             Vector3 along = alongX ? Vector3.right : Vector3.forward;
             Vector3 normal = alongX ? Vector3.forward : Vector3.right;
             Vector3 H(float w, float h, float d) => alongX ? new Vector3(w, h, d) : new Vector3(d, h, w);
@@ -243,9 +243,10 @@ namespace Ominous.EditorTools
         static MeshKit PuertaMarco()
         {
             var k = new MeshKit();
-            k.Box(new Vector3(0, 2.03f, 0), new Vector3(0.16f, 0.06f, 1.0f), frame);
-            k.Box(new Vector3(0, 1.0f, 0.46f), new Vector3(0.16f, 2.0f, 0.06f), frame);
-            k.Box(new Vector3(0, 1.0f, -0.46f), new Vector3(0.16f, 2.0f, 0.06f), frame);
+            // Más grueso que pared y fachada, y sin caras coplanarias con ellas: evita el parpadeo.
+            k.Box(new Vector3(0, 2.02f, 0), new Vector3(0.19f, 0.07f, 1.02f), frame);
+            k.Box(new Vector3(0, 0.99f, 0.46f), new Vector3(0.19f, 1.98f, 0.07f), frame);
+            k.Box(new Vector3(0, 0.99f, -0.46f), new Vector3(0.19f, 1.98f, 0.07f), frame);
             return k;
         }
 

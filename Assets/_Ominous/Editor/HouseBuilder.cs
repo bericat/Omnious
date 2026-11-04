@@ -492,7 +492,7 @@ namespace Ominous.EditorTools
 
         static void WindowFrameOnly(MeshKit kit, Vector3 center, float width, float height, bool alongX, float inward)
         {
-            const float bar = 0.05f, depth = 0.16f;
+            const float bar = 0.05f, depth = 0.19f;
             Vector3 along = alongX ? Vector3.right : Vector3.forward;
             Vector3 normal = alongX ? Vector3.forward : Vector3.right;
             Vector3 H(float w, float h, float d) => alongX ? new Vector3(w, h, d) : new Vector3(d, h, w);
@@ -598,7 +598,7 @@ namespace Ominous.EditorTools
             RoomLight(lights, "Pasillo2", 10f, 5.2f, new Vector3(9.8f, 1.2f, 4.47f), 90f, new Color(1f, 0.74f, 0.46f), 2.2f);
             RoomLight(lights, "Recibidor", 6f, 2.2f, new Vector3(6.93f, 1.2f, 0.55f), 0f, new Color(1f, 0.76f, 0.48f), 2.4f);
 
-            Door(d, "PuertaSalonRecibidor", 5f, 2.12f, false, 95f);
+            Door(d, "PuertaSalonRecibidor", 5f, 2.12f, false, -95f);
             Door(d, "PuertaRecibidorPasillo", 5.6f, 4.4f, true, 95f);
         }
 
@@ -619,8 +619,8 @@ namespace Ominous.EditorTools
             plate.Cylinder(Vector3.zero, 0.1f, 0.12f, 0.02f, 10, ceramic);
             Put("Plato", plate, f, 11.1f, 3f, 0, false, 0.76f);
             RoomLight(lights, "Cocina", 11.1f, 2.2f, new Vector3(10.0f + 1.02f, 1.2f, 4.33f), 90f, new Color(0.94f, 0.97f, 0.9f), 3.2f, false, 7f);
-            Door(d, "PuertaCocinaPasillo", 10f, 4.4f, true, -95f);
-            Door(d, "PuertaCocinaGaraje", 14f, 2.12f, false, 95f);
+            Door(d, "PuertaCocinaPasillo", 10f, 4.4f, true, 95f);
+            Door(d, "PuertaCocinaGaraje", 14f, 2.12f, false, -95f);
         }
 
         static void BuildBedroom(Transform f, Transform d, Transform lights)
@@ -841,7 +841,9 @@ namespace Ominous.EditorTools
             camGo.AddComponent<AudioListener>();
             var data = cam.GetUniversalAdditionalCameraData();
             data.renderPostProcessing = true;
-            data.antialiasing = AntialiasingMode.None;
+            // Suaviza el parpadeo de las líneas finas, como los marcos, a baja resolución.
+            data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+            data.antialiasingQuality = AntialiasingQuality.Low;
             fp.cameraPivot = camGo.transform;
             var interactor = player.AddComponent<PlayerInteractor>();
             interactor.eye = camGo.transform;
