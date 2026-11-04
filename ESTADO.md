@@ -1,6 +1,6 @@
 # Estado de Ominous
 
-**Fase actual:** 3, sistemas básicos.
+**Fase actual:** 4, la casa completa y el exterior.
 
 ## Hecho
 - Unity 6.3 LTS (6000.3.28f1) en Steam Deck (Unity Hub en Flatpak), con módulo de build Linux.
@@ -19,7 +19,7 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
-- Fase 3: prueba de Toni en `Test_Sistemas` (build `Builds/Ominous_Test/Ominous`). Con su visto bueno, etiqueta `fase-3-ok`.
+- Fase 4: casa completa, exterior, luz horneada y sonido ambiente.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
 
@@ -46,4 +46,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Cambiar el estilo a imagen de cámara doméstica, inspirada en Fears to Fathom. Algunas partes pueden ir en fases posteriores.
+Pidió pasar a la fase 4 (fase 3 dada por buena).
