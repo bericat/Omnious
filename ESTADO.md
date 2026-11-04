@@ -9,9 +9,17 @@
 - Conexión de Claude con el Editor. Prueba superada: crear un objeto, pulsar Play, detenerlo, leer la consola y borrar el objeto.
 
 ## Falta
-- Fase 2: shader y post-proceso PSX, salón provisional, ventana con exterior, luz de noche y medir rendimiento.
+- Fase 2: prueba de Toni con teclado y ratón en el salón. Con su visto bueno, etiqueta `fase-2-ok`.
+- WASD y ratón sin comprobar: las teclas simuladas no llegan con la ventana sin foco.
 - Guion: ampliar diálogos si hace falta cuando se juegue en la fase 5. No se ha compilado: Yarn Spinner llega en la fase 3.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
+
+## Fase 2: cómo está montada
+- Escena `Assets/_Ominous/Scenes/Test_Salon.unity`, regenerable con `Tools/Ominous/Construir salón de pruebas`.
+- Ajustes en `Assets/_Ominous/Data/PSXSettings.asset`, o en vivo con F1.
+- Sin sombras en tiempo real. La calle usa la capa `Exterior`, con luces y ambiente propios.
+- Build de prueba en `Builds/Ominous_Test/Ominous`. `-fpslog 20` mide y escribe en `~/.config/unity3d/Toni/Ominous/Player.log`.
+- Medido en la Deck (1280×800, OpenGL, jugador quieto, 20 s): 60,0 fps, peor fotograma 18,5 ms.
 
 ## Conexión con Unity
 La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el paquete `com.unity.pipeline`:

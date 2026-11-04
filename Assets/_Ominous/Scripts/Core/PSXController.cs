@@ -15,6 +15,12 @@ namespace Ominous
         static readonly int Ambient = Shader.PropertyToID("_PSX_Ambient");
         static readonly int FogColor = Shader.PropertyToID("_PSX_FogColor");
 
+        void Awake()
+        {
+            // 60 fps con sincronía vertical: sin tearing y sin gastar batería de más en la Deck.
+            if (Application.isPlaying) QualitySettings.vSyncCount = 1;
+        }
+
         void OnEnable() => Apply();
         void Update() => Apply();
 
