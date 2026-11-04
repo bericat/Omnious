@@ -1,25 +1,27 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 namespace Ominous.EditorTools
 {
-    /// <summary>Deja URP preparado para el estilo PSX en la Steam Deck.</summary>
+    /// <summary>Deja URP preparado para la imagen de cámara doméstica en la Steam Deck.</summary>
     public static class OminousSetup
     {
-        public const string SettingsPath = "Assets/_Ominous/Data/PSXSettings.asset";
+        public const string SettingsPath = "Assets/_Ominous/Data/VideoLook.asset";
         const string RendererPath = "Assets/Settings/PC_Renderer.asset";
+        const string VolumePath = "Assets/_Ominous/Data/VideoVolume.asset";
         const string PipelinePath = "Assets/Settings/PC_RPAsset.asset";
-        const string PostMatPath = "Assets/_Ominous/Materials/PSX/PSXPost.mat";
+        const string PostMatPath = "Assets/_Ominous/Materials/Video/VideoPost.mat";
 
-        [MenuItem("Tools/Ominous/Configurar PSX")]
+        [MenuItem("Tools/Ominous/Configurar imagen")]
         public static void Configure()
         {
-            var settings = AssetDatabase.LoadAssetAtPath<PSXSettings>(SettingsPath);
+            var settings = AssetDatabase.LoadAssetAtPath<VideoLookSettings>(SettingsPath);
             if (settings == null)
             {
-                settings = ScriptableObject.CreateInstance<PSXSettings>();
+                settings = ScriptableObject.CreateInstance<VideoLookSettings>();
                 AssetDatabase.CreateAsset(settings, SettingsPath);
             }
 
@@ -30,7 +32,7 @@ namespace Ominous.EditorTools
             var post = AssetDatabase.LoadAssetAtPath<Material>(PostMatPath);
             if (post == null)
             {
-                post = new Material(Shader.Find("Hidden/Ominous/PSX Post"));
+                post = new Material(Shader.Find("Hidden/Ominous/Video Post"));
                 AssetDatabase.CreateAsset(post, PostMatPath);
             }
 
@@ -39,9 +41,12 @@ namespace Ominous.EditorTools
             so.FindProperty("m_SupportsHDR").boolValue = false;
             so.FindProperty("m_MSAA").intValue = 1;
             so.FindProperty("m_MainLightShadowsSupported").boolValue = false;
-            so.FindProperty("m_AdditionalLightShadowsSupported").boolValue = false;
+            so.FindProperty("m_AdditionalLightShadowsSupported").boolValue = true;
+            so.FindProperty("m_AdditionalLightsShadowmapResolution").intValue = 1024;
+            so.FindProperty("m_SoftShadowsSupported").boolValue = true;
+            so.FindProperty("m_SoftShadowQuality").intValue = 1;
             so.FindProperty("m_AdditionalLightsRenderingMode").intValue = 1;
-            so.FindProperty("m_UpscalingFilter").intValue = (int)UpscalingFilterSelection.Point;
+            so.FindProperty("m_UpscalingFilter").intValue = (int)UpscalingFilterSelection.Linear;
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(pipeline);
 
@@ -53,7 +58,7 @@ namespace Ominous.EditorTools
             if (feature == null)
             {
                 feature = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
-                feature.name = "PSXPost";
+                feature.name = "VideoPost";
                 AssetDatabase.AddObjectToAsset(feature, data);
                 data.rendererFeatures.Add(feature);
                 AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out string _, out long id);
@@ -68,7 +73,31 @@ namespace Ominous.EditorTools
             feature.SetActive(true);
             EditorUtility.SetDirty(feature);
             EditorUtility.SetDirty(data);
+            BuildVolumeProfile();
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Solo el bloom de URP: el resto va en la pasada propia, más barata en la Deck.</summary>
+        public static VolumeProfile BuildVolumeProfile()
+        {
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumePath);
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<VolumeProfile>();
+                AssetDatabase.CreateAsset(profile, VolumePath);
+            }
+            if (!profile.TryGet<Bloom>(out var bloom))
+            {
+                bloom = profile.Add<Bloom>(true);
+                AssetDatabase.AddObjectToAsset(bloom, profile);
+            }
+            bloom.threshold.Override(0.8f);
+            bloom.intensity.Override(0.5f);
+            bloom.scatter.Override(0.62f);
+            bloom.highQualityFiltering.Override(false);
+            EditorUtility.SetDirty(bloom);
+            EditorUtility.SetDirty(profile);
+            return profile;
         }
     }
 }

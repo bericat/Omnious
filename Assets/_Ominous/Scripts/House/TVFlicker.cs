@@ -8,9 +8,9 @@ namespace Ominous
         public Light tvLight;
         public Renderer screen;
         public int screenMaterialIndex;
-        public Color colorA = new Color(0.55f, 0.7f, 1f);
-        public Color colorB = new Color(0.9f, 0.85f, 0.75f);
-        public float baseIntensity = 2.4f;
+        public Color colorA = new Color(0.72f, 0.8f, 0.95f);
+        public Color colorB = new Color(0.9f, 0.87f, 0.8f);
+        public float baseIntensity = 3.0f;
 
         static readonly int Emission = Shader.PropertyToID("_EmissionColor");
         MaterialPropertyBlock block;

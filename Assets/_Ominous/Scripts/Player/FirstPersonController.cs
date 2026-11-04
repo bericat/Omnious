@@ -13,6 +13,8 @@ namespace Ominous
         public float mouseSensitivity = 0.08f;
         public float standHeight = 1.7f;
         public float crouchHeight = 1.05f;
+        [Tooltip("Rapidez con la que la cámara sigue al ratón; más bajo, más pesada")]
+        public float lookSmoothing = 22f;
         static readonly System.Collections.Generic.HashSet<object> blockers = new();
         /// <summary>Hay algo que impide moverse: un diálogo, la pausa o un panel.</summary>
         public static bool InputBlocked => blockers.Count > 0;
@@ -22,12 +24,13 @@ namespace Ominous
         }
 
         CharacterController controller;
-        float pitch, verticalVelocity, currentHeight, bobTime;
+        float pitch, verticalVelocity, currentHeight, bobTime, yawTarget, pitchTarget, bobWeight, roll;
 
         void Awake()
         {
             controller = GetComponent<CharacterController>();
             currentHeight = standHeight;
+            yawTarget = transform.eulerAngles.y;
         }
 
         void Start() => SetCursorLocked(true);
@@ -38,7 +41,8 @@ namespace Ominous
         {
             if (controller != null) controller.enabled = false;
             transform.SetPositionAndRotation(position, Quaternion.Euler(0f, yaw, 0f));
-            pitch = 0f;
+            pitch = pitchTarget = 0f;
+            yawTarget = yaw;
             if (controller != null) controller.enabled = true;
         }
 
@@ -58,8 +62,13 @@ namespace Ominous
 
             bool active = !InputBlocked;
             Vector2 look = active ? mouse.delta.ReadValue() * (mouseSensitivity * OminousOptions.Sensitivity) : Vector2.zero;
-            transform.Rotate(0f, look.x, 0f);
-            pitch = Mathf.Clamp(pitch - look.y, -85f, 85f);
+            yawTarget += look.x;
+            pitchTarget = Mathf.Clamp(pitchTarget - look.y, -85f, 85f);
+            // La cámara sigue al ratón con un poco de inercia, como algo que se sostiene en la mano.
+            float follow = 1f - Mathf.Exp(-lookSmoothing * Time.deltaTime);
+            float yaw = Mathf.LerpAngle(transform.eulerAngles.y, yawTarget, follow);
+            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            pitch = Mathf.Lerp(pitch, pitchTarget, follow);
 
             Vector2 move = Vector2.zero;
             if (active)
@@ -81,12 +90,21 @@ namespace Ominous
             controller.height = currentHeight;
             controller.center = new Vector3(0f, currentHeight * 0.5f, 0f);
 
-            bobTime += move.sqrMagnitude > 0f ? Time.deltaTime * speed * 3.2f : 0f;
-            float bob = Mathf.Sin(bobTime) * 0.012f;
+            bool walking = move.sqrMagnitude > 0f;
+            bobWeight = Mathf.MoveTowards(bobWeight, walking ? 1f : 0f, Time.deltaTime * 4f);
+            bobTime += walking ? Time.deltaTime * speed * 3.1f : 0f;
+            float bobY = Mathf.Sin(bobTime * 2f) * 0.014f * bobWeight;
+            float bobX = Mathf.Sin(bobTime) * 0.009f * bobWeight;
+            roll = Mathf.Lerp(roll, -move.x * 0.5f + Mathf.Sin(bobTime) * 0.18f * bobWeight, 1f - Mathf.Exp(-6f * Time.deltaTime));
+            // Pulso de mano: deriva muy lenta e irregular, también con el jugador quieto.
+            float t = Time.time;
+            float handX = (Mathf.PerlinNoise(t * 0.33f, 1.3f) - 0.5f) * 0.55f;
+            float handY = (Mathf.PerlinNoise(2.7f, t * 0.27f) - 0.5f) * 0.55f;
+            float handZ = (Mathf.PerlinNoise(t * 0.21f, 5.9f) - 0.5f) * 0.4f;
             if (cameraPivot != null)
             {
-                cameraPivot.localPosition = new Vector3(0f, currentHeight - 0.1f + bob, 0f);
-                cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+                cameraPivot.localPosition = new Vector3(bobX, currentHeight - 0.1f + bobY, 0f);
+                cameraPivot.localRotation = Quaternion.Euler(pitch + handX, handY, roll + handZ);
             }
         }
     }

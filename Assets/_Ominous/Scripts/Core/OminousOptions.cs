@@ -12,7 +12,7 @@ namespace Ominous
         public static float TextSize { get => PlayerPrefs.GetFloat("texto", 1f); set => Set("texto", value); }
         public static float Brightness { get => PlayerPrefs.GetFloat("brillo", 1f); set => Set("brillo", value); }
         public static float Sensitivity { get => PlayerPrefs.GetFloat("sensibilidad", 1f); set => Set("sensibilidad", value); }
-        public static float PsxIntensity { get => PlayerPrefs.GetFloat("psx", 1f); set => Set("psx", value); }
+        public static float CameraEffectIntensity { get => PlayerPrefs.GetFloat("camara", 1f); set => Set("camara", value); }
 
         static void Set(string key, int value) { PlayerPrefs.SetInt(key, value); PlayerPrefs.Save(); Changed?.Invoke(); }
         static void Set(string key, float value) { PlayerPrefs.SetFloat(key, value); PlayerPrefs.Save(); Changed?.Invoke(); }

@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace Ominous
 {
-    /// <summary>Menú principal con el logo y un parpadeo irregular.</summary>
+    /// <summary>Menú principal discreto.</summary>
     public class MainMenu : MonoBehaviour
     {
         public const string SceneName = "MainMenu";
@@ -20,9 +20,8 @@ namespace Ominous
             Cursor.visible = true;
             var root = UIKit.Canvas("Menu", 10).transform;
 
-            logo = UIKit.Label(UIKit.Rect(root, "Logo", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 215), new Vector2(1000, 150)), "OMINOUS", 112, UIKit.Accent);
-            logo.characterSpacing = 18f;
-            logo.fontStyle = FontStyles.Bold;
+            logo = UIKit.Label(UIKit.Rect(root, "Logo", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 215), new Vector2(1000, 150)), "Ominous", 74, UIKit.Ink);
+            logo.characterSpacing = 6f;
 
             var col = UIKit.Rect(root, "Botones", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, -70), new Vector2(380, 270));
             UIKit.Column(col, 12);
@@ -40,8 +39,8 @@ namespace Ominous
         {
             if (Time.unscaledTime < nextFlicker) return;
             bool dark = logo.color.a > 0.5f && Random.value < 0.5f;
-            logo.color = new Color(UIKit.Accent.r, UIKit.Accent.g, UIKit.Accent.b, dark ? 0.25f : 1f);
-            nextFlicker = Time.unscaledTime + (dark ? Random.Range(0.04f, 0.12f) : Random.Range(0.8f, 4.5f));
+            logo.color = new Color(UIKit.Ink.r, UIKit.Ink.g, UIKit.Ink.b, dark ? 0.55f : 1f);
+            nextFlicker = Time.unscaledTime + (dark ? Random.Range(0.04f, 0.12f) : Random.Range(4f, 14f));
         }
     }
 }

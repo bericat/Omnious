@@ -69,11 +69,7 @@ namespace Ominous.EditorTools
             Instance("CajaPrueba", box, props, new Vector3(6.1f, 0, 2.7f)).AddComponent<DialogueTrigger>().Configure("Examinar", "Test_Caja");
 
             // Interruptor y lámpara
-            var lampGo = new GameObject("LuzLampara");
-            lampGo.transform.position = new Vector3(0.45f, 1.5f, 0.55f);
-            var lamp = lampGo.AddComponent<Light>();
-            lamp.type = LightType.Point; lamp.color = new Color(1f, 0.74f, 0.45f); lamp.intensity = 2.2f; lamp.range = 5.5f; lamp.shadows = LightShadows.None;
-            lamp.cullingMask = ~ExteriorMask;
+            var lamp = GameObject.Find("LuzLampara").GetComponent<Light>();
             var sw = new MeshKit();
             sw.Box(Vector3.zero, new Vector3(0.02f, 0.12f, 0.08f), frame);
             sw.Box(new Vector3(-0.015f, 0, 0), new Vector3(0.015f, 0.04f, 0.02f), metal);
@@ -81,6 +77,8 @@ namespace Ominous.EditorTools
             swGo.GetComponent<BoxCollider>().size = new Vector3(0.1f, 0.25f, 0.2f);
             var lightSwitch = swGo.AddComponent<LightSwitch>();
             lightSwitch.lights = new[] { lamp };
+            lightSwitch.isOn = true;
+            lightSwitch.emissive = GameObject.Find("Lampara").GetComponent<MeshRenderer>();
 
             // Cómoda con cajón
             var chest = new MeshKit();

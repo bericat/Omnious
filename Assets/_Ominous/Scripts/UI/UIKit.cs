@@ -10,9 +10,9 @@ namespace Ominous
     /// <summary>Monta la interfaz por código, sin prefabs.</summary>
     public static class UIKit
     {
-        public static readonly Color Ink = new(0.86f, 0.82f, 0.74f);
-        public static readonly Color Dim = new(0.6f, 0.58f, 0.54f);
-        public static readonly Color Accent = new(0.62f, 0.12f, 0.1f);
+        public static readonly Color Ink = new(0.82f, 0.82f, 0.78f);
+        public static readonly Color Dim = new(0.62f, 0.64f, 0.6f);
+        public static readonly Color Accent = new(0.5f, 0.52f, 0.48f);
 
         public static Canvas Canvas(string name, int order)
         {
@@ -69,11 +69,11 @@ namespace Ominous
         {
             var r = Rect(parent, text, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(420, height));
             r.gameObject.AddComponent<LayoutElement>().preferredHeight = height;
-            var image = Panel(r, new Color(0.09f, 0.08f, 0.08f, 0.9f));
+            var image = Panel(r, new Color(0.1f, 0.1f, 0.1f, 0.55f));
             var b = r.gameObject.AddComponent<Button>();
             b.targetGraphic = image;
             var c = b.colors;
-            c.normalColor = Color.white; c.highlightedColor = new Color(2.6f, 1.2f, 1.2f); c.pressedColor = new Color(3.6f, 1.2f, 1.2f); c.selectedColor = Color.white;
+            c.normalColor = Color.white; c.highlightedColor = new Color(2.2f, 2.2f, 2.1f); c.pressedColor = new Color(3f, 3f, 2.8f); c.selectedColor = Color.white;
             b.colors = c;
             b.onClick.AddListener(() => onClick());
             var label = Stretch(r, "Texto");
