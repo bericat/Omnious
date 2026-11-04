@@ -19,9 +19,18 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
-- Fase 4: casa completa, exterior, luz horneada y sonido ambiente.
+- Fase 4: prueba de Toni recorriendo la casa (build `Builds/Ominous_Test/Ominous`, Nueva partida). Con su visto bueno, etiqueta `fase-4-ok`.
+- Sin confirmar por Toni: la colocación de cada estancia y el sonido.
+- Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
+
+## Fase 4: cómo está montada
+- Escena `Assets/_Ominous/Scenes/House.unity`. Regenerar: `Tools/Ominous/Construir la casa` y después `Tools/Ominous/Hornear la luz de la casa` (menos de un minuto), y guardar la escena.
+- `SalonBuilder` y `HouseBuilder` son la misma clase parcial; coordenadas del plano con z = 10 - y.
+- Luz: Forward+ (ignora las máscaras de luz). Horneado solo el cielo que entra por ventanas. Plafones, lámpara, tele y farolas en tiempo real con sombra suave; plafones con foco de 168°.
+- Sonido sintetizado en `Editor/AudioGen.cs`.
+- Medición: `-fpslog 40 -recorrido [-todasluces]` en una build que arranque en `House`. Medido en la Deck a 1280×800: 60,0 fps; peor fotograma 42,3 ms en recorrido y 19,9 ms con todas las luces.
 
 ## Fase 3: cómo está montada
 - Yarn Spinner 3.2.8 por git. Proyecto `Assets/_Ominous/Dialogue/Ominous.yarnproject`; todo el guion compila.

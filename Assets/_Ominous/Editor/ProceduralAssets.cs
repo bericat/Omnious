@@ -165,7 +165,7 @@ namespace Ominous.EditorTools
             int seed = Seed(name);
             return Make(name, Texture(name, 256, 256, (u, v) =>
             {
-                float board = Mathf.Repeat(v * 8f, 1f);
+                float board = Mathf.Repeat(v * 14f, 1f);
                 Color c = Stain(color, u, v, seed, 0.7f);
                 return Mul(c, board < 0.12f ? 0.45f : 0.82f + board * 0.2f);
             }), 2f);

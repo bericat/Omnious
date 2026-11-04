@@ -83,7 +83,7 @@ Shader "Ominous/Video Lit"
                 // Ambiente desigual: entra algo más de luz desde arriba que desde abajo.
                 #if defined(LIGHTMAP_ON)
                 // Luz horneada: entra por las ventanas y deja los rincones oscuros.
-                half3 light = SampleLightmap(i.uvLightmap, n) + _Video_Ambient.rgb * 0.25;
+                half3 light = SampleLightmap(i.uvLightmap, n) + _Video_Ambient.rgb * (0.72 + 0.28 * n.y);
                 #else
                 half3 light = _Video_Ambient.rgb * _AmbientBoost * (0.72 + 0.28 * n.y);
                 #endif

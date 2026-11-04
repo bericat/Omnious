@@ -26,7 +26,7 @@ namespace Ominous
                 if (l != null) l.enabled = isOn;
             if (emissive == null) return;
             var block = new MaterialPropertyBlock();
-            block.SetColor(Emission, isOn ? new Color(0.95f, 0.66f, 0.34f) : Color.black);
+            block.SetColor(Emission, isOn ? new Color(0.9f, 0.78f, 0.58f) : Color.black);
             emissive.SetPropertyBlock(block);
         }
     }

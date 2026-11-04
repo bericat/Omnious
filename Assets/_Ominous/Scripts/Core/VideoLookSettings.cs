@@ -25,15 +25,15 @@ namespace Ominous
         [Range(0f, 1.2f)] public float saturation = 0.72f;
         [Range(0.7f, 1.5f)] public float contrast = 1.05f;
         [Range(0.5f, 2f)] public float brightness = 1.15f;
-        public Color shadowTint = new(0.9f, 1f, 1.03f);
+        public Color shadowTint = new(0.95f, 1f, 1.02f);
         public Color lightTint = new(1.03f, 1.01f, 0.9f);
 
         [Header("Iluminación y niebla")]
-        public Color ambient = new(0.085f, 0.088f, 0.09f);
+        public Color ambient = new(0.2f, 0.2f, 0.21f);
         public Color fogColor = new(0.02f, 0.024f, 0.03f);
         [Range(0f, 30f)] public float fogStart = 14f;
         [Range(5f, 80f)] public float fogEnd = 50f;
-        public Color exteriorFogColor = new(0.115f, 0.13f, 0.135f);
+        public Color exteriorFogColor = new(0.085f, 0.095f, 0.1f);
         [Range(0f, 15f)] public float exteriorFogStart = 2f;
         [Range(5f, 60f)] public float exteriorFogEnd = 22f;
     }

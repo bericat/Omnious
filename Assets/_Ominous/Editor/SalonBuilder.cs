@@ -26,7 +26,7 @@ namespace Ominous.EditorTools
         {
             ProceduralAssets.Clear();
             wall = ProceduralAssets.Plaster("Pared", new Color(0.6f, 0.59f, 0.49f));
-            floorWood = ProceduralAssets.Planks("SueloMadera", new Color(0.42f, 0.27f, 0.15f), 5, 1.6f);
+            floorWood = ProceduralAssets.Planks("SueloMadera", new Color(0.38f, 0.28f, 0.18f), 5, 1.6f);
             ceiling = ProceduralAssets.Plaster("Techo", new Color(0.66f, 0.65f, 0.58f));
             woodDark = ProceduralAssets.Planks("MaderaOscura", new Color(0.27f, 0.16f, 0.09f), 1, 0.8f);
             woodLight = ProceduralAssets.Planks("MaderaClara", new Color(0.5f, 0.34f, 0.2f), 1, 0.8f);

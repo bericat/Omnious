@@ -14,7 +14,7 @@ namespace Ominous.EditorTools
     {
         const string HousePath = "Assets/_Ominous/Scenes/House.unity";
         const string LightingPath = "Assets/_Ominous/Data/LightingHouse.lighting";
-        static Material tileWall, tileFloor, linoleum, concreteIn, ceramic, chrome, mirror, carRed, carBlue, carGrey, tire, carGlass, paintA, paintB, pillow, sheet, paper, fridge, appliance, countertop, grime;
+        static Material tileWall, tileFloor, linoleum, concreteIn, ceramic, chrome, mirror, carRed, carBlue, carGrey, tire, carGlass, tireIn, carGlassIn, fenceWood, paintA, paintB, pillow, sheet, paper, fridge, appliance, countertop, grime;
 
         static void HouseMaterials()
         {
@@ -24,12 +24,15 @@ namespace Ominous.EditorTools
             concreteIn = ProceduralAssets.Grime("Hormigon", new Color(0.4f, 0.39f, 0.36f), 0.8f, 2f);
             ceramic = ProceduralAssets.Grime("Ceramica", new Color(0.78f, 0.78f, 0.72f), 0.25f, 1f);
             chrome = ProceduralAssets.Grime("Cromo", new Color(0.55f, 0.56f, 0.56f), 0.3f, 1f);
-            mirror = ProceduralAssets.Grime("Espejo", new Color(0.32f, 0.36f, 0.36f), 0.35f, 1f);
+            mirror = ProceduralAssets.Grime("Espejo", new Color(0.52f, 0.56f, 0.56f), 0.2f, 1f);
             carRed = ProceduralAssets.Grime("CocheRojo", new Color(0.32f, 0.11f, 0.09f), 0.4f);
             carBlue = ProceduralAssets.Grime("CocheAzul", new Color(0.14f, 0.2f, 0.28f), 0.4f);
             carGrey = ProceduralAssets.Grime("CocheGris", new Color(0.36f, 0.37f, 0.36f), 0.4f);
             tire = ProceduralAssets.Grime("Rueda", new Color(0.05f, 0.05f, 0.05f), 0.3f);
             carGlass = ProceduralAssets.Grime("CristalCoche", new Color(0.06f, 0.08f, 0.09f), 0.1f);
+            tireIn = ProceduralAssets.Grime("RuedaGaraje", new Color(0.05f, 0.05f, 0.05f), 0.3f);
+            carGlassIn = ProceduralAssets.Grime("CristalCocheGaraje", new Color(0.07f, 0.09f, 0.1f), 0.1f);
+            fenceWood = ProceduralAssets.Planks("Valla", new Color(0.24f, 0.17f, 0.11f), 1, 1f);
             paintA = ProceduralAssets.Painting("CuadroA", new Color(0.42f, 0.44f, 0.32f), new Color(0.6f, 0.52f, 0.36f));
             paintB = ProceduralAssets.Painting("CuadroB", new Color(0.26f, 0.32f, 0.38f), new Color(0.58f, 0.58f, 0.5f));
             pillow = ProceduralAssets.Fabric("Almohada", new Color(0.7f, 0.69f, 0.62f));
@@ -42,7 +45,7 @@ namespace Ominous.EditorTools
             ProceduralAssets.Sheen(0.35f, ceramic, tileWall, fridge, appliance);
             ProceduralAssets.Sheen(0.6f, chrome, mirror);
             ProceduralAssets.Sheen(0.2f, tileFloor, linoleum, countertop);
-            ProceduralAssets.Exterior(carRed, carBlue, carGrey, tire, carGlass);
+            ProceduralAssets.Exterior(carBlue, carGrey, tire, carGlass, fenceWood);
         }
 
         const float DoorTop = 2.0f;
@@ -235,22 +238,29 @@ namespace Ominous.EditorTools
             return k;
         }
 
-        static MeshKit Coche(Material body)
+        static MeshKit Coche(Material body, Material windows, Material wheels)
         {
-            // Largo en z, morro hacia +z. Silueta de berlina de los 90.
+            // Largo en z, morro hacia +z. Berlina de los 90: capó y maletero más bajos que el habitáculo.
             var k = new MeshKit();
-            Material g = body == carGrey || body == carBlue || body == carRed ? carGlass : carGlass;
-            k.Box(new Vector3(0, 0.45f, 0), new Vector3(1.7f, 0.42f, 4.3f), body);
-            k.Box(new Vector3(0, 0.82f, -0.25f), new Vector3(1.5f, 0.36f, 2.05f), g);
-            k.Box(new Vector3(0, 1.015f, -0.25f), new Vector3(1.44f, 0.04f, 1.85f), body);
-            k.Box(new Vector3(0, 0.66f, 2.14f), new Vector3(1.5f, 0.05f, 0.02f), body);
+            k.Box(new Vector3(0, 0.42f, 0), new Vector3(1.7f, 0.36f, 4.3f), body);
+            k.Box(new Vector3(0, 0.63f, 1.52f), new Vector3(1.66f, 0.08f, 1.25f), body);     // Capó
+            k.Box(new Vector3(0, 0.63f, -1.72f), new Vector3(1.66f, 0.08f, 0.85f), body);    // Maletero
+            k.Box(new Vector3(0, 0.76f, -0.2f), new Vector3(1.62f, 0.2f, 2.3f), body);       // Cintura
+            k.Box(new Vector3(0, 0.98f, -0.2f), new Vector3(1.5f, 0.26f, 1.85f), windows);   // Cristales
+            k.Box(new Vector3(0, 1.13f, -0.2f), new Vector3(1.42f, 0.04f, 1.6f), body);      // Techo
+            foreach (float z in new[] { -1.04f, 0.64f })
+                foreach (float x in new[] { -0.74f, 0.74f })
+                    k.Box(new Vector3(x, 0.98f, z - 0.2f + 0.2f), new Vector3(0.05f, 0.26f, 0.05f), body); // Montantes
             foreach (float z in new[] { -1.38f, 1.38f })
-                foreach (float x in new[] { -0.82f, 0.82f })
-                    k.Box(new Vector3(x, 0.3f, z), new Vector3(0.2f, 0.6f, 0.6f), tire);
-            k.Box(new Vector3(0, 0.38f, 2.17f), new Vector3(1.7f, 0.14f, 0.04f), plastic);
-            k.Box(new Vector3(0, 0.38f, -2.17f), new Vector3(1.7f, 0.14f, 0.04f), plastic);
+                foreach (float x in new[] { -0.8f, 0.8f })
+                    k.Box(new Vector3(x, 0.3f, z), new Vector3(0.2f, 0.6f, 0.62f), wheels);
+            k.Box(new Vector3(0, 0.34f, 2.17f), new Vector3(1.72f, 0.14f, 0.05f), plastic);
+            k.Box(new Vector3(0, 0.34f, -2.17f), new Vector3(1.72f, 0.14f, 0.05f), plastic);
             foreach (float x in new[] { -0.62f, 0.62f })
-                k.Box(new Vector3(x, 0.55f, 2.16f), new Vector3(0.3f, 0.12f, 0.02f), chrome);
+            {
+                k.Box(new Vector3(x, 0.5f, 2.155f), new Vector3(0.32f, 0.13f, 0.02f), chrome);
+                k.Box(new Vector3(x, 0.5f, -2.155f), new Vector3(0.32f, 0.12f, 0.02f), carRed);
+            }
             return k;
         }
 
@@ -330,7 +340,7 @@ namespace Ominous.EditorTools
             RenderSettings.skybox = null;
             RenderSettings.ambientMode = AmbientMode.Flat;
             // Esta luz solo cuenta al hornear: es el cielo de noche que entra por las ventanas.
-            RenderSettings.ambientLight = new Color(0.34f, 0.4f, 0.5f);
+            RenderSettings.ambientLight = new Color(0.55f, 0.62f, 0.72f);
             RenderSettings.ambientIntensity = 1f;
             RenderSettings.fog = false;
             RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
@@ -546,7 +556,7 @@ namespace Ominous.EditorTools
             hanger.Cylinder(Vector3.zero, 0.17f, 0.15f, 0.03f, 6, woodDark);
             hanger.Cylinder(new Vector3(0, 0.03f, 0), 0.02f, 0.02f, 1.7f, 6, woodDark);
             foreach (float a in new[] { 0f, 1.57f, 3.14f, 4.71f }) hanger.Box(new Vector3(Mathf.Cos(a) * 0.1f, 1.63f, Mathf.Sin(a) * 0.1f), new Vector3(0.2f, 0.02f, 0.02f), woodDark);
-            hanger.Box(new Vector3(0.1f, 1.35f, 0), new Vector3(0.1f, 0.65f, 0.34f), carBlue);
+            hanger.Box(new Vector3(0.1f, 1.35f, 0), new Vector3(0.1f, 0.65f, 0.34f), blanket);
             Put("Perchero", hanger, f, 5.28f, 0.5f);
             var front = Door(d, "PuertaEntrada", 6.45f, 0f, true, 0f, true);
             front.transform.rotation = Quaternion.Euler(0, 270, 0);
@@ -587,7 +597,7 @@ namespace Ominous.EditorTools
             var plate = new MeshKit();
             plate.Cylinder(Vector3.zero, 0.1f, 0.12f, 0.02f, 10, ceramic);
             Put("Plato", plate, f, 11.1f, 3f, 0, false, 0.76f);
-            RoomLight(lights, "Cocina", 11.1f, 2.2f, new Vector3(10.0f + 1.02f, 1.2f, 4.33f), 90f, new Color(0.86f, 0.98f, 0.92f), 3.2f, false, 7f);
+            RoomLight(lights, "Cocina", 11.1f, 2.2f, new Vector3(10.0f + 1.02f, 1.2f, 4.33f), 90f, new Color(0.94f, 0.97f, 0.9f), 3.2f, false, 7f);
             Door(d, "PuertaCocinaPasillo", 10f, 4.4f, true, -95f);
             Door(d, "PuertaCocinaGaraje", 14f, 2.12f, false, 95f);
         }
@@ -616,11 +626,11 @@ namespace Ominous.EditorTools
             Put("Vater", Vater(), f, 9.4f, 9.55f, 180f);
             var towel = new MeshKit();
             towel.Box(new Vector3(0, 1.32f, 0), new Vector3(0.02f, 0.02f, 0.55f), chrome);
-            towel.Box(new Vector3(-0.012f, 1.03f, 0), new Vector3(0.018f, 0.58f, 0.42f), sheet);
+            towel.Box(new Vector3(-0.012f, 1.03f, 0), new Vector3(0.018f, 0.58f, 0.42f), pillow);
             Put("Toalla", towel, f, 9.93f, 8.35f, 0, false);
             var tile = new MeshKit().Box(new Vector3(0, 0.004f, 0), new Vector3(0.3f, 0.012f, 0.3f), grime);
             Put("BaldosaSuelta", tile, f, 7.6f, 7.6f, 3f, false);
-            RoomLight(lights, "Bano", 8.4f, 8f, new Vector3(7.93f + 1.02f, 1.2f, 6.07f), 90f, new Color(0.88f, 0.98f, 0.92f), 2.6f, false, 6f);
+            RoomLight(lights, "Bano", 8.4f, 8f, new Vector3(7.93f + 1.02f, 1.2f, 6.07f), 90f, new Color(0.94f, 0.97f, 0.9f), 2.6f, false, 6f);
             Door(d, "PuertaBano", 8f, 6f, true, -95f);
         }
 
@@ -631,7 +641,7 @@ namespace Ominous.EditorTools
             var shelf = new MeshKit();
             shelf.Box(new Vector3(0, 0, 0), new Vector3(0.3f, 0.025f, 1.5f), woodLight);
             shelf.Box(new Vector3(0, 0.35f, 0), new Vector3(0.3f, 0.025f, 1.5f), woodLight);
-            shelf.Box(new Vector3(0.01f, 0.1f, -0.45f), new Vector3(0.14f, 0.18f, 0.2f), carBlue);
+            shelf.Box(new Vector3(0.01f, 0.1f, -0.45f), new Vector3(0.14f, 0.18f, 0.2f), blanket);
             shelf.Box(new Vector3(0.01f, 0.13f, 0f), new Vector3(0.12f, 0.24f, 0.09f), ceramic);
             shelf.Box(new Vector3(0.01f, 0.45f, 0.35f), new Vector3(0.16f, 0.17f, 0.26f), paper);
             Put("Baldas", shelf, f, 10.21f, 8.7f, 0, false, 1.55f);
@@ -646,22 +656,22 @@ namespace Ominous.EditorTools
                 shoes.Box(new Vector3(x, 0.07f, -0.03f), new Vector3(0.07f, 0.06f, 0.1f), plastic);
             }
             Put("ZapatosRoberta", shoes, f, 13.55f, 6.6f, 80f, false);
-            RoomLight(lights, "Colada", 12f, 8f, new Vector3(12.47f, 1.2f, 6.07f), 90f, new Color(0.86f, 0.98f, 0.92f), 2.8f, false, 6f);
+            RoomLight(lights, "Colada", 12f, 8f, new Vector3(12.47f, 1.2f, 6.07f), 90f, new Color(0.94f, 0.97f, 0.9f), 2.8f, false, 6f);
             Door(d, "PuertaColada", 11.5f, 6f, true, -95f);
         }
 
         static void BuildGarage(Transform f, Transform d, Transform lights)
         {
-            Put("CocheChevas", Coche(carRed), f, 16.6f, 2.2f, 0f);
+            Put("CocheChevas", Coche(carRed, carGlassIn, tireIn), f, 16.6f, 2.2f, 0f);
             var shelves = new MeshKit();
             foreach (float y in new[] { 0.3f, 0.95f, 1.6f }) shelves.Box(new Vector3(0, y, 0), new Vector3(1.4f, 0.03f, 0.42f), woodLight);
             foreach (float x in new[] { -0.68f, 0.68f }) shelves.Box(new Vector3(x, 0.95f, -0.18f), new Vector3(0.04f, 1.9f, 0.04f), metal);
             shelves.Box(new Vector3(-0.3f, 0.47f, 0), new Vector3(0.42f, 0.31f, 0.3f), paper);
             shelves.Cylinder(new Vector3(0.35f, 0.965f, 0), 0.09f, 0.09f, 0.2f, 8, metal);
-            shelves.Box(new Vector3(-0.35f, 1.1f, 0), new Vector3(0.35f, 0.27f, 0.32f), carBlue);
+            shelves.Box(new Vector3(-0.35f, 1.1f, 0), new Vector3(0.35f, 0.27f, 0.32f), blanket);
             Put("EstanteriaGaraje", shelves, f, 18.72f, 2.4f, 270f);
             RoomGarageWall(f);
-            RoomLight(lights, "Garaje", 16.5f, 2.2f, new Vector3(14.07f, 1.2f, 3.3f), 0f, new Color(0.86f, 0.98f, 0.9f), 3.4f, false, 7f);
+            RoomLight(lights, "Garaje", 16.5f, 2.2f, new Vector3(14.07f, 1.2f, 3.3f), 0f, new Color(0.94f, 0.97f, 0.9f), 3.4f, false, 7f);
         }
 
         static void RoomGarageWall(Transform f)
@@ -722,13 +732,13 @@ namespace Ominous.EditorTools
             Inst("Arbol", 6f, 15.5f, 60f);
             Inst("Arbol", 13f, 19f, 110f);
             Inst("Arbol", -6f, 9f, 200f);
-            Instance("CocheAzul", Coche(carBlue), street, new Vector3(11.2f, -0.04f, -3.45f), 90f);
-            Instance("CocheGris", Coche(carGrey), street, new Vector3(-2.5f, -0.04f, -5.15f), 270f);
+            Instance("CocheAzul", Coche(carBlue, carGlass, tire), street, new Vector3(11.2f, -0.04f, -3.45f), 90f);
+            Instance("CocheGris", Coche(carGrey, carGlass, tire), street, new Vector3(-2.5f, -0.04f, -5.15f), 270f);
             // Valla del jardín
             var fence = new MeshKit();
-            fence.Box(new Vector3(7, 0.9f, 22), new Vector3(46, 0.05f, 0.03f), woodDark);
-            fence.Box(new Vector3(7, 0.45f, 22), new Vector3(46, 0.05f, 0.03f), woodDark);
-            for (int i = 0; i < 24; i++) fence.Box(new Vector3(-15f + i * 2f, 0.55f, 22f), new Vector3(0.08f, 1.1f, 0.08f), woodDark);
+            fence.Box(new Vector3(7, 0.9f, 22), new Vector3(46, 0.05f, 0.03f), fenceWood);
+            fence.Box(new Vector3(7, 0.45f, 22), new Vector3(46, 0.05f, 0.03f), fenceWood);
+            for (int i = 0; i < 24; i++) fence.Box(new Vector3(-15f + i * 2f, 0.55f, 22f), new Vector3(0.08f, 1.1f, 0.08f), fenceWood);
             Instance("Valla", fence, street, Vector3.zero, 0, false);
             foreach (var t in street.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = ExteriorLayer;
 
