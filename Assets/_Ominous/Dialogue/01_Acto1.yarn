@@ -1,0 +1,80 @@
+title: Acto1_Deambular
+---
+<<hora 02:15>>
+<<objetivo "">>
+// Tiempo libre. El jugador puede usar la tele, la nevera y la ventana.
+// Tras usar dos, o tras tres minutos, salta Acto1_Llamada.
+===
+title: Acto1_Tele
+---
+Pensamiento: El señor de los cuchillos sigue ahí. Debe de estar tan cansado como yo. #line:a1_001
+===
+title: Acto1_Nevera
+---
+Pensamiento: Tenía razón. No está bueno. #line:a1_002
+===
+title: Acto1_Ventana
+---
+Pensamiento: Ni un coche delante de la casa nueva. Ni una caja. Y ya está vendida. #line:a1_003
+===
+title: Acto1_Dormitorio
+---
+Pensamiento: Duerme con la mano debajo de la almohada. Mejor no la despierto. #line:a1_004
+===
+title: Acto1_Llamada
+---
+<<hora 02:40>>
+<<sonido llamada_puerta>>
+<<esperar 3>>
+Pensamiento: ¿A estas horas? #line:a1_005
+<<sonido llamada_puerta>>
+<<objetivo "Abre la puerta">>
+===
+title: Acto1_Mirilla
+---
+Pensamiento: Un hombre. Solo. Con las manos a la vista, como si supiera que estoy mirando. #line:a1_006
+===
+title: Visita1
+---
+<<visita 1>>
+<<hablante Chevas>>
+¿Sí…? Son casi las tres. ¿Pasa algo? #line:frase_puerta
+Chechu: Perdona la hora. Soy Chechu, el de enfrente. Acabo de llegar de trabajar. #line:a1_007
+Chechu: He visto luz y he pensado: este tampoco duerme. #line:a1_008
+-> ¿El de enfrente? No he visto ningún camión. #line:a1_009
+    Chechu: Traigo poca cosa. Lo demás ya llegará. #line:a1_010
+-> Mi mujer está durmiendo. #line:a1_011
+    Chechu: Claro. Hablo bajito. #line:a1_012
+-> ¿Qué quieres? #line:a1_013
+    Chechu: Nada, hombre. Saludar. Y una tontería. #line:a1_014
+Chevas: Dime. #line:a1_015
+Chechu: Las llaves no me abren. Será que me han dado las de otra casa. #line:a1_016
+Chechu: Y no sé si se puede llamar a alguien a estas horas o si aquí os vais todos a dormir a las diez. #line:a1_017
+-> Mañana llama a la inmobiliaria. #line:a1_018
+    Chechu: Eso haré. Esperaré en el coche, no te preocupes. #line:a1_019
+-> ¿Quieres usar el teléfono? #line:a1_020
+    Chechu: No, no. No quiero entrar con los zapatos así. Otro día. #line:a1_021
+Chechu: Bonito barrio. Muy tranquilo. El camión de la basura pasa los jueves, ¿no? #line:a1_022
+Chevas: Los martes. #line:a1_023
+Chechu: Los martes. Tiene sentido. #line:a1_024
+Chechu: Bueno. Te dejo. #line:a1_025
+<<chechu_se_gira>>
+<<esperar 2>>
+Chechu: Por cierto, ese grifo del baño… yo lo arreglaría antes de que ella se entere. #line:a1_026
+<<esperar 1>>
+Chechu: Buenas noches, vecino. #line:a1_027
+<<chechu_se_va>>
+<<objetivo "Cierra la puerta">>
+===
+title: Acto1_Despues
+---
+Pensamiento: Qué tío más raro. #line:a1_028
+<<esperar 4>>
+Pensamiento: Ni coche. No hay ningún coche. #line:a1_029
+<<objetivo "Mira por la ventana">>
+===
+title: Acto1_VentanaFinal
+---
+Pensamiento: Sigue a oscuras. No ha entrado nadie. #line:a1_030
+<<acto 2>>
+===

@@ -1,0 +1,82 @@
+title: Prologo_Coche
+---
+<<hora 01:50>>
+Pensamiento: Otra noche igual. Doce horas y aun así no tengo sueño. #line:pro_001
+Pensamiento: La casa de enfrente ya tiene el cartel. Vendida. #line:pro_002
+Pensamiento: A ver quién se muda a este barrio. #line:pro_003
+<<objetivo "Entra en casa">>
+===
+title: Prologo_Tareas
+---
+// Nodos cortos que se lanzan al usar cada objeto. Enseñan los controles.
+<<objetivo "Deja las llaves y cierra la puerta">>
+===
+title: Prologo_Llaves
+---
+Pensamiento: Las llaves, en el cuenco. Si no, mañana las busco media hora. #line:pro_004
+===
+title: Prologo_Puerta
+---
+Pensamiento: Vuelta y media. Roberta dice que soy un maniático. #line:pro_005
+===
+title: Prologo_Agua
+---
+Pensamiento: El agua de esta casa siempre sabe un poco a tubería. #line:pro_006
+===
+title: Prologo_Grifo_Examinar
+---
+// Opcional: el jugador puede ver el grifo del baño antes de oír el pensamiento clave.
+Pensamiento: Sigue goteando. Mañana. #line:pro_007
+===
+title: Prologo_Sofa
+---
+<<objetivo "Habla con Roberta">>
+Roberta: Hola. ¿Qué hora es? #line:pro_008
+Chevas: Tarde. ¿Qué haces aquí todavía? #line:pro_009
+Roberta: Te estaba esperando. Y esto no se acaba nunca. #line:pro_010
+Chevas: ¿Qué estás viendo? #line:pro_011
+Roberta: Ni idea. Un señor vende cuchillos. Llevo una hora queriendo comprarlos. #line:pro_012
+-> Pues cómprate uno y vámonos a la cama. #line:pro_013
+    Roberta: Con tu tarjeta, ¿no? #line:pro_014
+-> ¿Has cenado algo? #line:pro_015
+    Roberta: Te he dejado un plato en la nevera. No está bueno. #line:pro_016
+-> Lo siento. Se ha alargado todo. #line:pro_017
+    Roberta: Ya. Como siempre. #line:pro_018
+Roberta: Y no te olvides del martes. #line:pro_019
+Chevas: No me olvido. #line:pro_020
+Pensamiento: Once años. #line:pro_021
+<<roberta_se_adormece>>
+<<esperar 3>>
+<<mirar Roberta>>
+<<hablante Pensamiento>>
+Tengo que arreglar el grifo del baño antes de que se entere de que lo rompí yo. #line:pro_grifo
+<<esperar 2>>
+<<objetivo "Convence a Roberta para que se acueste">>
+<<jump Prologo_Convencer>>
+===
+title: Prologo_Convencer
+---
+-> Rober. Vamos a la cama. #line:pro_022
+    Roberta: Cinco minutos. #line:pro_023
+    Chevas: Llevas dormida diez. #line:pro_024
+    Roberta: Estaba escuchando lo de los cuchillos. #line:pro_025
+-> Mañana te duele el cuello y me lo cuentas a mí. #line:pro_026
+    Roberta: Mañana te lo cuento igual. #line:pro_027
+-> Apago la tele, ¿vale? #line:pro_028
+    Roberta: No la apagues. Déjala bajita. No me gusta tanto silencio. #line:pro_029
+Chevas: Venga. Arriba. #line:pro_030
+Roberta: ¿Tú no vienes? #line:pro_031
+-> Ahora voy. Cierro todo y voy. #line:pro_032
+    Roberta: Eso dijiste ayer. #line:pro_033
+-> No tengo sueño. Me quedo un rato. #line:pro_034
+    Roberta: Pues no hagas ruido. #line:pro_035
+Roberta: Apaga las luces, anda. #line:pro_036
+<<roberta_va_al_dormitorio>>
+<<objetivo "Apaga las luces">>
+===
+title: Prologo_Fin
+---
+Pensamiento: Ni un ruido en toda la calle. #line:pro_037
+Pensamiento: Debería acostarme. No me voy a acostar. #line:pro_038
+<<acto 1>>
+===

@@ -1,0 +1,52 @@
+title: Final_Pasillo
+---
+<<pasillo_alargado>>
+Chevas: ¿Rober? #line:fin_001
+Pensamiento: No contesta nadie. Ni la tele. #line:fin_002
+Pensamiento: Hay una puerta al fondo. Da a la calle, no puede dar a otra cosa. #line:fin_003
+<<objetivo "Abre la puerta">>
+===
+title: Final_Puerta
+---
+<<habitacion_abierta 4>>
+Pensamiento: No hay nada. #line:fin_004
+Pensamiento: No hay suelo. No hay calle. #line:fin_005
+Pensamiento: Hace frío, como cuando llego de trabajar. #line:fin_006
+<<esperar 3>>
+// El jugador da el paso. Si no se mueve en 20 segundos, Chevas se desmaya en el umbral.
+<<caida_o_desmayo>>
+<<fundido_negro 5>>
+<<jump Bucle_Coche>>
+===
+title: Bucle_Coche
+---
+<<reiniciar_noche>>
+<<hora 01:50>>
+Pensamiento: Otra noche igual. #line:fin_007
+Pensamiento: No tengo sueño. #line:fin_008
+Pensamiento: La casa de enfrente ya tiene el cartel. #line:fin_009
+<<objetivo "Entra en casa">>
+===
+title: Bucle_Llaves
+---
+<<sonido llave_no_gira>>
+Pensamiento: No entra. #line:fin_010
+<<sonido llave_no_gira>>
+Pensamiento: Son estas. Son estas, las llevo once años. #line:fin_011
+Pensamiento: Se oye la tele. #line:fin_012
+<<objetivo "Llama a la puerta">>
+===
+title: Bucle_Puerta
+---
+<<sonido llamada_puerta>>
+<<esperar 4>>
+<<hora 02:40>>
+<<puerta_se_abre>>
+<<esperar 2>>
+<<hablante Chechu>>
+¿Sí…? Son casi las tres. ¿Pasa algo? #line:fin_frase_puerta #shadow:frase_puerta
+<<esperar 1>>
+Roberta: ¿Quién es a estas horas? #line:fin_013
+<<corte_negro>>
+<<creditos>>
+===

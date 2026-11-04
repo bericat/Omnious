@@ -1,0 +1,100 @@
+title: Acto3_Inicio
+---
+<<hora 03:33>>
+<<reloj_parado>>
+Pensamiento: Las tres y treinta y tres. #line:a3_001
+Pensamiento: Eso ya lo ha marcado antes. ¿Cuánto llevo aquí? #line:a3_002
+<<casa_variante acto3>>
+===
+title: Acto3_Pasillo
+---
+Pensamiento: Este pasillo tiene cuatro puertas. Tiene cuatro puertas. #line:a3_003
+Pensamiento: Una, dos, tres, cuatro, cinco. #line:a3_004
+===
+title: Acto3_HabitacionRepetida
+---
+Pensamiento: Acabo de salir de aquí. #line:a3_005
+Pensamiento: Acabo de salir de aquí y he cerrado la puerta. #line:a3_006
+===
+title: Acto3_VentanaCalle
+---
+Pensamiento: Esa no es mi calle. Mi calle tiene una farola ahí. #line:a3_007
+Pensamiento: La casa de enfrente tiene la luz encendida. Hay alguien en la ventana. #line:a3_008
+Pensamiento: Saluda. #line:a3_009
+===
+title: Roberta_Imposible_Colada
+---
+<<roberta_aparece colada>>
+Roberta: ¿Has visto mis zapatos? #line:a3_010
+Chevas: ¿Qué haces ahí? ¿Cómo has entrado? #line:a3_011
+Roberta: Por la puerta. Estás muy raro esta noche. #line:a3_012
+<<esperar 2>>
+Roberta: Aquí se oye todo, si uno se queda quieto. #line:a3_013
+Chevas: ¿Qué has dicho? #line:a3_014
+Roberta: Que si has visto mis zapatos. #line:a3_015
+<<roberta_desaparece>>
+===
+title: Roberta_Imposible_Coche
+---
+<<roberta_aparece garaje_coche>>
+Pensamiento: Está dentro del coche. Con el motor apagado y el cinturón puesto. #line:a3_016
+Chevas: Rober. Rober, abre. #line:a3_017
+Roberta: Te estaba esperando. Y esto no se acaba nunca. #line:a3_018
+Chevas: ¿Rober? #line:a3_019
+Roberta: Un señor vende cuchillos. #line:a3_020
+<<roberta_desaparece>>
+===
+title: Roberta_Imposible_Ventana
+---
+Pensamiento: Está en la casa de enfrente. En la ventana. En pijama. #line:a3_021
+Pensamiento: No saluda. #line:a3_022
+===
+title: Chechu_Dentro
+---
+<<chechu_aparece bano>>
+Chechu: Ya está. #line:a3_023
+Chevas: ¿Cómo has entrado? #line:a3_024
+Chechu: Lo del grifo. Era una junta de nada. Ya no gotea. #line:a3_025
+<<esperar 2>>
+Chechu: No te preocupes. No se ha enterado. #line:a3_026
+-> ¿Qué quieres de nosotros? #line:a3_027
+    Chechu: Nada. Yo solo arreglo lo que dejas. #line:a3_028
+-> Fuera de mi casa. #line:a3_029
+    Chechu: Eso es. Eso mismo. Se dice así. #line:a3_030
+-> ¿Quién eres? #line:a3_031
+    Chechu: Son todas iguales. Te sabes una y te sabes todas. #line:a3_032
+Chechu: Te queda poco. Es la que está al fondo. #line:a3_033
+<<chechu_desaparece>>
+===
+title: Sotano_Puerta
+---
+Pensamiento: En esta casa no hay sótano. #line:a3_034
+Pensamiento: Nunca ha habido sótano. #line:a3_035
+<<objetivo "Baja">>
+===
+title: Habitacion3
+---
+<<habitacion_abierta 3>>
+Pensamiento: Es nuestro dormitorio. #line:a3_036
+Pensamiento: Es nuestra cama. La misma colcha. El mismo roto en la cortina, y aquí abajo no hay ventana. #line:a3_037
+===
+title: Habitacion3_Fotos
+---
+Pensamiento: Somos nosotros. Durmiendo. #line:a3_038
+Pensamiento: Esta es de este verano. Esta es de hace años. En esta todavía no teníamos esa cama. #line:a3_039
+===
+title: Habitacion3_Libreta
+---
+Pensamiento: Una libreta en la mesilla. En mi lado. #line:a3_040
+<<hablante Libreta>>
+Tengo que arreglar el grifo del baño antes de que se entere de que lo rompí yo. #line:a3_libreta #shadow:pro_grifo
+<<esperar 3>>
+Pensamiento: Es mi letra. #line:a3_041
+===
+title: Habitacion3_Salida
+---
+Pensamiento: Las páginas de atrás están en blanco. #line:a3_042
+Pensamiento: Todas menos la última: «Son casi las tres». #line:a3_043
+<<objetivo "Vuelve al pasillo">>
+<<acto 4>>
+===
