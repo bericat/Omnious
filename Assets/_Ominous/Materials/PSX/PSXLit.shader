@@ -6,6 +6,8 @@ Shader "Ominous/PSX Lit"
         _BaseColor ("Color", Color) = (1,1,1,1)
         _EmissionColor ("Emisión", Color) = (0,0,0,1)
         _AmbientBoost ("Ambiente extra (exterior)", Float) = 1
+        _Exterior ("Niebla de exterior", Float) = 0
+        _RoomAO ("Oscurecer junto a suelo y techo", Float) = 0
     }
     SubShader
     {
@@ -18,6 +20,8 @@ Shader "Ominous/PSX Lit"
             half4 _BaseColor;
             half4 _EmissionColor;
             float _AmbientBoost;
+            float _Exterior;
+            float _RoomAO;
         CBUFFER_END
         float4 SnapVertex(float4 clip)
         {
@@ -43,7 +47,9 @@ Shader "Ominous/PSX Lit"
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             half4 _PSX_Ambient;
             half4 _PSX_FogColor;
-            float4 _PSX_Params;   // x: afín, y: inicio de niebla, z: fin de niebla
+            half4 _PSX_ExteriorFogColor;
+            float4 _PSX_Params;   // x: afín, y-z: niebla interior, inicio y fin
+            float4 _PSX_ExteriorFog; // x: inicio, y: fin
 
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; };
             struct Varyings
@@ -53,7 +59,6 @@ Shader "Ominous/PSX Lit"
                 noperspective float2 uvAffine : TEXCOORD1;
                 float3 positionWS : TEXCOORD2;
                 float3 normalWS : TEXCOORD3;
-                float fog : TEXCOORD4;
             };
 
             Varyings Vert(Attributes i)
@@ -64,15 +69,14 @@ Shader "Ominous/PSX Lit"
                 o.positionCS = SnapVertex(TransformWorldToHClip(o.positionWS));
                 o.uv = TRANSFORM_TEX(i.uv, _BaseMap);
                 o.uvAffine = o.uv;
-                float d = distance(o.positionWS, GetCameraPositionWS());
-                o.fog = saturate((d - _PSX_Params.y) / max(0.001, _PSX_Params.z - _PSX_Params.y));
                 return o;
             }
 
             half4 Frag(Varyings i) : SV_Target
             {
                 float2 uv = lerp(i.uv, i.uvAffine, _PSX_Params.x);
-                half3 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb * _BaseColor.rgb;
+                half3 tex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb;
+                half3 albedo = tex * _BaseColor.rgb;
                 float3 n = normalize(i.normalWS);
                 half3 light = _PSX_Ambient.rgb * _AmbientBoost;
 
@@ -91,8 +95,25 @@ Shader "Ominous/PSX Lit"
                 LIGHT_LOOP_END
                 #endif
 
-                half3 color = albedo * light + _EmissionColor.rgb;
-                color = lerp(color, _PSX_FogColor.rgb, i.fog);
+                if (_RoomAO > 0.5)
+                {
+                    float edge = saturate(min(i.positionWS.y / 0.4, (2.6 - i.positionWS.y) / 0.4));
+                    light *= lerp(0.45, 1.0, edge);
+                }
+
+                half3 color = albedo * light + _EmissionColor.rgb * tex;
+                // La niebla va por píxel: los suelos de la calle son polígonos muy grandes.
+                float d = distance(i.positionWS, GetCameraPositionWS());
+                if (_Exterior > 0.5)
+                {
+                    float fog = saturate((d - _PSX_ExteriorFog.x) / max(0.001, _PSX_ExteriorFog.y - _PSX_ExteriorFog.x));
+                    color = lerp(color, _PSX_ExteriorFogColor.rgb, fog);
+                }
+                else
+                {
+                    float fog = saturate((d - _PSX_Params.y) / max(0.001, _PSX_Params.z - _PSX_Params.y));
+                    color = lerp(color, _PSX_FogColor.rgb, fog);
+                }
                 return half4(color, 1);
             }
             ENDHLSL

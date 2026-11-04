@@ -15,10 +15,16 @@ MonoBehaviour:
   internalHeight: 360
   vertexSnap: 0.7
   affine: 0.3
-  dither: 0.9
-  colorLevels: 32
-  brightness: 1.15
-  ambient: {r: 0.05, g: 0.055, b: 0.08, a: 1}
+  dither: 1
+  colorLevels: 12
+  brightness: 1.1
+  contrast: 1.2
+  saturation: 0.8
+  shadowTint: 0.7
+  ambient: {r: 0.05, g: 0.05, b: 0.065, a: 1}
   fogColor: {r: 0.012, g: 0.016, b: 0.028, a: 1}
   fogStart: 12
   fogEnd: 48
+  exteriorFogColor: {r: 0.14, g: 0.16, b: 0.19, a: 1}
+  exteriorFogStart: 2
+  exteriorFogEnd: 21

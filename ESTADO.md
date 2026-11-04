@@ -17,6 +17,7 @@
 ## Fase 2: cómo está montada
 - Escena `Assets/_Ominous/Scenes/Test_Salon.unity`, regenerable con `Tools/Ominous/Construir salón de pruebas`.
 - Ajustes en `Assets/_Ominous/Data/PSXSettings.asset`, o en vivo con F1.
+- Estilo guiado por las referencias de Toni (Buckshot Roulette y Fears to Fathom): 360 px de alto, 12 niveles por canal con tramado Bayer, negros profundos, color apagado y texturas con suciedad.
 - Sin sombras en tiempo real. La calle usa la capa `Exterior`, con luces y ambiente propios.
 - Build de prueba en `Builds/Ominous_Test/Ominous`. `-fpslog 20` mide y escribe en `~/.config/unity3d/Toni/Ominous/Player.log`.
 - Medido en la Deck (1280×800, OpenGL, jugador quieto, 20 s): 60,0 fps, peor fotograma 18,5 ms.
@@ -33,4 +34,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Aprobó el guion revisado, el plano, las 4 visitas y el antecedente, y pidió pasar a la fase 2.
+Aprobó la colocación de los muebles. Pidió más niebla en la calle y acercar el pixelado y las texturas a sus referencias.

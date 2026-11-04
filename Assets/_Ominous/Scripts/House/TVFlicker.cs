@@ -10,7 +10,7 @@ namespace Ominous
         public int screenMaterialIndex;
         public Color colorA = new Color(0.55f, 0.7f, 1f);
         public Color colorB = new Color(0.9f, 0.85f, 0.75f);
-        public float baseIntensity = 1.6f;
+        public float baseIntensity = 2.4f;
 
         static readonly int Emission = Shader.PropertyToID("_EmissionColor");
         MaterialPropertyBlock block;

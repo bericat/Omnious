@@ -19,39 +19,44 @@ namespace Ominous.EditorTools
         const int ExteriorMask = 1 << ExteriorLayer;
 
         static Material wall, floorWood, ceiling, woodDark, woodLight, sofa, cushion, rug, plastic, screen, frame, curtain,
-            metal, shade, asphalt, concrete, grass, siding, sidingFar, roof, trunk, leaves, lampGlow, sign, windowLit, door, blanket;
+            metal, shade, frameExt, doorExt, metalExt, asphalt, concrete, grass, siding, sidingFar, roof, trunk, leaves, lampGlow, sign, windowLit, door, blanket;
 
         static void Materials()
         {
             PSXAssets.Clear();
-            wall = PSXAssets.Noise("Pared", new Color(0.62f, 0.56f, 0.44f), 0.1f);
-            floorWood = PSXAssets.Planks("SueloMadera", new Color(0.36f, 0.24f, 0.14f));
-            ceiling = PSXAssets.Noise("Techo", new Color(0.62f, 0.6f, 0.54f), 0.06f);
-            woodDark = PSXAssets.Planks("MaderaOscura", new Color(0.24f, 0.15f, 0.09f), 2);
-            woodLight = PSXAssets.Planks("MaderaClara", new Color(0.46f, 0.32f, 0.19f), 2);
-            sofa = PSXAssets.Fabric("TelaSofa", new Color(0.33f, 0.31f, 0.2f));
-            cushion = PSXAssets.Fabric("TelaCojin", new Color(0.42f, 0.38f, 0.25f));
-            rug = PSXAssets.Fabric("Alfombra", new Color(0.36f, 0.14f, 0.11f));
+            wall = PSXAssets.Plaster("Pared", new Color(0.66f, 0.58f, 0.44f));
+            floorWood = PSXAssets.Planks("SueloMadera", new Color(0.42f, 0.27f, 0.15f), 5, 1.6f);
+            ceiling = PSXAssets.Plaster("Techo", new Color(0.62f, 0.6f, 0.53f));
+            woodDark = PSXAssets.Planks("MaderaOscura", new Color(0.27f, 0.16f, 0.09f), 1, 0.8f);
+            woodLight = PSXAssets.Planks("MaderaClara", new Color(0.5f, 0.34f, 0.2f), 1, 0.8f);
+            sofa = PSXAssets.Fabric("TelaSofa", new Color(0.38f, 0.35f, 0.21f));
+            cushion = PSXAssets.Fabric("TelaCojin", new Color(0.46f, 0.41f, 0.26f));
+            rug = PSXAssets.Rug("Alfombra", new Color(0.42f, 0.13f, 0.1f), new Color(0.72f, 0.58f, 0.36f), 2.4f, 1.7f);
             blanket = PSXAssets.Fabric("Manta", new Color(0.2f, 0.27f, 0.36f));
-            curtain = PSXAssets.Fabric("Cortina", new Color(0.5f, 0.42f, 0.3f));
-            plastic = PSXAssets.Noise("Plastico", new Color(0.09f, 0.09f, 0.09f), 0.1f);
-            screen = PSXAssets.Solid("PantallaTele", new Color(0.03f, 0.03f, 0.04f), new Color(0.3f, 0.4f, 0.6f));
-            frame = PSXAssets.Noise("Marco", new Color(0.72f, 0.7f, 0.64f), 0.06f);
-            door = PSXAssets.Planks("Puerta", new Color(0.42f, 0.3f, 0.2f), 1);
-            metal = PSXAssets.Noise("Metal", new Color(0.22f, 0.22f, 0.24f), 0.1f);
-            shade = PSXAssets.Fabric("Pantalla", new Color(0.62f, 0.54f, 0.38f));
-            asphalt = PSXAssets.Noise("Asfalto", new Color(0.13f, 0.13f, 0.14f), 0.3f);
-            concrete = PSXAssets.Noise("Acera", new Color(0.36f, 0.35f, 0.33f), 0.16f);
-            grass = PSXAssets.Noise("Cesped", new Color(0.13f, 0.2f, 0.09f), 0.4f);
-            siding = PSXAssets.Siding("Fachada", new Color(0.5f, 0.5f, 0.46f));
-            sidingFar = PSXAssets.Siding("FachadaVecinos", new Color(0.36f, 0.34f, 0.32f));
-            roof = PSXAssets.Noise("Tejado", new Color(0.14f, 0.12f, 0.12f), 0.2f);
-            trunk = PSXAssets.Noise("Tronco", new Color(0.18f, 0.12f, 0.08f), 0.3f);
-            leaves = PSXAssets.Noise("Hojas", new Color(0.08f, 0.14f, 0.07f), 0.5f);
+            curtain = PSXAssets.Curtain("Cortina", new Color(0.56f, 0.45f, 0.3f));
+            plastic = PSXAssets.Grime("Plastico", new Color(0.1f, 0.1f, 0.1f), 0.4f);
+            screen = PSXAssets.TvScreen("PantallaTele");
+            frame = PSXAssets.Grime("Marco", new Color(0.72f, 0.69f, 0.6f), 0.5f);
+            door = PSXAssets.Planks("Puerta", new Color(0.44f, 0.3f, 0.2f), 1, 1f);
+            metal = PSXAssets.Grime("Metal", new Color(0.24f, 0.24f, 0.25f), 0.6f);
+            shade = PSXAssets.Fabric("Pantalla", new Color(0.66f, 0.56f, 0.38f));
+            asphalt = PSXAssets.Grime("Asfalto", new Color(0.17f, 0.17f, 0.18f), 0.8f, 3f);
+            concrete = PSXAssets.Grime("Acera", new Color(0.4f, 0.39f, 0.36f), 0.7f, 2f);
+            grass = PSXAssets.Grime("Cesped", new Color(0.15f, 0.22f, 0.1f), 0.9f, 3f);
+            siding = PSXAssets.Siding("Fachada", new Color(0.52f, 0.52f, 0.47f));
+            sidingFar = PSXAssets.Siding("FachadaVecinos", new Color(0.38f, 0.36f, 0.33f));
+            roof = PSXAssets.Grime("Tejado", new Color(0.16f, 0.13f, 0.13f), 0.7f, 2f);
+            trunk = PSXAssets.Grime("Tronco", new Color(0.2f, 0.13f, 0.08f), 0.8f);
+            leaves = PSXAssets.Grime("Hojas", new Color(0.09f, 0.15f, 0.07f), 0.9f, 2f);
             lampGlow = PSXAssets.Solid("Farola", new Color(0.1f, 0.1f, 0.1f), new Color(1f, 0.75f, 0.42f));
             windowLit = PSXAssets.Solid("VentanaOscura", new Color(0.02f, 0.025f, 0.035f));
             sign = PSXAssets.Sign("CartelVendida");
-            PSXAssets.Exterior(asphalt, concrete, grass, siding, sidingFar, roof, trunk, leaves, sign);
+            frameExt = PSXAssets.Grime("MarcoExterior", new Color(0.6f, 0.58f, 0.52f), 0.5f);
+            doorExt = PSXAssets.Planks("PuertaExterior", new Color(0.3f, 0.22f, 0.16f), 1, 1f);
+            metalExt = PSXAssets.Grime("MetalExterior", new Color(0.24f, 0.24f, 0.25f), 0.6f);
+            PSXAssets.Exterior(asphalt, concrete, grass, siding, sidingFar, roof, trunk, leaves, sign, windowLit, lampGlow, frameExt, doorExt, metalExt);
+            wall.SetFloat("_RoomAO", 1f);
+            EditorUtility.SetDirty(wall);
         }
 
         // ---------- utilidades ----------
@@ -231,8 +236,8 @@ namespace Ominous.EditorTools
         static MeshKit Farola()
         {
             var k = new MeshKit();
-            k.Cylinder(Vector3.zero, 0.08f, 0.05f, 4.6f, 6, metal);
-            k.Box(new Vector3(0, 4.6f, 0.45f), new Vector3(0.06f, 0.06f, 0.9f), metal);
+            k.Cylinder(Vector3.zero, 0.08f, 0.05f, 4.6f, 6, metalExt);
+            k.Box(new Vector3(0, 4.6f, 0.45f), new Vector3(0.06f, 0.06f, 0.9f), metalExt);
             k.Box(new Vector3(0, 4.53f, 0.85f), new Vector3(0.22f, 0.08f, 0.4f), lampGlow);
             return k;
         }
@@ -259,14 +264,14 @@ namespace Ominous.EditorTools
             foreach (float x in new[] { -2.6f, 2.4f })
             {
                 k.Box(new Vector3(x, 1.5f, 0.01f), new Vector3(1.4f, 1.15f, 0.02f), windowLit);
-                k.Box(new Vector3(x, 2.1f, 0.03f), new Vector3(1.5f, 0.06f, 0.05f), frame);
-                k.Box(new Vector3(x, 0.92f, 0.03f), new Vector3(1.5f, 0.06f, 0.05f), frame);
+                k.Box(new Vector3(x, 2.1f, 0.03f), new Vector3(1.5f, 0.06f, 0.05f), frameExt);
+                k.Box(new Vector3(x, 0.92f, 0.03f), new Vector3(1.5f, 0.06f, 0.05f), frameExt);
             }
-            k.Box(new Vector3(0, 1.0f, 0.02f), new Vector3(0.95f, 2.05f, 0.04f), door);
+            k.Box(new Vector3(0, 1.0f, 0.02f), new Vector3(0.95f, 2.05f, 0.04f), doorExt);
             k.Box(new Vector3(0, 0.1f, 0.8f), new Vector3(2.4f, 0.2f, 1.6f), concrete);
             if (chechu)
             {
-                k.Cylinder(new Vector3(2f, 0, 3.2f), 0.03f, 0.03f, 1.05f, 4, metal);
+                k.Cylinder(new Vector3(2f, 0, 3.2f), 0.03f, 0.03f, 1.05f, 4, metalExt);
                 k.Box(new Vector3(2f, 1.0f, 3.22f), new Vector3(0.75f, 0.28f, 0.02f), sign);
             }
             return k;
@@ -344,7 +349,7 @@ namespace Ominous.EditorTools
             foreach (var t in street.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = ExteriorLayer;
 
             // Luces de noche: la tele es la fuente principal; la farola entra por la ventana
-            var tvLight = Point("LuzTele", lights, new Vector3(2.15f, 0.85f, 3.45f), new Color(0.55f, 0.7f, 1f), 2.2f, 6f);
+            var tvLight = Point("LuzTele", lights, new Vector3(2.15f, 0.85f, 3.45f), new Color(0.55f, 0.7f, 1f), 2.4f, 6.5f);
             tvLight.cullingMask = ~ExteriorMask;
             Spot("LuzFarola", lights, new Vector3(2.2f, 4.4f, -1.8f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.72f, 0.42f), 40f, 10f, 120f, ExteriorMask);
             Spot("LuzFarolaVentana", lights, new Vector3(2.0f, 3.3f, -1.5f), Quaternion.LookRotation(new Vector3(1.6f, 0f, 2.3f) - new Vector3(2.0f, 3.3f, -1.5f)), new Color(1f, 0.72f, 0.42f), 5f, 7.5f, 34f, ~ExteriorMask);
@@ -368,7 +373,7 @@ namespace Ominous.EditorTools
             var cam = camGo.AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
             var settings = AssetDatabase.LoadAssetAtPath<PSXSettings>(OminousSetup.SettingsPath);
-            cam.backgroundColor = settings.fogColor;
+            cam.backgroundColor = settings.exteriorFogColor;
             cam.fieldOfView = 68f;
             cam.nearClipPlane = 0.05f;
             cam.farClipPlane = 80f;

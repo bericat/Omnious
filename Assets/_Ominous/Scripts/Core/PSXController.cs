@@ -14,6 +14,9 @@ namespace Ominous
         static readonly int Post = Shader.PropertyToID("_PSX_Post");
         static readonly int Ambient = Shader.PropertyToID("_PSX_Ambient");
         static readonly int FogColor = Shader.PropertyToID("_PSX_FogColor");
+        static readonly int ExteriorFogColor = Shader.PropertyToID("_PSX_ExteriorFogColor");
+        static readonly int ExteriorFog = Shader.PropertyToID("_PSX_ExteriorFog");
+        static readonly int Grade = Shader.PropertyToID("_PSX_Grade");
 
         void Awake()
         {
@@ -34,6 +37,11 @@ namespace Ominous
             Shader.SetGlobalVector(Post, new Vector4(settings.dither, settings.colorLevels, settings.brightness, 0));
             Shader.SetGlobalColor(Ambient, settings.ambient.linear);
             Shader.SetGlobalColor(FogColor, settings.fogColor.linear);
+            Shader.SetGlobalColor(ExteriorFogColor, settings.exteriorFogColor.linear);
+            Shader.SetGlobalVector(ExteriorFog, new Vector4(settings.exteriorFogStart, settings.exteriorFogEnd, 0, 0));
+            Shader.SetGlobalVector(Grade, new Vector4(settings.contrast, settings.saturation, settings.shadowTint, 0));
+            var cam = Camera.main;
+            if (cam != null) cam.backgroundColor = settings.exteriorFogColor;
 
             var pipeline = UniversalRenderPipeline.asset;
             if (pipeline != null && Screen.height > 0)

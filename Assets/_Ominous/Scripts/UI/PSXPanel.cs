@@ -58,15 +58,18 @@ namespace Ominous
             GUI.color = new Color(1f, 1f, 1f, 0.9f);
             GUI.Label(new Rect(8, 4, 500, 26), $"{1f / smooth:0} fps · peor {worst * 1000f:0} ms · F1 ajustes", style);
             if (!open || settings == null) return;
-            GUILayout.BeginArea(new Rect(8, 32, 340, 520), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(8, 32, 340, 620), GUI.skin.box);
             settings.internalHeight = Mathf.RoundToInt(Slider("Resolución interna", settings.internalHeight, 240, 480));
             settings.vertexSnap = Slider("Temblor de vértices", settings.vertexSnap, 0f, 1f);
             settings.affine = Slider("Deformación de texturas", settings.affine, 0f, 1f);
             settings.dither = Slider("Tramado", settings.dither, 0f, 1f);
-            settings.colorLevels = Mathf.RoundToInt(Slider("Niveles de color", settings.colorLevels, 8, 64));
+            settings.colorLevels = Mathf.RoundToInt(Slider("Niveles de color", settings.colorLevels, 6, 64));
             settings.brightness = Slider("Brillo", settings.brightness, 0.5f, 2f);
-            settings.fogStart = Slider("Niebla: inicio", settings.fogStart, 0f, 30f);
-            settings.fogEnd = Slider("Niebla: fin", settings.fogEnd, 5f, 80f);
+            settings.contrast = Slider("Contraste", settings.contrast, 0.8f, 2f);
+            settings.saturation = Slider("Saturación", settings.saturation, 0f, 1.2f);
+            settings.shadowTint = Slider("Sombras granates", settings.shadowTint, 0f, 1f);
+            settings.exteriorFogStart = Slider("Niebla calle: inicio", settings.exteriorFogStart, 0f, 15f);
+            settings.exteriorFogEnd = Slider("Niebla calle: fin", settings.exteriorFogEnd, 5f, 60f);
             GUILayout.EndArea();
         }
     }

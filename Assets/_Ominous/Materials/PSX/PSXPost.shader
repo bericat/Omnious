@@ -12,7 +12,8 @@ Shader "Hidden/Ominous/PSX Post"
             #pragma fragment Frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
-            float4 _PSX_Post; // x: tramado, y: niveles por canal, z: brillo
+            float4 _PSX_Post;  // x: tramado, y: niveles por canal, z: brillo
+            float4 _PSX_Grade; // x: contraste, y: saturación, z: tinte de sombras
 
             static const float BAYER[16] = {
                  0.0,  8.0,  2.0, 10.0,
@@ -27,6 +28,12 @@ Shader "Hidden/Ominous/PSX Post"
                 c = LinearToSRGB(c);
                 #endif
                 c = saturate(c * _PSX_Post.z);
+                // Etalonaje con pivote bajo para no perder los tonos medios: negros profundos, color apagado y sombras hacia el granate.
+                c = saturate((c - 0.28) * _PSX_Grade.x + 0.28);
+                float luma = dot(c, float3(0.299, 0.587, 0.114));
+                c = lerp(luma.xxx, c, _PSX_Grade.y);
+                float shadow = 1.0 - smoothstep(0.0, 0.55, luma);
+                c *= lerp(float3(1.0, 1.0, 1.0), float3(1.08, 0.84, 0.8), shadow * _PSX_Grade.z);
                 float levels = max(2.0, _PSX_Post.y);
                 uint2 p = (uint2)i.positionCS.xy % 4;
                 float threshold = (BAYER[p.x + p.y * 4] + 0.5) / 16.0 - 0.5;
