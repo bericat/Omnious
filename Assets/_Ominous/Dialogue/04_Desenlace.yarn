@@ -13,8 +13,9 @@ Pensamiento: No hay nada. #line:fin_004
 Pensamiento: No hay suelo. No hay calle. #line:fin_005
 Pensamiento: Hace frío, como cuando llego de trabajar. #line:fin_006
 <<esperar 3>>
-// El jugador da el paso. Si no se mueve en 20 segundos, Chevas se desmaya en el umbral.
-<<caida_o_desmayo>>
+// Sin límite de tiempo: la escena espera hasta que el jugador se tire.
+<<esperar_salto_jugador>>
+<<caida>>
 <<fundido_negro 5>>
 <<jump Bucle_Coche>>
 ===

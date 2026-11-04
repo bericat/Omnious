@@ -1,200 +1,211 @@
 title: Acto2_Inicio
 ---
 <<hora 02:55>>
-Pensamiento: El grifo. #line:a2_001
-Pensamiento: No. Lo habrá dicho por otra cosa. Se oirá desde el porche. Todas estas casas gotean. #line:a2_002
-<<objetivo "Comprueba el baño">>
+// Sin pensamientos sobre lo que dijo Chechu: el jugador saca sus propias conclusiones.
+<<objetivo "Arregla el grifo del baño">>
 ===
-title: Acto2_Bano
+title: Acto2_Grifo_SinHerramienta
 ---
-Pensamiento: No se oye nada desde aquí con la puerta cerrada. #line:a2_003
-Pensamiento: Cierra la puerta, idiota, y duérmete. #line:a2_004
+Pensamiento: Con las manos no va a salir. La llave inglesa está en el garaje. #line:a2_001
+===
+title: Acto2_Garaje_Herramienta
+---
+// Susto: al coger la llave cae un bote de la estantería del garaje a su espalda.
+<<susto bote_cae_garaje>>
+<<esperar 2>>
+Pensamiento: Joder. Qué susto. #line:a2_002
+===
+title: Acto2_Grifo_Intento
+---
+// El jugador hace fuerza con la llave. No lo consigue y la herramienta se rompe.
+<<animacion_llave_grifo>>
+<<esperar 3>>
+<<sonido llave_se_parte>>
+<<sonido tuberia_golpe>>
+Pensamiento: Mierda. #line:a2_003
+Pensamiento: Se ha partido. Y sigue goteando. #line:a2_004
+<<objeto_roto llave_inglesa>>
 ===
 title: Visita2
 ---
 <<visita 2>>
 <<hora 03:05>>
 <<sonido llamada_puerta>>
-Chevas: Oye, en serio. Son las tres. #line:a2_005
-Chechu: Lo sé, lo sé. Perdona. Te prometo que es la última. #line:a2_006
+Chevas: Hola otra vez. #line:a2_005
+Chechu: Perdona, de verdad. Te prometo que es la última. #line:a2_006
 Chechu: Se me ha ido la luz. #line:a2_007
-Chevas: No te han abierto las llaves, pero se te ha ido la luz. #line:a2_008
+Chevas: ¿No decías que no podías entrar? #line:a2_008
 Chechu: He entrado por detrás. No se lo digas a nadie. #line:a2_009
--> Pues mira el diferencial. #line:a2_010
-    Chechu: Eso venía a preguntarte. En estas casas está en el garaje, ¿verdad? #line:a2_011
--> No puedo ayudarte. Vete a casa. #line:a2_012
-    Chechu: Sí, sí. Era por saber si está en el garaje, como el vuestro. #line:a2_013
-Chechu: Detrás de las latas de pintura. Donde no se puede abrir la tapa sin mover la escalera. #line:a2_014
-Chevas: ¿Quién te ha dicho eso? #line:a2_015
-Chechu: Son todas iguales. Las hicieron a la vez, las casas. Te sabes una y te sabes todas. #line:a2_016
-Chechu: Ah, y cuidado con la baldosa del baño. La tercera, según sales de la bañera. Esa cojea en todas. #line:a2_017
-<<esperar 2>>
-Chevas: ¿Has estado dentro de esta casa? #line:a2_018
-Chechu: ¿Yo? Si acabo de llegar. #line:a2_019
-Chechu: Descansa, vecino. #line:a2_020
+Chechu: ¿Y a ti? Tienes las manos negras. #line:a2_010
+-> Una chapuza. Nada. #line:a2_011
+    Chechu: A estas horas. Qué valor. #line:a2_012
+-> Cosas de la casa. #line:a2_013
+    Chechu: Ya. Yo acabo de empezar con eso. #line:a2_014
+Chechu: Oye, el cuadro de la luz en estas casas está en el garaje, ¿no? #line:a2_015
+Chevas: Sí. El mío está detrás de unas latas de pintura. #line:a2_016
+Chechu: Pues el mío detrás de algo estará. Los de la inmobiliaria dicen que las hicieron todas iguales. #line:a2_017
+Chechu: Hasta la baldosa del baño, que me baila. ¿A ti no? #line:a2_018
+Chevas: Puede ser. No me he fijado. #line:a2_019
+Chechu: Fíjate. Es muy molesto. Gracias, vecino. Descansa. #line:a2_020
 <<chechu_se_va>>
 <<casa_variante acto2_a>>
-===
-title: Acto2_Garaje
----
-Pensamiento: Detrás de las latas. Claro que sí. #line:a2_021
-Pensamiento: Son todas iguales. Eso ha dicho. #line:a2_022
+<<objetivo "">>
 ===
 title: Acto2_Baldosa
 ---
-Pensamiento: La tercera. Cojea. #line:a2_023
-Pensamiento: Eso lo sabe cualquiera que haya vivido aquí. Solo que aquí no ha vivido nadie más que nosotros. #line:a2_024
+// Opcional. El jugador puede comprobarlo o no.
+Pensamiento: Pues sí que baila. #line:a2_021
 ===
-title: Acto2_CuadroNuevo
+title: Acto2_Ruido_Cocina
 ---
-// Variante acto2_a: un cuadro del pasillo que no estaba antes.
-Pensamiento: ¿Este cuadro lo ha colgado Roberta? #line:a2_025
-Pensamiento: Es esta casa. Vista desde enfrente. #line:a2_026
+// Susto: ruido seco en la cocina. No hay nada fuera de lugar salvo un armario abierto.
+<<susto armario_cocina_abierto>>
+Pensamiento: Eso estaba cerrado. Creo. #line:a2_022
 ===
-title: Acto2_Estanteria
+title: Acto2_Objeto_Cae
 ---
-Pensamiento: La estantería está separada de la pared. Nunca ha estado así. #line:a2_027
-Pensamiento: Hay corriente. Sale de detrás. #line:a2_028
+// Susto: al pasar por el pasillo cae al suelo la foto de la boda de la estantería.
+<<susto foto_cae_estanteria>>
+<<esperar 2>>
+Pensamiento: Ya se ha soltado otra vez. #line:a2_023
+<<objetivo "Recoge la foto y vuelve a ponerla en la estantería">>
+===
+title: Acto2_Objeto_Colocado
+---
+// Al colocar la foto, la estantería cede y se separa de la pared lo justo para ver el hueco.
+<<estanteria_cede>>
+<<esperar 2>>
+Pensamiento: Se ha movido. #line:a2_024
+Pensamiento: Hay algo detrás. #line:a2_025
 <<objetivo "Aparta la estantería">>
 ===
 title: Habitacion1
 ---
 <<habitacion_abierta 1>>
-Pensamiento: Esto no estaba. Esto no puede estar aquí. #line:a2_029
-Pensamiento: Una silla. Una manta. Latas. #line:a2_030
-Pensamiento: Las latas son de las nuestras. Es la marca que compra Roberta. #line:a2_031
+Pensamiento: ¿Un trastero? Once años aquí y no lo había visto. #line:a2_026
+Pensamiento: Será de los de antes. Una silla, una manta, latas. #line:a2_027
 ===
 title: Habitacion1_Chaqueta
 ---
-Pensamiento: Esta chaqueta. #line:a2_032
-Pensamiento: La llevaba puesta hace un rato. La llevaba puesta en mi puerta. #line:a2_033
-Pensamiento: Está fría. Lleva tiempo aquí. #line:a2_034
+Pensamiento: Una chaqueta vieja. Me suena de algo. #line:a2_028
 ===
 title: Habitacion1_Silla
 ---
-Pensamiento: Está orientada hacia la pared. Desde aquí se oye la tele del salón. #line:a2_035
-Pensamiento: Se oye muy bien. #line:a2_036
+Pensamiento: Desde aquí se oye la tele del salón. #line:a2_029
 ===
 title: Visita3
 ---
 <<visita 3>>
 <<hora 03:20>>
 <<sonido llamada_puerta>>
-Chevas: Llevas viviendo en mi casa. #line:a2_037
-Chechu: Buenas noches a ti también. #line:a2_038
-Chevas: Hay un cuarto detrás de la estantería. Hay una silla. Está tu chaqueta. #line:a2_039
-Chechu: ¿Mi chaqueta? #line:a2_040
-<<chechu_mira_su_chaqueta>>
-Chechu: La llevo puesta. #line:a2_041
--> Voy a llamar a la policía. #line:a2_042
-    Chechu: Claro. Llama. ¿Qué les vas a decir? #line:a2_043
--> Dime quién eres. #line:a2_044
-    Chechu: Ya te lo he dicho. El de enfrente. #line:a2_045
--> Lárgate de aquí ahora mismo. #line:a2_046
-    Chechu: Me voy enseguida. Solo una cosa. #line:a2_047
-Chechu: Once años el martes. ¿Ya sabes qué le vas a regalar? #line:a2_048
+Chevas: ¿Otra vez? #line:a2_030
+Chechu: Dije que era la última y he mentido. Te traigo esto, que se te ha caído en el porche. #line:a2_031
+<<chechu_entrega_tornillo>>
+Chevas: Oye. Esa chaqueta. ¿Es tuya? #line:a2_032
+Chechu: ¿Esta? Sí. ¿Por? #line:a2_033
+-> He visto una igual. #line:a2_034
+    Chechu: Las venden en cualquier sitio. Es lo malo que tienen. #line:a2_035
+-> Por nada. Me sonaba. #line:a2_036
+    Chechu: Tengo cara de que me suene todo el mundo. Me lo dicen mucho. #line:a2_037
+Chechu: Por cierto, felicidades. Once años el martes, ¿no? #line:a2_038
+Chevas: ¿Cómo lo sabes? #line:a2_039
+Chechu: Tu mujer. Hablamos un rato el día que vine a ver la casa. Me contó lo de su hermana también, esos días que pasó con ella. #line:a2_040
+Chechu: Es muy simpática. Se le va la lengua. #line:a2_041
+Chevas: Ya. #line:a2_042
+Chechu: Y ten cuidado con lo que hablas, que estas casas tienen las paredes de papel. #line:a2_043
+Chechu: Aquí se oye todo, si uno se queda quieto. #line:a2_044
 <<esperar 2>>
-Chechu: Yo no le compraría nada grande. Después de las tres noches en casa de su hermana. #line:a2_049
-Chechu: Volvió con la misma maleta y os pusisteis a cenar. Nadie dijo nada. Lo hicisteis muy bien. #line:a2_050
-Chevas: Eso no lo sabe nadie. #line:a2_051
-Chechu: Duerme con la mano debajo de la almohada. Tú en el lado derecho, porque del otro roncas. #line:a2_052
-Chechu: Aquí se oye todo, si uno se queda quieto. #line:a2_053
-<<esperar 2>>
-Chechu: Ve a verla, anda. Yo que tú iría. #line:a2_054
+Chechu: Anda, vete a dormir. Te estará esperando. #line:a2_045
 <<chechu_se_va>>
-<<objetivo "Ve al dormitorio">>
 ===
 title: Roberta_CamaVacia
 ---
 <<roberta_desaparece>>
-Pensamiento: No está. #line:a2_055
-Pensamiento: La sábana está caliente. Acaba de levantarse. #line:a2_056
-Chevas: ¿Rober? #line:a2_057
+Pensamiento: No está. #line:a2_046
+Pensamiento: La sábana está caliente. #line:a2_047
+Chevas: ¿Rober? #line:a2_048
 <<objetivo "Busca a Roberta">>
 ===
 title: Roberta_Busqueda_Bano
 ---
-Chevas: ¿Rober? ¿Estás ahí? #line:a2_058
-Pensamiento: Nada. La toalla está seca. #line:a2_059
+Chevas: ¿Rober? ¿Estás ahí? #line:a2_049
+Pensamiento: Nada. La toalla está seca. #line:a2_050
 ===
 title: Roberta_Busqueda_Salon
 ---
-Pensamiento: La tele está apagada. Yo no la he apagado. #line:a2_060
+Pensamiento: La tele está apagada. Yo no la he apagado. #line:a2_051
 ===
 title: Roberta_Busqueda_Cocina
 ---
-Pensamiento: Nadie. El plato sigue en la nevera. #line:a2_061
+Pensamiento: Nadie. El plato sigue en la nevera. #line:a2_052
 ===
 title: Roberta_Busqueda_Garaje
 ---
-Pensamiento: El coche está aquí. Sus zapatos están aquí. #line:a2_062
+Pensamiento: El coche está aquí. Sus zapatos están aquí. #line:a2_053
 ===
 title: Roberta_Busqueda_Puerta
 ---
-Pensamiento: Vuelta y media. Sigue cerrada por dentro. #line:a2_063
+Pensamiento: Vuelta y media. Sigue cerrada por dentro. #line:a2_054
+===
+title: Roberta_Busqueda_Armario
+---
+// Se desbloquea tras revisar al menos tres sitios. El ruido lleva al jugador al armario.
+<<sonido golpe_dentro_armario>>
+Pensamiento: ¿Rober? ¿Estás en el armario? #line:a2_055
+Pensamiento: Aquí no hay nadie. Pero el fondo suena hueco. #line:a2_056
+<<objetivo "Abre el fondo del armario">>
+===
+title: Habitacion2
+---
+<<habitacion_abierta 2>>
+Pensamiento: Hay un hueco entre las paredes. #line:a2_057
+Pensamiento: Aquí no cabe nadie. #line:a2_058
+===
+title: Habitacion2_Agujero_Dormitorio
+---
+Pensamiento: Un agujero a la altura de la cabeza. Se ve la cama. #line:a2_059
+Pensamiento: Se oye respirar. Seré yo. #line:a2_060
+===
+title: Habitacion2_Agujero_Bano
+---
+// Sin más comentario: el jugador une las piezas.
+Pensamiento: Se ve el lavabo. Se ve el grifo. #line:a2_061
 ===
 title: Visita4
 ---
 <<visita 4>>
 <<hora 03:28>>
 <<sonido llamada_puerta_suave>>
-Chevas: ¿Dónde está? #line:a2_064
-Chechu: ¿Quién? #line:a2_065
-Chevas: ¿Dónde está mi mujer? #line:a2_066
-Chechu: Tranquilo. No grites, que se despierta. #line:a2_067
--> ¿Qué le has hecho? #line:a2_068
-    Chechu: ¿Yo? Yo llevo toda la noche aquí fuera. Tú me has visto. #line:a2_069
--> Abre esa boca otra vez y te mato. #line:a2_070
-    Chechu: No vas a hacer eso. Tú abres siempre. Es lo que tienes. #line:a2_071
-Chechu: ¿Has mirado en la cocina? #line:a2_072
-Chevas: Ya he mirado en la cocina. #line:a2_073
-Chechu: Mira otra vez. #line:a2_074
+Chevas: ¿Has visto a mi mujer? #line:a2_062
+Chechu: ¿A estas horas? No. ¿Qué ha pasado? #line:a2_063
+-> No está en la cama. #line:a2_064
+    Chechu: Tendrá sed. O insomnio, como todos en esta calle. #line:a2_065
+-> Nada. Déjalo. #line:a2_066
+    Chechu: Claro. No grites, que la despiertas. #line:a2_067
+Chechu: ¿Has mirado en la cocina? Cuando alguien se pierde de noche, siempre está en la cocina. #line:a2_068
+Chevas: Ya he mirado. #line:a2_069
+Chechu: Mira otra vez. #line:a2_070
 <<chechu_se_va>>
 ===
 title: Roberta_Cocina
 ---
 <<roberta_aparece cocina>>
-Roberta: ¿Qué haces despierto? #line:a2_075
-Chevas: ¿Dónde estabas? #line:a2_076
-Roberta: En la cama. Tenía sed. #line:a2_077
--> He ido al dormitorio. La cama estaba vacía. Te he buscado por toda la casa. #line:a2_078
-    Roberta: Pues me habrás visto poco, porque no me he movido. #line:a2_079
--> Hay un cuarto detrás de la estantería. #line:a2_080
-    Roberta: ¿Qué estantería? #line:a2_081
-    Chevas: La del pasillo. #line:a2_082
-    Roberta: Ah. Sí. Tienes que quitarle el polvo. #line:a2_083
--> ¿Has oído la puerta? Ha venido alguien. #line:a2_084
-    Roberta: ¿Alguien? ¿A estas horas? #line:a2_085
-    Roberta: Estarás cansado. #line:a2_086
-Roberta: Te has dejado la tele puesta. Se oía desde el dormitorio. #line:a2_087
-Chevas: La tele estaba apagada. #line:a2_088
-Roberta: Vente a la cama, anda. Tienes mala cara. #line:a2_089
+Roberta: ¿Qué haces despierto? #line:a2_071
+Chevas: ¿Dónde estabas? #line:a2_072
+Roberta: En la cama. Tenía sed. #line:a2_073
+-> He ido al dormitorio. La cama estaba vacía. Te he buscado por toda la casa. #line:a2_074
+    Roberta: Pues me habrás visto poco, porque no me he movido. #line:a2_075
+-> Hay un cuarto detrás de la estantería. #line:a2_076
+    Roberta: ¿Qué estantería? #line:a2_077
+    Chevas: La del pasillo. #line:a2_078
+    Roberta: Ah. Sí. Tienes que quitarle el polvo. #line:a2_079
+-> ¿Has oído la puerta? Ha venido el vecino. #line:a2_080
+    Roberta: ¿Qué vecino? ¿A estas horas? #line:a2_081
+    Roberta: Estarás cansado. #line:a2_082
+Roberta: Te has dejado la tele puesta. Se oía desde el dormitorio. #line:a2_083
+Chevas: La tele estaba apagada. #line:a2_084
+Roberta: Vente a la cama, anda. Tienes mala cara. #line:a2_085
 <<roberta_va_al_dormitorio>>
 <<casa_variante acto2_b>>
-===
-title: Acto2_Armario
----
-// Aquí se descubre la trampilla. Roberta está dormida en la cama, de espaldas.
-Pensamiento: Duerme. Con la mano debajo de la almohada. #line:a2_090
-Pensamiento: Hay ropa mía en el armario que no he visto nunca. #line:a2_091
-Pensamiento: El fondo suena hueco. #line:a2_092
-<<objetivo "Abre el fondo del armario">>
-===
-title: Habitacion2
----
-<<habitacion_abierta 2>>
-Pensamiento: Hay un hueco. Entre las paredes. Esto da a la vez al dormitorio y al baño. #line:a2_093
-Pensamiento: Aquí no cabe nadie. #line:a2_094
-===
-title: Habitacion2_Agujero_Dormitorio
----
-Pensamiento: Un agujero a la altura de la cabeza. Se ve la cama. #line:a2_095
-Pensamiento: Se la oye respirar. #line:a2_096
-===
-title: Habitacion2_Agujero_Bano
----
-Pensamiento: Se ve el lavabo. Se ve el grifo. #line:a2_097
-Pensamiento: Pero lo del grifo no lo dije en voz alta. No se lo he dicho a nadie. #line:a2_098
-Pensamiento: No lo he dicho. #line:a2_099
 <<acto 3>>
 ===

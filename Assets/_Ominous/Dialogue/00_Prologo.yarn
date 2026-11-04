@@ -28,6 +28,22 @@ title: Prologo_Grifo_Examinar
 // Opcional: el jugador puede ver el grifo del baño antes de oír el pensamiento clave.
 Pensamiento: Sigue goteando. Mañana. #line:pro_007
 ===
+title: Prologo_RobertaTele
+---
+// Bucle hasta que el jugador habla con ella; se corta en cuanto interactúa y arranca Prologo_Sofa.
+// Audio 3D desde el sofá: se oye más o menos según dónde esté el jugador. Subtítulos solo a menos de 6 m.
+// Texto provisional: se ampliará con el doblaje para los jugadores que tarden en acercarse.
+<<audio_espacial Roberta 6>>
+Roberta: ¿Y eso quién lo necesita? ¿Quién corta un zapato en su casa? #line:pro_tv_001
+Roberta: No, hombre, no. Mira cómo lo coge. Ese no ha cocinado en su vida. #line:pro_tv_002
+Roberta: Dos por uno. Claro, porque el primero no corta. #line:pro_tv_003
+Roberta: Llevas una hora con el tomate. Déjalo ya, que está muerto. #line:pro_tv_004
+Roberta: Que no llamo. Que no te voy a llamar. #line:pro_tv_005
+Roberta: A ver, ¿y si me lo traen a casa? ¿Quién está aquí para abrir? Yo. Siempre yo. #line:pro_tv_006
+Roberta: Mírale. Qué feliz. Ese no tiene que levantarse mañana. #line:pro_tv_007
+<<esperar 6>>
+<<jump Prologo_RobertaTele>>
+===
 title: Prologo_Sofa
 ---
 <<objetivo "Habla con Roberta">>
