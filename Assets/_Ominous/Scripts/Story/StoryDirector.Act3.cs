@@ -20,7 +20,7 @@ namespace Ominous
         public Light bathLight;
         public AudioSource dripSound;
         public Transform basementArrival;
-        public Vector3 carSeat = new(16.2f, -0.28f, 2f);
+        public Vector3 carSeat = new(16.2f, -0.2f, 2f);
 
         bool repeatedRoom, hallSeen, robertaLaundry, robertaCar, robertaWindow, chechuSeen, basementSeen, notebookRead;
         bool streetSeen, wasInKitchen, blinking;

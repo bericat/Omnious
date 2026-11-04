@@ -25,7 +25,8 @@ namespace Ominous
         void Awake()
         {
             if (!Application.isPlaying) return;
-            QualitySettings.vSyncCount = 1;
+            // Sin sincronía solo para medir rendimiento: ./Ominous -sinvsync -fpslog 20
+            QualitySettings.vSyncCount = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-sinvsync") >= 0 ? 0 : 1;
             // Copia en ejecución: los ajustes del jugador no tocan el asset del proyecto.
             if (settings != null) settings = Instantiate(settings);
             nextImperfection = Time.unscaledTime + 20f;
