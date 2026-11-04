@@ -9,7 +9,8 @@
 - Conexión de Claude con el Editor. Prueba superada: crear un objeto, pulsar Play, detenerlo, leer la consola y borrar el objeto.
 
 ## Falta
-- Fase 1: guion, plano, lista de objetos y tabla de escalada, con la aprobación de Toni.
+- Fase 1: Toni tiene que aprobar el guion (`Assets/_Ominous/Dialogue`), el plano, la lista de objetos y la tabla de escalada (`Docs/Diseno`).
+- El guion no se ha podido compilar: Yarn Spinner se instala en la fase 3.
 - Pendiente de la fase 0, sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto. Hasta entonces no hay copia fuera de la microSD.
 
 ## Conexión con Unity

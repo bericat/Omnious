@@ -100,7 +100,7 @@ Chevas: Eso no lo sabe nadie. #line:a2_051
 Chechu: Duerme con la mano debajo de la almohada. Tú en el lado derecho, porque del otro roncas. #line:a2_052
 Chechu: Aquí se oye todo, si uno se queda quieto. #line:a2_053
 <<esperar 2>>
-Chechu: Sube a verla, anda. Yo que tú subiría. #line:a2_054
+Chechu: Ve a verla, anda. Yo que tú iría. #line:a2_054
 <<chechu_se_va>>
 <<objetivo "Ve al dormitorio">>
 ===
@@ -157,7 +157,7 @@ title: Roberta_Cocina
 Roberta: ¿Qué haces despierto? #line:a2_075
 Chevas: ¿Dónde estabas? #line:a2_076
 Roberta: En la cama. Tenía sed. #line:a2_077
--> He subido. La cama estaba vacía. Te he buscado por toda la casa. #line:a2_078
+-> He ido al dormitorio. La cama estaba vacía. Te he buscado por toda la casa. #line:a2_078
     Roberta: Pues me habrás visto poco, porque no me he movido. #line:a2_079
 -> Hay un cuarto detrás de la estantería. #line:a2_080
     Roberta: ¿Qué estantería? #line:a2_081
