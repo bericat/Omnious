@@ -334,8 +334,9 @@ namespace Ominous.EditorTools
             BuildLaundry(furniture, doors, lights);
             BuildGarage(furniture, doors, lights);
             BuildExterior(street, lights);
-            BuildSound();
+            var tvAudio = BuildSound();
             BuildPlayerAndSystems();
+            BuildStory(tvAudio);
 
             RenderSettings.skybox = null;
             RenderSettings.ambientMode = AmbientMode.Flat;
@@ -558,7 +559,7 @@ namespace Ominous.EditorTools
             foreach (float a in new[] { 0f, 1.57f, 3.14f, 4.71f }) hanger.Box(new Vector3(Mathf.Cos(a) * 0.1f, 1.63f, Mathf.Sin(a) * 0.1f), new Vector3(0.2f, 0.02f, 0.02f), woodDark);
             hanger.Box(new Vector3(0.1f, 1.35f, 0), new Vector3(0.1f, 0.65f, 0.34f), blanket);
             Put("Perchero", hanger, f, 5.28f, 0.5f);
-            var front = Door(d, "PuertaEntrada", 6.45f, 0f, true, 0f, true);
+            var front = Door(d, "PuertaEntrada", 6.45f, 0f, true, 95f, false);
             front.transform.rotation = Quaternion.Euler(0, 270, 0);
 
             // Pasillo
@@ -587,10 +588,11 @@ namespace Ominous.EditorTools
             Put("Encimera", Encimera(), f, 10.5f, 0.38f);
             Put("Nevera", Nevera(), f, 13.45f, 0.46f);
             Put("MesaCocina", MesaCocina(), f, 11.3f, 3f);
-            Put("SillaCocina", Silla(), f, 10.9f, 3.55f, 0f);
-            Again("SillaCocina", f, 11.7f, 3.55f, 0f);
-            Again("SillaCocina", f, 10.9f, 2.45f, 180f);
-            Again("SillaCocina", f, 11.7f, 2.45f, 180f);
+            // El frente de la silla mira a +z: las del norte giran 180° para mirar a la mesa.
+            Put("SillaCocina", Silla(), f, 10.9f, 3.55f, 180f);
+            Again("SillaCocina", f, 11.7f, 3.55f, 180f);
+            Again("SillaCocina", f, 10.9f, 2.45f, 0f);
+            Again("SillaCocina", f, 11.7f, 2.45f, 0f);
             var cup = new MeshKit();
             cup.Cylinder(Vector3.zero, 0.035f, 0.04f, 0.1f, 8, ceramic);
             Put("Vaso", cup, f, 9.1f, 0.5f, 0, false, 0.92f);
@@ -750,7 +752,7 @@ namespace Ominous.EditorTools
             }
         }
 
-        static void BuildSound()
+        static AudioSource BuildSound()
         {
             AudioSource Loop(string name, AudioClip clip, Vector3 pos, float volume, float maxDistance)
             {
@@ -768,7 +770,9 @@ namespace Ominous.EditorTools
             Loop("Nevera", AudioGen.Fridge(), new Vector3(13.45f, 0.9f, 0.5f), 0.32f, 8f).transform.SetParent(root);
             Loop("Reloj", AudioGen.Clock(), new Vector3(6.3f, 1.9f, 5.9f), 0.2f, 7f).transform.SetParent(root);
             Loop("Viento", AudioGen.Wind(), Vector3.zero, 0.12f, 0f).transform.SetParent(root);
-            Loop("Tele", AudioGen.TvMurmur(), new Vector3(2.15f, 0.8f, 3.85f), 0.3f, 9f).transform.SetParent(root);
+            var tvAudio = Loop("Tele", AudioGen.TvMurmur(), new Vector3(2.15f, 0.8f, 3.85f), 0.3f, 9f);
+            tvAudio.transform.SetParent(root);
+            Loop("Grifo", AudioGen.Drip(), new Vector3(9.6f, 0.9f, 7.1f), 0.28f, 5f).transform.SetParent(root);
             var cars = new GameObject("Coches");
             cars.transform.SetParent(root);
             var src = cars.AddComponent<AudioSource>();
@@ -776,13 +780,25 @@ namespace Ominous.EditorTools
             var a = cars.AddComponent<AmbientSounds>();
             a.carSource = src;
             a.carClip = AudioGen.Car();
+
+            var sfx = root.gameObject.AddComponent<Sfx>();
+            void Add(string name, AudioClip clip, float volume) => sfx.clips.Add(new Sfx.Entry { name = name, clip = clip, volume = volume });
+            Add("llamada_puerta", AudioGen.Knock(), 0.95f);
+            Add("llamada_puerta_suave", AudioGen.Knock(), 0.45f);
+            Add("puerta_abre", AudioGen.Latch(), 0.5f);
+            Add("puerta_cierra", AudioGen.SoftThud(), 0.6f);
+            Add("puerta_cerrada", AudioGen.Rattle(), 0.5f);
+            Add("interruptor", AudioGen.Click(), 0.45f);
+            Add("llaves", AudioGen.Keys(), 0.5f);
+            Add("paso", AudioGen.Step(), 0.22f);
+            return tvAudio;
         }
 
         static void BuildPlayerAndSystems()
         {
             var settings = AssetDatabase.LoadAssetAtPath<VideoLookSettings>(OminousSetup.SettingsPath);
             var player = new GameObject("Jugador");
-            player.transform.SetPositionAndRotation(new Vector3(6f, 0.02f, 1.1f), Quaternion.identity);
+            player.transform.SetPositionAndRotation(new Vector3(6f, 0.02f, -2.2f), Quaternion.identity);
             var cc = player.AddComponent<CharacterController>();
             cc.height = 1.7f; cc.radius = 0.25f; cc.center = new Vector3(0, 0.85f, 0); cc.stepOffset = 0.2f; cc.skinWidth = 0.02f;
             var fp = player.AddComponent<FirstPersonController>();
@@ -817,6 +833,169 @@ namespace Ominous.EditorTools
             systems.AddComponent<GameUI>();
             systems.AddComponent<PauseMenu>();
             systems.AddComponent<DialogueManager>().project = AssetDatabase.LoadAssetAtPath<YarnProject>(YarnProjectPath);
+        }
+
+        // ---------- historia ----------
+
+        static MeshKit Person(Material skin, Material top, Material legs, Material hair, string pose)
+        {
+            var k = new MeshKit();
+            void Head(Vector3 c)
+            {
+                k.Box(c, new Vector3(0.17f, 0.22f, 0.2f), skin);
+                k.Box(c + new Vector3(0, 0.07f, -0.02f), new Vector3(0.19f, 0.13f, 0.21f), hair);
+                k.Box(c + new Vector3(0, -0.02f, -0.09f), new Vector3(0.19f, 0.26f, 0.05f), hair);
+            }
+            if (pose == "depie")
+            {
+                foreach (float x in new[] { -0.09f, 0.09f })
+                {
+                    k.Box(new Vector3(x, 0.41f, 0), new Vector3(0.13f, 0.82f, 0.15f), legs);
+                    k.Box(new Vector3(x, 0.035f, 0.04f), new Vector3(0.11f, 0.07f, 0.25f), plastic);
+                    k.Box(new Vector3(x * 2.85f, 1.07f, 0), new Vector3(0.085f, 0.58f, 0.1f), top);
+                    k.Box(new Vector3(x * 2.85f, 0.73f, 0.01f), new Vector3(0.08f, 0.1f, 0.09f), skin);
+                }
+                k.Box(new Vector3(0, 1.09f, 0), new Vector3(0.36f, 0.56f, 0.2f), top);
+                k.Box(new Vector3(0, 1.41f, 0), new Vector3(0.08f, 0.1f, 0.08f), skin);
+                Head(new Vector3(0, 1.56f, 0));
+            }
+            else if (pose == "sentada")
+            {
+                foreach (float x in new[] { -0.09f, 0.09f })
+                {
+                    k.Box(new Vector3(x, 0.55f, 0.18f), new Vector3(0.13f, 0.14f, 0.42f), legs);
+                    k.Box(new Vector3(x, 0.24f, 0.36f), new Vector3(0.12f, 0.48f, 0.13f), legs);
+                    k.Box(new Vector3(x, 0.035f, 0.4f), new Vector3(0.11f, 0.07f, 0.24f), plastic);
+                    k.Box(new Vector3(x * 2.85f, 0.73f, 0.03f), new Vector3(0.085f, 0.42f, 0.1f), top);
+                    k.Box(new Vector3(x * 2.3f, 0.57f, 0.2f), new Vector3(0.08f, 0.08f, 0.26f), skin);
+                }
+                k.Box(new Vector3(0, 0.82f, -0.05f), new Vector3(0.36f, 0.56f, 0.2f), top);
+                k.Box(new Vector3(0, 1.14f, -0.03f), new Vector3(0.08f, 0.1f, 0.08f), skin);
+                Head(new Vector3(0, 1.29f, -0.01f));
+            }
+            else // tumbada, de lado y con la cabeza hacia +z
+            {
+                k.Box(new Vector3(0, 0.13f, -0.55f), new Vector3(0.3f, 0.17f, 0.92f), legs);
+                k.Box(new Vector3(0, 0.15f, 0.2f), new Vector3(0.36f, 0.2f, 0.56f), top);
+                k.Box(new Vector3(0.21f, 0.14f, 0.16f), new Vector3(0.09f, 0.1f, 0.5f), top);
+                k.Box(new Vector3(0, 0.14f, 0.52f), new Vector3(0.09f, 0.08f, 0.1f), skin);
+                k.Box(new Vector3(0, 0.18f, 0.68f), new Vector3(0.2f, 0.17f, 0.22f), skin);
+                k.Box(new Vector3(0, 0.26f, 0.66f), new Vector3(0.21f, 0.1f, 0.25f), hair);
+                k.Box(new Vector3(0, 0.14f, 0.8f), new Vector3(0.21f, 0.2f, 0.05f), hair);
+            }
+            return k;
+        }
+
+        static GameObject Actor(string name, Material skin, Material top, Material legs, Material hair, string[] poses, Vector3 colliderSize, out ActorFigure figure)
+        {
+            var root = new GameObject(name);
+            figure = root.AddComponent<ActorFigure>();
+            foreach (string pose in poses)
+            {
+                var mesh = Person(skin, top, legs, hair, pose).Build($"{name}_{pose}", out var mats);
+                string path = $"Assets/_Ominous/Art/Meshes/{name}_{pose}.asset";
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(mesh, path);
+                var go = new GameObject(pose);
+                go.transform.SetParent(root.transform, false);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                go.AddComponent<MeshRenderer>().sharedMaterials = mats;
+                figure.poses.Add(new ActorFigure.Pose { name = pose, root = go });
+            }
+            var head = new GameObject("Cabeza");
+            head.transform.SetParent(root.transform, false);
+            head.transform.localPosition = new Vector3(0, 1.45f, 0);
+            figure.head = head.transform;
+            var col = root.AddComponent<BoxCollider>();
+            col.isTrigger = true;
+            col.center = new Vector3(0, colliderSize.y * 0.5f, 0);
+            col.size = colliderSize;
+            return root;
+        }
+
+        static void Use(string id, string prompt, Vector3 position, Vector3 size, Transform parent)
+        {
+            var go = new GameObject("Uso_" + id);
+            go.transform.SetParent(parent);
+            go.transform.position = position;
+            var c = go.AddComponent<BoxCollider>();
+            c.isTrigger = true;
+            c.size = size;
+            var s = go.AddComponent<StoryObject>();
+            s.id = id;
+            s.prompt = prompt;
+        }
+
+        static void BuildStory(AudioSource tvAudio)
+        {
+            var skin = ProceduralAssets.Grime("Piel", new Color(0.62f, 0.47f, 0.38f), 0.2f);
+            var pajama = ProceduralAssets.Fabric("Pijama", new Color(0.46f, 0.5f, 0.54f));
+            var pajamaLegs = ProceduralAssets.Fabric("PijamaPantalon", new Color(0.36f, 0.4f, 0.45f));
+            var hairR = ProceduralAssets.Grime("PeloRoberta", new Color(0.16f, 0.1f, 0.07f), 0.3f);
+            var jacket = ProceduralAssets.Fabric("Chaqueta", new Color(0.24f, 0.27f, 0.23f));
+            var jeans = ProceduralAssets.Fabric("Vaqueros", new Color(0.18f, 0.2f, 0.26f));
+            var hairC = ProceduralAssets.Grime("PeloChechu", new Color(0.07f, 0.06f, 0.05f), 0.3f);
+
+            var story = new GameObject("Historia");
+            Actor("Roberta", skin, pajama, pajamaLegs, hairR, new[] { "sentada", "depie", "tumbada" }, new Vector3(0.7f, 1.3f, 1f), out var roberta);
+            roberta.gameObject.AddComponent<StoryObject>().id = "roberta";
+            roberta.head.localPosition = new Vector3(0, 1.25f, 0);
+            Actor("Chechu", skin, jacket, jeans, hairC, new[] { "depie" }, new Vector3(0.6f, 1.75f, 0.5f), out var chechu);
+
+            // Voz de Roberta: se oye más o menos según dónde esté el jugador
+            var voiceGo = new GameObject("Voz");
+            voiceGo.transform.SetParent(roberta.transform, false);
+            voiceGo.transform.localPosition = new Vector3(0, 1.2f, 0);
+            var voice = voiceGo.AddComponent<AudioSource>();
+            voice.clip = AudioGen.VoiceMumble();
+            voice.loop = true; voice.playOnAwake = false; voice.volume = 0.55f; voice.spatialBlend = 1f;
+            voice.rolloffMode = AudioRolloffMode.Linear; voice.minDistance = 1f; voice.maxDistance = 9f;
+
+            var t = story.transform;
+            Use("cuenco", "Dejar las llaves", new Vector3(6.6f, 0.9f, 1.3f), new Vector3(0.5f, 0.25f, 0.5f), t);
+            Use("vaso", "Beber agua", new Vector3(9.1f, 1.0f, 0.5f), new Vector3(0.3f, 0.3f, 0.3f), t);
+            Use("grifo", "Mirar el grifo", new Vector3(9.5f, 0.95f, 7.2f), new Vector3(0.45f, 0.3f, 0.5f), t);
+            Use("tele", "Mirar la tele", new Vector3(2.15f, 0.85f, 3.82f), new Vector3(0.8f, 0.6f, 0.1f), t);
+            Use("nevera", "Abrir la nevera", new Vector3(13.45f, 1.1f, 0.85f), new Vector3(0.75f, 1.4f, 0.1f), t);
+            Use("ventana", "Mirar por la ventana", new Vector3(3.7f, 1.5f, 0.12f), new Vector3(1.4f, 1.2f, 0.1f), t);
+            Use("ventana", "Mirar por la ventana", new Vector3(1.6f, 1.5f, 0.12f), new Vector3(1.4f, 1.2f, 0.1f), t);
+            Use("mirilla", "Mirar por la mirilla", new Vector3(6f, 1.6f, 0.05f), new Vector3(0.35f, 0.3f, 0.1f), t);
+
+            // Umbral: en la visita el jugador no sale a la calle
+            var threshold = new GameObject("UmbralPuerta");
+            threshold.transform.SetParent(t);
+            threshold.transform.position = new Vector3(6f, 1f, -0.1f);
+            threshold.AddComponent<BoxCollider>().size = new Vector3(1.2f, 2.2f, 0.2f);
+
+            // Límites del jardín en la llegada
+            var bounds = new GameObject("LimitesLlegada");
+            bounds.transform.SetParent(t);
+            foreach (var (c, size) in new[]
+            {
+                (new Vector3(6f, 1f, -2.95f), new Vector3(8f, 2f, 0.2f)),
+                (new Vector3(2.5f, 1f, -1.3f), new Vector3(0.2f, 2f, 3.3f)),
+                (new Vector3(8.5f, 1f, -1.3f), new Vector3(0.2f, 2f, 3.3f)),
+            })
+            {
+                var w = new GameObject("Limite");
+                w.transform.SetParent(bounds.transform);
+                w.transform.position = c;
+                w.AddComponent<BoxCollider>().size = size;
+            }
+
+            var dir = story.AddComponent<StoryDirector>();
+            dir.frontDoor = GameObject.Find("PuertaEntrada").GetComponent<Door>();
+            dir.roberta = roberta;
+            dir.chechu = chechu;
+            dir.robertaVoice = voice;
+            dir.tvSound = tvAudio;
+            dir.threshold = threshold;
+            dir.outsideBounds = bounds;
+            dir.project = AssetDatabase.LoadAssetAtPath<YarnProject>(YarnProjectPath);
+
+            // Luces al llegar: recibidor y lámpara del salón encendidas, como las dejó Roberta
+            var hall = GameObject.Find("Interruptor_Recibidor").GetComponent<LightSwitch>();
+            hall.isOn = true;
         }
 
         /// <summary>Hornea la luz que entra por las ventanas. Tarda varios minutos: se lanza en segundo plano.</summary>

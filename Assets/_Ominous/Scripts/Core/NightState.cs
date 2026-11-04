@@ -9,6 +9,7 @@ namespace Ominous
     {
         public int act = 1;
         public int visit;
+        public int storyStep;
         public string hour = "01:50";
         public string objective = "";
         public bool robertaInBed;

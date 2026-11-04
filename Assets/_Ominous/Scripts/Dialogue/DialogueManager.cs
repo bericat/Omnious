@@ -11,12 +11,16 @@ namespace Ominous
         public YarnProject project;
         public DialogueRunner Runner { get; private set; }
         public SubtitlePresenter Presenter { get; private set; }
+        readonly System.Collections.Generic.Queue<(string, Action)> queue = new();
+        (string, Action)? current;
+        bool wasRunning;
+        int startedFrame;
         public bool IsRunning => Runner != null && Runner.IsDialogueRunning;
 
         // Comandos del guion que aún no hacen nada: los implementan las fases 5 a 8.
         static readonly string[] PendingNoArgs =
         {
-            "roberta_se_adormece", "roberta_va_al_dormitorio", "chechu_se_gira", "chechu_se_va", "reloj_parado",
+            "reloj_parado",
             "animacion_llave_grifo", "estanteria_cede", "chechu_entrega_tornillo", "roberta_desaparece",
             "chechu_desaparece", "chechu_desaparece_riendo", "pasillo_alargado", "esperar_salto_jugador", "caida",
             "reiniciar_noche", "puerta_se_abre", "corte_negro", "creditos", "puerta_chechu_se_abre",
@@ -25,7 +29,7 @@ namespace Ominous
 
         static readonly string[] PendingOneArg =
         {
-            "sonido", "susto", "objeto_roto", "roberta_aparece", "chechu_aparece", "mirar", "fundido_negro",
+            "susto", "objeto_roto", "roberta_aparece", "chechu_aparece", "fundido_negro",
         };
 
         void Awake()
@@ -69,10 +73,34 @@ namespace Ominous
             }
         }
 
-        public async void Play(string node)
+        /// <summary>Lanza un nodo. Si ya hay un diálogo en marcha, espera su turno.</summary>
+        public void Play(string node, Action done = null)
         {
-            if (Runner == null || Runner.IsDialogueRunning || string.IsNullOrEmpty(node)) return;
-            await Runner.StartDialogue(node);
+            if (Runner == null || string.IsNullOrEmpty(node)) return;
+            queue.Enqueue((node, done));
+        }
+
+        /// <summary>Hay diálogo en marcha o en cola.</summary>
+        public bool IsBusy => IsRunning || queue.Count > 0 || current != null;
+
+        void Update()
+        {
+            if (Runner == null) return;
+            if (IsRunning) { wasRunning = true; return; }
+            if (wasRunning || current != null && startedFrame < Time.frameCount - 2)
+            {
+                wasRunning = false;
+                var finished = current;
+                current = null;
+                if (finished.HasValue) finished.Value.Item2?.Invoke();
+                if (queue.Count == 0) return;
+            }
+            if (current == null && queue.Count > 0)
+            {
+                current = queue.Dequeue();
+                startedFrame = Time.frameCount;
+                _ = Runner.StartDialogue(current.Value.Item1);
+            }
         }
     }
 }

@@ -5,11 +5,14 @@ using UnityEngine.SceneManagement;
 namespace Ominous
 {
     /// <summary>Lleva el estado de la noche, aplica las variantes de la casa y guarda en los puntos de control.</summary>
+    [DefaultExecutionOrder(-50)]
     public class GameDirector : MonoBehaviour
     {
         public static GameDirector Instance { get; private set; }
         public NightState Night { get; private set; } = new();
         public event Action Changed;
+        /// <summary>La partida viene de un punto de control: el director de historia debe recolocar la escena.</summary>
+        public bool Restored { get; private set; }
 
         void Awake() => Instance = this;
 
@@ -24,6 +27,7 @@ namespace Ominous
             {
                 SaveSystem.LoadRequested = false;
                 RestoreCheckpoint();
+                Restored = true;
             }
             else ApplyVariants();
             Changed?.Invoke();

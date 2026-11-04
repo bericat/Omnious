@@ -1,6 +1,6 @@
 # Estado de Ominous
 
-**Fase actual:** 4, la casa completa y el exterior.
+**Fase actual:** 5, prólogo y acto 1 jugables.
 
 ## Hecho
 - Unity 6.3 LTS (6000.3.28f1) en Steam Deck (Unity Hub en Flatpak), con módulo de build Linux.
@@ -19,8 +19,8 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
-- Fase 4: prueba de Toni recorriendo la casa (build `Builds/Ominous_Test/Ominous`, Nueva partida). Con su visto bueno, etiqueta `fase-4-ok`.
-- Sin confirmar por Toni: la colocación de cada estancia y el sonido.
+- Fase 5: prólogo y acto 1.
+- El coche es feo y cutre, lo dijo Toni: mejorarlo con los assets de la fase 10.
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
@@ -55,4 +55,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Pidió pasar a la fase 4 (fase 3 dada por buena).
+Aprobó la fase 4 tras girar las sillas de la cocina y pidió empezar la 5.

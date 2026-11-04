@@ -18,6 +18,7 @@ namespace Ominous
         public override void Interact()
         {
             IsOpen = !IsOpen;
+            Sfx.Play("puerta_cierra", transform.position, 0.2f);
             base.Interact();
         }
 

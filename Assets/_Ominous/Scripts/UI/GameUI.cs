@@ -12,7 +12,8 @@ namespace Ominous
         public static GameUI Instance { get; private set; }
         public Canvas Canvas { get; private set; }
 
-        TextMeshProUGUI prompt, objective, subtitle, speakerName;
+        TextMeshProUGUI prompt, objective, subtitle, speakerName, ambientLine;
+        UnityEngine.UI.Image fade;
         RectTransform subtitleBox, optionsBox;
         GameObject crosshair;
         readonly List<GameObject> optionButtons = new();
@@ -42,6 +43,13 @@ namespace Ominous
             optionsBox = UIKit.Rect(root, "Elecciones", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 46), new Vector2(760, 240));
             UIKit.Column(optionsBox, 8).childAlignment = TextAnchor.LowerCenter;
             optionsBox.gameObject.SetActive(false);
+
+            ambientLine = UIKit.Label(UIKit.Rect(root, "VozLejana", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 176), new Vector2(900, 34)), "", 20f, UIKit.Dim);
+            ambientLine.fontStyle = FontStyles.Italic;
+
+            var black = UIKit.Stretch(root, "Fundido");
+            fade = UIKit.Panel(black, new Color(0, 0, 0, 0));
+            fade.raycastTarget = false;
 
             OminousOptions.Changed += ApplyOptions;
             ApplyOptions();
@@ -89,6 +97,28 @@ namespace Ominous
             subtitle.text = text;
             subtitle.fontStyle = thought ? FontStyles.Italic : FontStyles.Normal;
             subtitle.color = thought ? UIKit.Dim : UIKit.Ink;
+        }
+
+        /// <summary>Alguien que habla lejos: el texto se apaga con la distancia.</summary>
+        public void SetAmbientLine(string text, float alpha)
+        {
+            bool show = !string.IsNullOrEmpty(text) && alpha > 0.02f && OminousOptions.Subtitles;
+            ambientLine.text = show ? text : "";
+            var c = ambientLine.color;
+            c.a = alpha;
+            ambientLine.color = c;
+        }
+
+        public System.Collections.IEnumerator Fade(float target, float seconds)
+        {
+            float start = fade.color.a, t = 0f;
+            while (t < seconds)
+            {
+                t += Time.unscaledDeltaTime;
+                fade.color = new Color(0, 0, 0, Mathf.Lerp(start, target, t / seconds));
+                yield return null;
+            }
+            fade.color = new Color(0, 0, 0, target);
         }
 
         public void HideSubtitle() => subtitleBox.gameObject.SetActive(false);

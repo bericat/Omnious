@@ -21,10 +21,12 @@ namespace Ominous
         {
             if (locked)
             {
+                Sfx.Play("puerta_cerrada", transform.position + Vector3.up);
                 if (!string.IsNullOrEmpty(lockedNode)) DialogueManager.Instance?.Play(lockedNode);
                 return;
             }
             IsOpen = !IsOpen;
+            Sfx.Play(IsOpen ? "puerta_abre" : "puerta_cierra", transform.position + Vector3.up);
             base.Interact();
         }
 

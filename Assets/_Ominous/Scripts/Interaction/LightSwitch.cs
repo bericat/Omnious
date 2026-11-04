@@ -16,6 +16,7 @@ namespace Ominous
         public override void Interact()
         {
             isOn = !isOn;
+            Sfx.Play("interruptor", transform.position);
             ApplyState();
             base.Interact();
         }

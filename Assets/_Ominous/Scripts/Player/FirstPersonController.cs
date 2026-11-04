@@ -37,6 +37,36 @@ namespace Ominous
 
         void OnDestroy() => blockers.Clear();
 
+        public void LookAt(Vector3 world)
+        {
+            if (cameraPivot == null) return;
+            Vector3 d = world - cameraPivot.position;
+            yawTarget = Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg;
+            pitchTarget = -Mathf.Atan2(d.y, new Vector2(d.x, d.z).magnitude) * Mathf.Rad2Deg;
+        }
+
+        bool peeping;
+        float normalFov;
+
+        /// <summary>Mirar por la mirilla: la cámara se pone en otro sitio y con otro campo de visión.</summary>
+        public void SetPeep(Vector3 position, float yaw, float fov)
+        {
+            if (cameraPivot == null) return;
+            peeping = true;
+            var cam = cameraPivot.GetComponent<Camera>();
+            normalFov = cam.fieldOfView;
+            cam.fieldOfView = fov;
+            cameraPivot.SetPositionAndRotation(position, Quaternion.Euler(0f, yaw, 0f));
+        }
+
+        public void EndPeep()
+        {
+            peeping = false;
+            cameraPivot.GetComponent<Camera>().fieldOfView = normalFov;
+        }
+
+        float stepPhase;
+
         public void Teleport(Vector3 position, float yaw)
         {
             if (controller != null) controller.enabled = false;
@@ -101,7 +131,12 @@ namespace Ominous
             float handX = (Mathf.PerlinNoise(t * 0.33f, 1.3f) - 0.5f) * 0.55f;
             float handY = (Mathf.PerlinNoise(2.7f, t * 0.27f) - 0.5f) * 0.55f;
             float handZ = (Mathf.PerlinNoise(t * 0.21f, 5.9f) - 0.5f) * 0.4f;
-            if (cameraPivot != null)
+            // Pasos: en el punto bajo del balanceo.
+            float step = Mathf.Sin(bobTime * 2f);
+            if (walking && step < -0.9f && stepPhase >= -0.9f) Sfx.Play("paso", transform.position, 0.1f);
+            stepPhase = step;
+
+            if (cameraPivot != null && !peeping)
             {
                 cameraPivot.localPosition = new Vector3(bobX, currentHeight - 0.1f + bobY, 0f);
                 cameraPivot.localRotation = Quaternion.Euler(pitch + handX, handY, roll + handZ);

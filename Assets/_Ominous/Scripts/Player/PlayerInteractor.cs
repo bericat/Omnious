@@ -14,8 +14,11 @@ namespace Ominous
         {
             Current = null;
             bool free = !FirstPersonController.InputBlocked && !(DialogueManager.Instance != null && DialogueManager.Instance.IsRunning);
-            if (free && eye != null && Physics.Raycast(eye.position, eye.forward, out var hit, reach, ~0, QueryTriggerInteraction.Ignore))
-                Current = hit.collider.GetComponentInParent<Interactable>();
+            if (free && eye != null && Physics.Raycast(eye.position, eye.forward, out var hit, reach, ~0, QueryTriggerInteraction.Collide))
+            {
+                var found = hit.collider.GetComponentInParent<Interactable>();
+                if (found != null && found.CanUse) Current = found;
+            }
 
             GameUI.Instance?.SetPrompt(Current != null ? $"[E] {Current.Prompt}" : null);
 

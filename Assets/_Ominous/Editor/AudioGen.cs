@@ -105,6 +105,67 @@ namespace Ominous.EditorTools
             return Save("CocheLejano", s);
         }
 
+        static float[] Noise(int length, int seed) { var r = new System.Random(seed); var s = new float[length]; for (int i = 0; i < length; i++) s[i] = (float)r.NextDouble() * 2f - 1f; return s; }
+
+        static AudioClip Thuds(string name, float[] times, float tone, float decay, float noiseMix, float gain, int seed)
+        {
+            float end = times[times.Length - 1] + 0.5f;
+            var s = new float[(int)(end * Rate)];
+            var n = Noise(s.Length, seed);
+            foreach (float t0 in times)
+                for (int i = (int)(t0 * Rate); i < s.Length; i++)
+                {
+                    float t = i / (float)Rate - t0;
+                    float e = Mathf.Exp(-t * decay);
+                    if (e < 0.001f) break;
+                    s[i] += (Mathf.Sin(t * 2f * Mathf.PI * tone) * (1f - noiseMix) + n[i] * noiseMix) * e * gain;
+                }
+            return Save(name, s);
+        }
+
+        public static AudioClip Knock() => Thuds("LlamadaPuerta", new[] { 0f, 0.26f, 0.55f }, 145f, 34f, 0.28f, 0.9f, 71);
+        public static AudioClip SoftThud() => Thuds("PuertaCierra", new[] { 0f, 0.05f }, 110f, 26f, 0.25f, 0.8f, 72);
+        public static AudioClip Latch() => Thuds("PuertaAbre", new[] { 0f, 0.09f }, 900f, 95f, 0.6f, 0.45f, 73);
+        public static AudioClip Rattle() => Thuds("PuertaCerrada", new[] { 0f, 0.07f, 0.15f }, 520f, 70f, 0.55f, 0.4f, 74);
+        public static AudioClip Click() => Thuds("Interruptor", new[] { 0f }, 1700f, 180f, 0.5f, 0.5f, 75);
+        public static AudioClip Keys() => Thuds("Llaves", new[] { 0f, 0.06f, 0.11f, 0.19f, 0.26f }, 3200f, 70f, 0.5f, 0.28f, 76);
+        public static AudioClip Step() => Thuds("Paso", new[] { 0f }, 90f, 42f, 0.45f, 0.5f, 77);
+
+        public static AudioClip Drip()
+        {
+            var s = new float[Rate * 3];
+            foreach (float t0 in new[] { 0.1f, 1.7f })
+                for (int i = (int)(t0 * Rate); i < s.Length; i++)
+                {
+                    float t = i / (float)Rate - t0;
+                    float e = Mathf.Exp(-t * 55f);
+                    if (e < 0.001f) break;
+                    s[i] += Mathf.Sin(t * 2f * Mathf.PI * Mathf.Lerp(1050f, 1500f, Mathf.Clamp01(t * 14f))) * e * 0.55f;
+                }
+            return Save("Goteo", s);
+        }
+
+        /// <summary>Voz de Roberta hablándole a la tele: sílabas sin palabras hasta el doblaje.</summary>
+        public static AudioClip VoiceMumble()
+        {
+            var r = new System.Random(81);
+            var s = new float[Rate * 16];
+            float buzzPhase = 0f, a = 0f, b = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = (float)i / Rate;
+                float pitch = 180f + 45f * Mathf.PerlinNoise(t * 1.6f, 4.2f);
+                buzzPhase += pitch / Rate;
+                float saw = Mathf.Repeat(buzzPhase, 1f) * 2f - 1f;
+                a += (saw - a) * 0.22f;
+                b += (a - b) * 0.05f;
+                float syllable = Mathf.SmoothStep(0.42f, 0.56f, Mathf.PerlinNoise(t * 5.4f, 2.2f));
+                float phrase = Mathf.SmoothStep(0.34f, 0.46f, Mathf.PerlinNoise(t * 0.55f, 9.1f));
+                s[i] = (a - b) * syllable * phrase * 1.8f + ((float)r.NextDouble() - 0.5f) * 0.01f;
+            }
+            return Save("VozRoberta", Loopable(s, Rate / 2));
+        }
+
         public static AudioClip TvMurmur()
         {
             var r = new System.Random(61);

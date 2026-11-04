@@ -10,6 +10,7 @@ namespace Ominous
         public UnityEvent onInteract;
 
         public virtual string Prompt => prompt;
+        public virtual bool CanUse => true;
         public virtual void Interact() => onInteract?.Invoke();
     }
 }
