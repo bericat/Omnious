@@ -19,11 +19,18 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
-- Fase 5: prólogo y acto 1.
+- Fase 5: prueba de Toni jugando del principio al final del acto 1, y de alguien que no conozca el juego. Con su visto bueno, etiqueta `fase-5-ok`. Si no da miedo, se corrige aquí antes de seguir.
+- No hay animaciones ni voces: las figuras se deslizan y Roberta murmura con sonido sintetizado.
 - El coche es feo y cutre, lo dijo Toni: mejorarlo con los assets de la fase 10.
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
+
+## Fase 5: cómo está montada
+- `Scripts/Story/StoryDirector.cs`: los pasos de la noche, los objetos que se usan (`StoryObject`) y los comandos de Yarn. Se construye dentro de `Tools/Ominous/Construir la casa`.
+- El monólogo de Roberta usa un segundo `DialogueRunner` que no bloquea al jugador. El principal lo lleva `DialogueManager`, con cola.
+- Se usa guion más código, no Timeline: Yarn ya marca el ritmo de la llamada y la despedida. Se puede revisar si hace falta una cinemática compleja.
+- Punto de control al llamar Chechu (`EsperaPuerta`). Restaurar otros pasos aún no está programado.
 
 ## Fase 4: cómo está montada
 - Escena `Assets/_Ominous/Scenes/House.unity`. Regenerar: `Tools/Ominous/Construir la casa` y después `Tools/Ominous/Hornear la luz de la casa` (menos de un minuto), y guardar la escena.

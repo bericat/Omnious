@@ -74,8 +74,8 @@ namespace Ominous
         {
             style ??= new GUIStyle(GUI.skin.label) { fontSize = 16 };
             GUI.color = new Color(1f, 1f, 1f, 0.9f);
-            GUI.Label(new Rect(8, 4, 500, 26), $"{1f / smooth:0} fps · peor {worst * 1000f:0} ms · F1 ajustes", style);
             if (!open || settings == null) return;
+            GUI.Label(new Rect(8, 4, 500, 26), $"{1f / smooth:0} fps · peor {worst * 1000f:0} ms", style);
             GUILayout.BeginArea(new Rect(8, 32, 340, 620), GUI.skin.box);
             settings.internalHeight = Mathf.RoundToInt(Slider("Resolución interna", settings.internalHeight, 360, 800));
             settings.softness = Slider("Suavizado", settings.softness, 0f, 2f);
