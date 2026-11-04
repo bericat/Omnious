@@ -32,6 +32,7 @@ Material:
     - _AmbientBoost: 1
     - _Exterior: 0
     - _RoomAO: 0
+    - _Stable: 0
     m_Colors:
     - _BaseColor: {r: 0.05, g: 0.05, b: 0.06, a: 1}
     - _EmissionColor: {r: 0.3, g: 0.4, b: 0.6, a: 1}

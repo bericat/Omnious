@@ -55,6 +55,7 @@ namespace Ominous.EditorTools
             doorExt = PSXAssets.Planks("PuertaExterior", new Color(0.3f, 0.22f, 0.16f), 1, 1f);
             metalExt = PSXAssets.Grime("MetalExterior", new Color(0.24f, 0.24f, 0.25f), 0.6f);
             PSXAssets.Exterior(asphalt, concrete, grass, siding, sidingFar, roof, trunk, leaves, sign, windowLit, lampGlow, frameExt, doorExt, metalExt);
+            PSXAssets.Stable(wall, floorWood, ceiling, rug, asphalt, concrete, grass, siding, sidingFar, roof);
             wall.SetFloat("_RoomAO", 1f);
             EditorUtility.SetDirty(wall);
         }

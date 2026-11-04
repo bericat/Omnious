@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: PSXSettings
   m_EditorClassIdentifier: Assembly-CSharp::Ominous.PSXSettings
   internalHeight: 360
-  vertexSnap: 0.7
-  affine: 0.3
+  vertexSnap: 0.5
+  affine: 0.08
   dither: 1
   colorLevels: 12
   brightness: 1.1

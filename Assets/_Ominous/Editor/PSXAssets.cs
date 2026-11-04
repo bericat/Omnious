@@ -239,6 +239,12 @@ namespace Ominous.EditorTools
             return m;
         }
 
+        /// <summary>Suelos, paredes y techos: el temblor PSX los estira al caminar porque son polígonos muy grandes.</summary>
+        public static void Stable(params Material[] mats)
+        {
+            foreach (var m in mats) { m.SetFloat("_Stable", 1f); EditorUtility.SetDirty(m); }
+        }
+
         public static void Exterior(params Material[] mats)
         {
             foreach (var m in mats) { m.SetFloat("_AmbientBoost", 6f); m.SetFloat("_Exterior", 1f); EditorUtility.SetDirty(m); }

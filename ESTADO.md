@@ -10,7 +10,6 @@
 
 ## Falta
 - Fase 2: prueba de Toni con teclado y ratón en el salón. Con su visto bueno, etiqueta `fase-2-ok`.
-- WASD y ratón sin comprobar: las teclas simuladas no llegan con la ventana sin foco.
 - Guion: ampliar diálogos si hace falta cuando se juegue en la fase 5. No se ha compilado: Yarn Spinner llega en la fase 3.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
 
@@ -18,6 +17,7 @@
 - Escena `Assets/_Ominous/Scenes/Test_Salon.unity`, regenerable con `Tools/Ominous/Construir salón de pruebas`.
 - Ajustes en `Assets/_Ominous/Data/PSXSettings.asset`, o en vivo con F1.
 - Estilo guiado por las referencias de Toni (Buckshot Roulette y Fears to Fathom): 360 px de alto, 12 niveles por canal con tramado Bayer, negros profundos, color apagado y texturas con suciedad.
+- Suelos, paredes, techo y alfombra llevan `_Stable`: sin temblor ni deformación afín, porque Toni los veía estirarse al caminar.
 - Sin sombras en tiempo real. La calle usa la capa `Exterior`, con luces y ambiente propios.
 - Build de prueba en `Builds/Ominous_Test/Ominous`. `-fpslog 20` mide y escribe en `~/.config/unity3d/Toni/Ominous/Player.log`.
 - Medido en la Deck (1280×800, OpenGL, jugador quieto, 20 s): 60,0 fps, peor fotograma 18,5 ms.

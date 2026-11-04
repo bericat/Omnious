@@ -8,6 +8,7 @@ Shader "Ominous/PSX Lit"
         _AmbientBoost ("Ambiente extra (exterior)", Float) = 1
         _Exterior ("Niebla de exterior", Float) = 0
         _RoomAO ("Oscurecer junto a suelo y techo", Float) = 0
+        _Stable ("Superficie grande sin temblor", Float) = 0
     }
     SubShader
     {
@@ -22,10 +23,11 @@ Shader "Ominous/PSX Lit"
             float _AmbientBoost;
             float _Exterior;
             float _RoomAO;
+            float _Stable;
         CBUFFER_END
         float4 SnapVertex(float4 clip)
         {
-            if (_PSX_SnapRes.z <= 0.0 || clip.w <= 0.0) return clip;
+            if (_Stable > 0.5 || _PSX_SnapRes.z <= 0.0 || clip.w <= 0.0) return clip;
             float2 ndc = clip.xy / clip.w;
             float2 snapped = round(ndc * _PSX_SnapRes.xy) / _PSX_SnapRes.xy;
             clip.xy = lerp(ndc, snapped, _PSX_SnapRes.z) * clip.w;
@@ -74,7 +76,7 @@ Shader "Ominous/PSX Lit"
 
             half4 Frag(Varyings i) : SV_Target
             {
-                float2 uv = lerp(i.uv, i.uvAffine, _PSX_Params.x);
+                float2 uv = lerp(i.uv, i.uvAffine, _Stable > 0.5 ? 0.0 : _PSX_Params.x);
                 half3 tex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb;
                 half3 albedo = tex * _BaseColor.rgb;
                 float3 n = normalize(i.normalWS);

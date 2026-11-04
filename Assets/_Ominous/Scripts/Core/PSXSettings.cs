@@ -7,8 +7,8 @@ namespace Ominous
     public class PSXSettings : ScriptableObject
     {
         [Range(240, 480)] public int internalHeight = 360;
-        [Range(0f, 1f)] public float vertexSnap = 0.7f;
-        [Range(0f, 1f)] public float affine = 0.3f;
+        [Range(0f, 1f)] public float vertexSnap = 0.5f;
+        [Range(0f, 1f)] public float affine = 0.08f;
         [Range(0f, 1f)] public float dither = 1f;
         [Range(6, 64)] public int colorLevels = 12;
         [Range(0.5f, 2f)] public float brightness = 1.1f;
