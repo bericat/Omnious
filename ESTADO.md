@@ -1,6 +1,6 @@
 # Estado de Ominous
 
-**Fase actual:** 2, estilo PSX y primera estancia.
+**Fase actual:** 3, sistemas básicos.
 
 ## Hecho
 - Unity 6.3 LTS (6000.3.28f1) en Steam Deck (Unity Hub en Flatpak), con módulo de build Linux.
@@ -9,8 +9,9 @@
 - Conexión de Claude con el Editor. Prueba superada: crear un objeto, pulsar Play, detenerlo, leer la consola y borrar el objeto.
 
 ## Falta
-- Fase 2: prueba de Toni con teclado y ratón en el salón. Con su visto bueno, etiqueta `fase-2-ok`.
-- Guion: ampliar diálogos si hace falta cuando se juegue en la fase 5. No se ha compilado: Yarn Spinner llega en la fase 3.
+- Fase 3: interacción, diálogos con Yarn, GameDirector y variantes, guardado, menús y opciones.
+- Sin confirmar por Toni: los 60 fps mientras anda (medidos solo con el jugador quieto) y si el suelo ya no se estira.
+- Estilo: se sigue Buckshot Roulette (nítido, pocos colores, tramado); Toni no pidió lo contrario.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
 
 ## Fase 2: cómo está montada
@@ -34,4 +35,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Aprobó la colocación de los muebles. Pidió más niebla en la calle y acercar el pixelado y las texturas a sus referencias.
+Pidió pasar a la fase 3 (fase 2 dada por buena).
