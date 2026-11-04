@@ -577,6 +577,8 @@ namespace Ominous.EditorTools
             Put("Perchero", hanger, f, 5.28f, 0.5f);
             var front = Door(d, "PuertaEntrada", 6.45f, 0f, true, 95f, false);
             front.transform.rotation = Quaternion.Euler(0, 270, 0);
+            // La bisagra de esta puerta está en el lado este: el marco va centrado en el hueco.
+            GameObject.Find("PuertaEntrada_Marco").transform.position = new Vector3(6f, 0f, 0f);
 
             // Pasillo
             var hallShelf = Put("EstanteriaPasillo", Estanteria(), f, 7.6f, 4.62f, 180f);
@@ -1160,6 +1162,14 @@ namespace Ominous.EditorTools
                 w.AddComponent<BoxCollider>().size = size;
             }
             dir.streetBounds = limits;
+
+            // Bombilla olvidada en el cuartito: solo se enciende al descubrirlo
+            var bulb = SpotLight("LuzCuartito", t, new Vector3(7.6f, 2.45f, 2.2f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.7f, 0.42f), 1.3f, 4f, 160f, ~0);
+            bulb.shadows = LightShadows.Soft;
+            dir.hiddenRoomLight = bulb;
+            // Luz del porche de Chechu: sin ella su ropa negra desaparece contra la puerta oscura
+            var porch = Point("LuzPorcheChechu", t, new Vector3(7f, 2.4f, -8.6f), new Color(1f, 0.74f, 0.46f), 1.5f, 5f);
+            dir.chechuPorchLight = porch;
             foreach (var x in street.GetComponentsInChildren<Transform>(true)) x.gameObject.layer = ExteriorLayer;
         }
 

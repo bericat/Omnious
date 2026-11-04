@@ -26,6 +26,8 @@ namespace Ominous
         public GameObject chechuDoorLeaf;
         public GameObject chechuDoorDark;
         public GameObject streetBounds;
+        public Light hiddenRoomLight;
+        public Light chechuPorchLight;
 
         bool hasWrench, cuartitoSeen, huecoSeen, kitchenScare, tvOff, holeBed, holeBath;
         float stepTime;
@@ -47,6 +49,8 @@ namespace Ominous
             chechuDoorLeaf.SetActive(true);
             chechuDoorDark.SetActive(false);
             streetBounds.SetActive(false);
+            hiddenRoomLight.enabled = false;
+            chechuPorchLight.enabled = false;
         }
 
         bool InRoom(float x0, float x1, float z0, float z1)
@@ -173,6 +177,7 @@ namespace Ominous
                 case "estanteria":
                     Set(Step.Cuartito);
                     shelfAside.Open();
+                    hiddenRoomLight.enabled = true;
                     Sfx.Play("objeto_cae", shelfAside.transform.position);
                     GameDirector.Instance.SetObjective("");
                     stepTime = 0f;
@@ -239,6 +244,7 @@ namespace Ominous
             frontDoor.locked = false;
             threshold.SetActive(false);
             streetBounds.SetActive(true);
+            chechuPorchLight.enabled = true;
             DialogueManager.Instance.Play("Visita4_Salir", () => GameDirector.Instance.Checkpoint("visita4"));
         }
 
@@ -425,6 +431,7 @@ namespace Ominous
                 cuartitoSeen = true;
                 shelfNudge.OpenNow();
                 shelfAside.OpenNow();
+                hiddenRoomLight.enabled = true;
                 photoOnShelf.SetActive(true);
             }
             if (step > Step.EsperaV3) chechuSilhouette.SetActive(true);
@@ -437,6 +444,7 @@ namespace Ominous
                 huecoSeen = true;
                 streetBounds.SetActive(true);
                 threshold.SetActive(false);
+                chechuPorchLight.enabled = true;
             }
         }
     }

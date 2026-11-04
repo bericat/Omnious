@@ -19,15 +19,20 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
-- Fase 6: acto 2.
+- Fase 6: prueba de Toni. Con su visto bueno, etiqueta `fase-6-ok`. El acto 2 empieza tras mirar por la ventana al final del acto 1 y acaba con Roberta en la cocina, que vuelve al menú porque el acto 3 no existe.
 - Pendiente de la fase 5: Toni no dijo si el prólogo y el acto 1 dan miedo ni lo ha probado con un tercero; pidió seguir. Revisar el ritmo al tener toda la historia.
-- Defecto conocido: línea punteada en la fachada, sobre la puerta de entrada (seguramente la sombra del porche).
 - No hay animaciones ni voces: las figuras se deslizan y Roberta murmura con sonido sintetizado.
 - El sonido se deja para las fases de pulido (decisión de Toni): no perder tiempo en él antes.
 - El coche es feo y cutre, lo dijo Toni: mejorarlo con los assets de la fase 10.
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
+
+## Fase 6: cómo está montada
+- `Scripts/Story/StoryDirector.Act2.cs`: el acto 2 entero, con sus objetos (`Use` en `HouseBuilder.BuildAct2`) y comandos de Yarn.
+- Puntos de control al llamar Chechu en las visitas 2 y 3, y al salir hacia su casa (visita 4).
+- Para probar sin jugar todo: `StoryDirector.JumpForTest(paso)`.
+- Comandos pendientes de implementar: los del acto 3 y el desenlace, en `DialogueManager`.
 
 ## Fase 5: cómo está montada
 - `Scripts/Story/StoryDirector.cs`: los pasos de la noche, los objetos que se usan (`StoryObject`) y los comandos de Yarn. Se construye dentro de `Tools/Ominous/Construir la casa`.
