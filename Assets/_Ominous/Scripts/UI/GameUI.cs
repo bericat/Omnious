@@ -17,7 +17,7 @@ namespace Ominous
         RectTransform subtitleBox, optionsBox;
         GameObject crosshair;
         readonly List<GameObject> optionButtons = new();
-        const float SubtitleSize = 24f, NameSize = 18f, PromptSize = 19f;
+        const float SubtitleSize = 17f, NameSize = 13f, PromptSize = 15f, ObjectiveSize = 13f;
 
         void Awake()
         {
@@ -29,22 +29,24 @@ namespace Ominous
             UIKit.Panel(dot, new Color(1f, 1f, 1f, 0.3f)).raycastTarget = false;
             crosshair = dot.gameObject;
 
-            prompt = UIKit.Label(UIKit.Rect(root, "Aviso", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(0, -22), new Vector2(620, 34)), "", PromptSize, UIKit.Ink);
-            objective = UIKit.Label(UIKit.Rect(root, "Objetivo", new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1), new Vector2(14, -34), new Vector2(640, 32)), "", 20f, UIKit.Dim, TextAlignmentOptions.Left);
+            // Todos los textos van abajo, pequeños y sin llamar la atención.
+            objective = UIKit.Label(UIKit.Rect(root, "Objetivo", new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(16, 12), new Vector2(420, 24)), "", ObjectiveSize, UIKit.Dim, TextAlignmentOptions.Left);
 
-            subtitleBox = UIKit.Rect(root, "Subtitulos", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 46), new Vector2(1000, 120));
-            UIKit.Panel(subtitleBox, new Color(0, 0, 0, 0.32f)).raycastTarget = false;
-            speakerName = UIKit.Label(UIKit.Rect(subtitleBox, "Nombre", new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, -6), new Vector2(-40, 26)), "", NameSize, UIKit.Dim);
+            subtitleBox = UIKit.Rect(root, "Subtitulos", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 40), new Vector2(760, 66));
+            UIKit.Panel(subtitleBox, new Color(0, 0, 0, 0.3f)).raycastTarget = false;
+            speakerName = UIKit.Label(UIKit.Rect(subtitleBox, "Nombre", new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, -3), new Vector2(-30, 18)), "", NameSize, UIKit.Dim);
             var body = UIKit.Rect(subtitleBox, "Texto", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
-            body.offsetMin = new Vector2(24, 8); body.offsetMax = new Vector2(-24, -30);
+            body.offsetMin = new Vector2(16, 4); body.offsetMax = new Vector2(-16, -20);
             subtitle = UIKit.Label(body, "", SubtitleSize, UIKit.Ink);
             subtitleBox.gameObject.SetActive(false);
 
-            optionsBox = UIKit.Rect(root, "Elecciones", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 46), new Vector2(760, 240));
-            UIKit.Column(optionsBox, 8).childAlignment = TextAnchor.LowerCenter;
+            prompt = UIKit.Label(UIKit.Rect(root, "Aviso", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 112), new Vector2(620, 24)), "", PromptSize, UIKit.Ink);
+
+            optionsBox = UIKit.Rect(root, "Elecciones", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 40), new Vector2(640, 170));
+            UIKit.Column(optionsBox, 5).childAlignment = TextAnchor.LowerCenter;
             optionsBox.gameObject.SetActive(false);
 
-            ambientLine = UIKit.Label(UIKit.Rect(root, "VozLejana", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 176), new Vector2(900, 34)), "", 20f, UIKit.Dim);
+            ambientLine = UIKit.Label(UIKit.Rect(root, "VozLejana", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 138), new Vector2(760, 24)), "", 14f, UIKit.Dim);
             ambientLine.fontStyle = FontStyles.Italic;
 
             var black = UIKit.Stretch(root, "Fundido");
@@ -69,7 +71,8 @@ namespace Ominous
             subtitle.fontSize = SubtitleSize * scale;
             speakerName.fontSize = NameSize * scale;
             prompt.fontSize = PromptSize * scale;
-            objective.fontSize = 20f * scale;
+            objective.fontSize = ObjectiveSize * scale;
+            ambientLine.fontSize = 14f * scale;
         }
 
         void RefreshObjective()
@@ -131,7 +134,7 @@ namespace Ominous
             {
                 if (!options[i].IsAvailable) continue;
                 int index = i;
-                var button = UIKit.Button(optionsBox, options[i].Line.TextWithoutCharacterName.Text, () => choose(index), 46f, 22f * OminousOptions.TextSize);
+                var button = UIKit.Button(optionsBox, options[i].Line.TextWithoutCharacterName.Text, () => choose(index), 32f, 16f * OminousOptions.TextSize);
                 optionButtons.Add(button.gameObject);
             }
         }

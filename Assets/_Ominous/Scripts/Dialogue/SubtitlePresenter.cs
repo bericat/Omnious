@@ -42,8 +42,8 @@ namespace Ominous
             FirstPersonController.SetBlocked(this, !thought);
             GameUI.Instance?.ShowSubtitle(thought ? null : speaker, text, thought);
 
-            float minTime = 0.25f;
-            float thoughtTime = Mathf.Max(2.2f, text.Split(' ').Length * 0.38f);
+            float minTime = 0.7f;
+            float thoughtTime = Mathf.Max(4f, text.Split(' ').Length * 0.62f);
             float elapsed = 0f;
             while (!token.NextContentToken.IsCancellationRequested)
             {

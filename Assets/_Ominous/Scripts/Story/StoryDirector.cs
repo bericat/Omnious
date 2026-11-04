@@ -342,7 +342,9 @@ namespace Ominous
             FirstPersonController.SetBlocked(this, true);
             player.SetPeep(peepPosition, 180f, 98f);
             DialogueManager.Instance.Play("Acto1_Mirilla");
-            yield return new WaitForSeconds(4.5f);
+            yield return new WaitForSeconds(1f);
+            while (DialogueManager.Instance.IsBusy) yield return null;
+            yield return new WaitForSeconds(0.8f);
             player.EndPeep();
             FirstPersonController.SetBlocked(this, false);
             peeping = false;

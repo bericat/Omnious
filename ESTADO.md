@@ -21,6 +21,7 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 ## Falta
 - Fase 5: prueba de Toni jugando del principio al final del acto 1, y de alguien que no conozca el juego. Con su visto bueno, etiqueta `fase-5-ok`. Si no da miedo, se corrige aquí antes de seguir.
 - No hay animaciones ni voces: las figuras se deslizan y Roberta murmura con sonido sintetizado.
+- El sonido se deja para las fases de pulido (decisión de Toni): no perder tiempo en él antes.
 - El coche es feo y cutre, lo dijo Toni: mejorarlo con los assets de la fase 10.
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
@@ -62,4 +63,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Aprobó la fase 4 tras girar las sillas de la cocina y pidió empezar la 5.
+Textos abajo, más pequeños y más lentos; fuente adecuada al estilo (Noto Sans Mono, licencia OFL). El sonido se deja para el pulido.

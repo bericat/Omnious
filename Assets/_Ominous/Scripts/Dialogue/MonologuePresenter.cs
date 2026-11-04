@@ -24,7 +24,7 @@ namespace Ominous
         public override async YarnTask RunLineAsync(LocalizedLine line, LineCancellationToken token)
         {
             string text = line.TextWithoutCharacterName.Text;
-            float duration = Mathf.Max(2.4f, text.Split(' ').Length * 0.42f);
+            float duration = Mathf.Max(3.6f, text.Split(' ').Length * 0.62f);
             float elapsed = 0f;
             while (elapsed < duration && !token.NextContentToken.IsCancellationRequested)
             {

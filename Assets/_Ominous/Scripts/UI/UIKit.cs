@@ -14,6 +14,9 @@ namespace Ominous
         public static readonly Color Dim = new(0.62f, 0.64f, 0.6f);
         public static readonly Color Accent = new(0.5f, 0.52f, 0.48f);
 
+        static TMP_FontAsset font;
+        static TMP_FontAsset Font => font != null ? font : font = Resources.Load<TMP_FontAsset>("Fuentes/OminousUI");
+
         public static Canvas Canvas(string name, int order)
         {
             var go = new GameObject(name, typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -52,6 +55,7 @@ namespace Ominous
         public static TextMeshProUGUI Label(RectTransform r, string text, float size, Color color, TextAlignmentOptions align = TextAlignmentOptions.Center)
         {
             var t = r.gameObject.AddComponent<TextMeshProUGUI>();
+            if (Font != null) t.font = Font;
             t.text = text; t.fontSize = size; t.color = color; t.alignment = align; t.raycastTarget = false;
             t.textWrappingMode = TextWrappingModes.Normal;
             return t;
@@ -65,7 +69,7 @@ namespace Ominous
             return v;
         }
 
-        public static Button Button(Transform parent, string text, Action onClick, float height = 44f, float fontSize = 22f)
+        public static Button Button(Transform parent, string text, Action onClick, float height = 38f, float fontSize = 17f)
         {
             var r = Rect(parent, text, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(420, height));
             r.gameObject.AddComponent<LayoutElement>().preferredHeight = height;
@@ -86,7 +90,7 @@ namespace Ominous
         {
             var row = Rect(parent, text, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(420, 58));
             row.gameObject.AddComponent<LayoutElement>().preferredHeight = 58;
-            Label(Rect(row, "Etiqueta", new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), Vector2.zero, new Vector2(0, 26)), text, 20, Ink, TextAlignmentOptions.Left);
+            Label(Rect(row, "Etiqueta", new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), Vector2.zero, new Vector2(0, 26)), text, 16, Ink, TextAlignmentOptions.Left);
             var go = DefaultControls.CreateSlider(new DefaultControls.Resources());
             var r = go.GetComponent<RectTransform>();
             r.SetParent(row, false);
