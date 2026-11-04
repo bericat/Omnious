@@ -123,6 +123,43 @@ namespace Ominous.EditorTools
             }), metersPerTile);
         }
 
+        /// <summary>Azulejos con junta y pequeñas diferencias de tono.</summary>
+        public static Material Tile(string name, Color color, int tiles, float metersPerTile)
+        {
+            int seed = Seed(name);
+            return Make(name, Texture(name, 256, 256, (u, v) =>
+            {
+                float tu = u * tiles, tv = v * tiles;
+                float fu = Mathf.Repeat(tu, 1f), fv = Mathf.Repeat(tv, 1f);
+                bool grout = fu < 0.04f || fv < 0.04f;
+                float tone = 0.92f + 0.14f * Hash(Mathf.FloorToInt(tu), Mathf.FloorToInt(tv), seed);
+                Color c = Stain(Mul(color, tone), u, v, seed, 0.35f);
+                return grout ? Mul(c, 0.5f) : c;
+            }), metersPerTile);
+        }
+
+        /// <summary>Linóleo a cuadros, típico de cocina.</summary>
+        public static Material Checker(string name, Color a, Color b, float metersPerTile)
+        {
+            int seed = Seed(name);
+            return Make(name, Texture(name, 256, 256, (u, v) =>
+            {
+                bool odd = (Mathf.FloorToInt(u * 8f) + Mathf.FloorToInt(v * 8f)) % 2 == 0;
+                return Stain(odd ? a : b, u, v, seed, 0.45f);
+            }), metersPerTile);
+        }
+
+        /// <summary>Cuadro con una imagen vaga: mancha de color, sin motivo reconocible.</summary>
+        public static Material Painting(string name, Color a, Color b)
+        {
+            int seed = Seed(name);
+            var tex = Texture(name, 128, 128, (u, v) => Stain(Color.Lerp(a, b, Mathf.SmoothStep(0.35f, 0.65f, Fbm(u, v, 3, 3, seed))), u, v, seed + 3, 0.4f));
+            var m = Make(name, tex);
+            m.SetTextureScale("_BaseMap", new Vector2(2f, 2f));
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
         public static Material Siding(string name, Color color)
         {
             int seed = Seed(name);

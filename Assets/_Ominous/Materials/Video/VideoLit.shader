@@ -37,6 +37,7 @@ Shader "Ominous/Video Lit"
             #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile _ LIGHTMAP_ON
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
@@ -46,13 +47,14 @@ Shader "Ominous/Video Lit"
             float4 _Video_Fog;         // x-y: niebla interior, inicio y fin
             float4 _Video_ExteriorFog; // x-y: niebla exterior, inicio y fin
 
-            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; };
+            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; float2 uvLightmap : TEXCOORD1; };
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float3 positionWS : TEXCOORD1;
                 float3 normalWS : TEXCOORD2;
+                float2 uvLightmap : TEXCOORD3;
             };
 
             Varyings Vert(Attributes i)
@@ -62,6 +64,7 @@ Shader "Ominous/Video Lit"
                 o.normalWS = TransformObjectToWorldNormal(i.normalOS);
                 o.positionCS = TransformWorldToHClip(o.positionWS);
                 o.uv = TRANSFORM_TEX(i.uv, _BaseMap);
+                o.uvLightmap = i.uvLightmap * unity_LightmapST.xy + unity_LightmapST.zw;
                 return o;
             }
 
@@ -78,10 +81,15 @@ Shader "Ominous/Video Lit"
                 float3 n = normalize(i.normalWS);
                 float3 v = normalize(GetCameraPositionWS() - i.positionWS);
                 // Ambiente desigual: entra algo más de luz desde arriba que desde abajo.
+                #if defined(LIGHTMAP_ON)
+                // Luz horneada: entra por las ventanas y deja los rincones oscuros.
+                half3 light = SampleLightmap(i.uvLightmap, n) + _Video_Ambient.rgb * 0.25;
+                #else
                 half3 light = _Video_Ambient.rgb * _AmbientBoost * (0.72 + 0.28 * n.y);
+                #endif
                 half3 spec = 0;
 
-                #if defined(_ADDITIONAL_LIGHTS)
+                #if defined(_ADDITIONAL_LIGHTS) || defined(_CLUSTER_LIGHT_LOOP)
                 InputData inputData = (InputData)0;
                 inputData.positionWS = i.positionWS;
                 inputData.normalWS = n;
@@ -151,6 +159,28 @@ Shader "Ominous/Video Lit"
                 return c;
             }
             half Frag() : SV_Target { return 0; }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "Meta"
+            Tags { "LightMode"="Meta" }
+            Cull Off
+            HLSLPROGRAM
+            #pragma vertex UniversalVertexMeta
+            #pragma fragment Frag
+            #pragma shader_feature EDITOR_VISUALIZATION
+            TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UniversalMetaPass.hlsl"
+            half4 Frag(Varyings i) : SV_Target
+            {
+                half3 tex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv).rgb;
+                MetaInput m = (MetaInput)0;
+                m.Albedo = tex * _BaseColor.rgb;
+                m.Emission = _EmissionColor.rgb * tex;
+                return UniversalFragmentMeta(i, m);
+            }
             ENDHLSL
         }
 

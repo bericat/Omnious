@@ -1,0 +1,841 @@
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using Yarn.Unity;
+
+namespace Ominous.EditorTools
+{
+    /// <summary>
+    /// Casa completa según Docs/Diseno/plano.svg. x hacia el este, z hacia el norte (z = 10 - y del plano), calle al sur.
+    /// </summary>
+    public static partial class SalonBuilder
+    {
+        const string HousePath = "Assets/_Ominous/Scenes/House.unity";
+        const string LightingPath = "Assets/_Ominous/Data/LightingHouse.lighting";
+        static Material tileWall, tileFloor, linoleum, concreteIn, ceramic, chrome, mirror, carRed, carBlue, carGrey, tire, carGlass, paintA, paintB, pillow, sheet, paper, fridge, appliance, countertop, grime;
+
+        static void HouseMaterials()
+        {
+            tileWall = ProceduralAssets.Tile("AzulejoPared", new Color(0.72f, 0.74f, 0.68f), 7, 1f);
+            tileFloor = ProceduralAssets.Tile("AzulejoSuelo", new Color(0.46f, 0.48f, 0.46f), 4, 1.2f);
+            linoleum = ProceduralAssets.Checker("Linoleo", new Color(0.52f, 0.5f, 0.42f), new Color(0.36f, 0.36f, 0.3f), 2.4f);
+            concreteIn = ProceduralAssets.Grime("Hormigon", new Color(0.4f, 0.39f, 0.36f), 0.8f, 2f);
+            ceramic = ProceduralAssets.Grime("Ceramica", new Color(0.78f, 0.78f, 0.72f), 0.25f, 1f);
+            chrome = ProceduralAssets.Grime("Cromo", new Color(0.55f, 0.56f, 0.56f), 0.3f, 1f);
+            mirror = ProceduralAssets.Grime("Espejo", new Color(0.32f, 0.36f, 0.36f), 0.35f, 1f);
+            carRed = ProceduralAssets.Grime("CocheRojo", new Color(0.32f, 0.11f, 0.09f), 0.4f);
+            carBlue = ProceduralAssets.Grime("CocheAzul", new Color(0.14f, 0.2f, 0.28f), 0.4f);
+            carGrey = ProceduralAssets.Grime("CocheGris", new Color(0.36f, 0.37f, 0.36f), 0.4f);
+            tire = ProceduralAssets.Grime("Rueda", new Color(0.05f, 0.05f, 0.05f), 0.3f);
+            carGlass = ProceduralAssets.Grime("CristalCoche", new Color(0.06f, 0.08f, 0.09f), 0.1f);
+            paintA = ProceduralAssets.Painting("CuadroA", new Color(0.42f, 0.44f, 0.32f), new Color(0.6f, 0.52f, 0.36f));
+            paintB = ProceduralAssets.Painting("CuadroB", new Color(0.26f, 0.32f, 0.38f), new Color(0.58f, 0.58f, 0.5f));
+            pillow = ProceduralAssets.Fabric("Almohada", new Color(0.7f, 0.69f, 0.62f));
+            sheet = ProceduralAssets.Fabric("Colcha", new Color(0.34f, 0.3f, 0.34f));
+            paper = ProceduralAssets.Grime("Papel", new Color(0.72f, 0.7f, 0.62f), 0.3f);
+            fridge = ProceduralAssets.Grime("Nevera", new Color(0.7f, 0.7f, 0.65f), 0.35f);
+            appliance = ProceduralAssets.Grime("Electrodomestico", new Color(0.62f, 0.62f, 0.58f), 0.45f);
+            countertop = ProceduralAssets.Grime("Encimera", new Color(0.5f, 0.47f, 0.4f), 0.5f);
+            grime = ProceduralAssets.Grime("Baldosa", new Color(0.42f, 0.44f, 0.42f), 0.6f);
+            ProceduralAssets.Sheen(0.35f, ceramic, tileWall, fridge, appliance);
+            ProceduralAssets.Sheen(0.6f, chrome, mirror);
+            ProceduralAssets.Sheen(0.2f, tileFloor, linoleum, countertop);
+            ProceduralAssets.Exterior(carRed, carBlue, carGrey, tire, carGlass);
+        }
+
+        const float DoorTop = 2.0f;
+
+        static void Static(GameObject go, bool lightmapped = true)
+        {
+            GameObjectUtility.SetStaticEditorFlags(go, lightmapped ? StaticEditorFlags.ContributeGI | StaticEditorFlags.BatchingStatic : StaticEditorFlags.BatchingStatic);
+        }
+
+        static GameObject Put(string name, MeshKit kit, Transform parent, float x, float z, float yaw = 0f, bool collider = true, float y = 0f)
+        {
+            var go = Instance(name, kit, parent, new Vector3(x, y, z), yaw, collider);
+            Static(go);
+            return go;
+        }
+
+        static GameObject Again(string prefab, Transform parent, float x, float z, float yaw = 0f, float y = 0f)
+        {
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Ominous/Prefabs/{prefab}.prefab"), parent);
+            go.transform.SetPositionAndRotation(new Vector3(x, y, z), Quaternion.Euler(0, yaw, 0));
+            Static(go);
+            return go;
+        }
+
+        // ---------- muebles nuevos (frente hacia +z salvo que se diga otra cosa) ----------
+
+        static MeshKit Cama()
+        {
+            var k = new MeshKit();
+            k.Box(new Vector3(0, 0.17f, 0), new Vector3(1.5f, 0.22f, 2f), woodDark);
+            k.Box(new Vector3(0, 0.38f, 0), new Vector3(1.44f, 0.2f, 1.94f), pillow);
+            k.Box(new Vector3(0, 0.49f, -0.2f), new Vector3(1.52f, 0.05f, 1.56f), sheet);
+            k.Box(new Vector3(-0.77f, 0.33f, -0.2f), new Vector3(0.03f, 0.3f, 1.56f), sheet);
+            k.Box(new Vector3(0.77f, 0.33f, -0.2f), new Vector3(0.03f, 0.3f, 1.56f), sheet);
+            k.Box(new Vector3(0, 0.33f, -0.99f), new Vector3(1.56f, 0.3f, 0.03f), sheet);
+            k.Box(new Vector3(0, 0.55f, 0.75f), new Vector3(0.6f, 0.12f, 0.42f), pillow).Box(new Vector3(0.36f, 0.54f, 0.74f), new Vector3(0.6f, 0.11f, 0.42f), pillow);
+            k.Box(new Vector3(0, 0.55f, 1.0f), new Vector3(1.5f, 1.1f, 0.05f), woodDark);
+            foreach (float x in new[] { -0.7f, 0.7f })
+                foreach (float z in new[] { -0.95f, 0.95f })
+                    k.Box(new Vector3(x, 0.03f, z), new Vector3(0.07f, 0.06f, 0.07f), woodDark);
+            return k;
+        }
+
+        static MeshKit Mesilla(bool lamp)
+        {
+            var k = new MeshKit();
+            k.Box(new Vector3(0, 0.27f, 0), new Vector3(0.45f, 0.54f, 0.4f), woodDark);
+            k.Box(new Vector3(0, 0.38f, 0.205f), new Vector3(0.38f, 0.16f, 0.015f), woodLight);
+            k.Box(new Vector3(0, 0.38f, 0.215f), new Vector3(0.05f, 0.015f, 0.015f), metal);
+            if (lamp)
+            {
+                k.Cylinder(new Vector3(0, 0.54f, 0), 0.06f, 0.015f, 0.2f, 6, metal);
+                k.Cylinder(new Vector3(0, 0.72f, 0), 0.11f, 0.06f, 0.14f, 8, shade);
+            }
+            return k;
+        }
+
+        static MeshKit Armario()
+        {
+            var k = new MeshKit();
+            k.Box(new Vector3(0, 1.05f, 0), new Vector3(1.4f, 2.1f, 0.58f), woodLight);
+            k.Box(new Vector3(-0.35f, 1.05f, 0.295f), new Vector3(0.67f, 2f, 0.015f), woodDark);
+            k.Box(new Vector3(0.35f, 1.05f, 0.295f), new Vector3(0.67f, 2f, 0.015f), woodDark);
+            k.Box(new Vector3(-0.05f, 1.05f, 0.31f), new Vector3(0.02f, 0.14f, 0.02f), metal);
+            k.Box(new Vector3(0.05f, 1.05f, 0.31f), new Vector3(0.02f, 0.14f, 0.02f), metal);
+            return k;
+        }
+
+        static MeshKit ComodaSimple()
+        {
+            var k = new MeshKit();
+            k.Box(new Vector3(0, 0.38f, 0), new Vector3(0.95f, 0.76f, 0.42f), woodLight);
+            for (int i = 0; i < 3; i++)
+            {
+                k.Box(new Vector3(0, 0.15f + i * 0.23f, 0.215f), new Vector3(0.87f, 0.2f, 0.012f), woodDark);
+                k.Box(new Vector3(0, 0.15f + i * 0.23f, 0.228f), new Vector3(0.1f, 0.015f, 0.015f), metal);
+            }
+            return k;
+        }
+
+        static MeshKit Nevera()
+        {
+            var k = new MeshKit();
+            k.Box(new Vector3(0, 0.92f, 0), new Vector3(0.72f, 1.84f, 0.68f), fridge);
+            k.Box(new Vector3(0, 0.62f, 0.35f), new Vector3(0.69f, 1.15f, 0.02f), fridge);
+            k.Box(new Vector3(0, 1.48f, 0.35f), new Vector3(0.69f, 0.66f, 0.02f), fridge);
+            k.Box(new Vector3(-0.29f, 1.08f, 0.375f), new Vector3(0.03f, 0.3f, 0.03f), chrome);
+            k.Box(new Vector3(-0.29f, 1.36f, 0.375f), new Vector3(0.03f, 0.2f, 0.03f), chrome);
+            return k;
+        }
+
+        static MeshKit Encimera()
+        {
+            // Bajo la ventana, contra la pared sur: el frente mira a +z. Mide 4.4 m desde x = 8.3.
+            var k = new MeshKit();
+            const float w = 4.4f, cx = 0f;
+            k.Box(new Vector3(cx, 0.44f, 0), new Vector3(w, 0.88f, 0.58f), woodLight);
+            k.Box(new Vector3(cx, 0.9f, 0.01f), new Vector3(w + 0.02f, 0.04f, 0.62f), countertop);
+            for (int i = 0; i < 6; i++)
+            {
+                float x = -w * 0.5f + 0.37f + i * 0.733f;
+                k.Box(new Vector3(x, 0.47f, 0.296f), new Vector3(0.68f, 0.76f, 0.012f), woodDark);
+                k.Box(new Vector3(x + 0.26f, 0.72f, 0.31f), new Vector3(0.02f, 0.1f, 0.015f), metal);
+            }
+            k.Box(new Vector3(0, 0.05f, 0.27f), new Vector3(w, 0.1f, 0.04f), plastic);
+            // Fregadero bajo la ventana y grifo
+            k.Box(new Vector3(-0.0f, 0.923f, 0.02f), new Vector3(0.72f, 0.012f, 0.44f), chrome);
+            k.Box(new Vector3(-0.0f, 0.93f, 0.02f), new Vector3(0.58f, 0.004f, 0.32f), plastic);
+            k.Cylinder(new Vector3(0, 0.93f, -0.21f), 0.016f, 0.012f, 0.24f, 6, chrome);
+            k.Box(new Vector3(0, 1.16f, -0.13f), new Vector3(0.022f, 0.022f, 0.17f), chrome);
+            // Armarios altos a los lados de la ventana
+            foreach (float x in new[] { -1.65f, 1.45f })
+            {
+                float width = x < 0 ? 1.05f : 1.45f;
+                k.Box(new Vector3(x, 1.82f, -0.11f), new Vector3(width, 0.72f, 0.33f), woodLight);
+                k.Box(new Vector3(x, 1.82f, 0.058f), new Vector3(width - 0.04f, 0.68f, 0.012f), woodDark);
+            }
+            return k;
+        }
+
+        static MeshKit MesaCocina()
+        {
+            var k = new MeshKit();
+            k.Box(new Vector3(0, 0.74f, 0), new Vector3(1.4f, 0.04f, 0.8f), woodLight);
+            foreach (float x in new[] { -0.64f, 0.64f })
+                foreach (float z in new[] { -0.34f, 0.34f })
+                    k.Box(new Vector3(x, 0.36f, z), new Vector3(0.05f, 0.72f, 0.05f), woodDark);
+            return k;
+        }
+
+        static MeshKit Silla()
+        {
+            var k = new MeshKit();
+            k.Box(new Vector3(0, 0.45f, 0), new Vector3(0.42f, 0.035f, 0.42f), woodLight);
+            k.Box(new Vector3(0, 0.84f, -0.195f), new Vector3(0.4f, 0.2f, 0.025f), woodDark);
+            foreach (float x in new[] { -0.19f, 0.19f })
+            {
+                k.Box(new Vector3(x, 0.22f, 0.19f), new Vector3(0.03f, 0.44f, 0.03f), woodDark);
+                k.Box(new Vector3(x, 0.47f, -0.195f), new Vector3(0.03f, 0.94f, 0.03f), woodDark);
+            }
+            return k;
+        }
+
+        static MeshKit Banera()
+        {
+            // Largo en z; origen en el centro del suelo.
+            var k = new MeshKit();
+            k.Box(new Vector3(0, 0.26f, -0.82f), new Vector3(0.76f, 0.52f, 0.06f), ceramic);
+            k.Box(new Vector3(0, 0.26f, 0.82f), new Vector3(0.76f, 0.52f, 0.06f), ceramic);
+            k.Box(new Vector3(-0.35f, 0.26f, 0), new Vector3(0.06f, 0.52f, 1.7f), ceramic);
+            k.Box(new Vector3(0.35f, 0.26f, 0), new Vector3(0.06f, 0.52f, 1.7f), ceramic);
+            k.Box(new Vector3(0, 0.12f, 0), new Vector3(0.64f, 0.05f, 1.58f), ceramic);
+            k.Cylinder(new Vector3(0, 0.52f, 0.79f), 0.014f, 0.012f, 0.16f, 6, chrome);
+            k.Box(new Vector3(0, 0.67f, 0.72f), new Vector3(0.022f, 0.022f, 0.14f), chrome);
+            return k;
+        }
+
+        static MeshKit Lavabo()
+        {
+            // Frente a +z. El grifo es el del guion: el que gotea.
+            var k = new MeshKit();
+            k.Cylinder(new Vector3(0, 0, -0.06f), 0.1f, 0.075f, 0.68f, 8, ceramic);
+            k.Box(new Vector3(0, 0.74f, 0), new Vector3(0.6f, 0.12f, 0.46f), ceramic);
+            k.Box(new Vector3(0, 0.805f, 0.01f), new Vector3(0.44f, 0.01f, 0.3f), mirror);
+            k.Cylinder(new Vector3(0, 0.8f, -0.18f), 0.014f, 0.012f, 0.15f, 6, chrome);
+            k.Box(new Vector3(0, 0.945f, -0.12f), new Vector3(0.02f, 0.02f, 0.13f), chrome);
+            k.Box(new Vector3(0.09f, 0.83f, -0.18f), new Vector3(0.05f, 0.03f, 0.03f), chrome);
+            return k;
+        }
+
+        static MeshKit Vater()
+        {
+            // Frente a +z, cisterna a -z.
+            var k = new MeshKit();
+            k.Cylinder(new Vector3(0, 0, 0.05f), 0.13f, 0.19f, 0.4f, 8, ceramic);
+            k.Box(new Vector3(0, 0.41f, 0.06f), new Vector3(0.36f, 0.03f, 0.42f), ceramic);
+            k.Box(new Vector3(0, 0.6f, -0.24f), new Vector3(0.42f, 0.42f, 0.18f), ceramic);
+            k.Box(new Vector3(0, 0.82f, -0.24f), new Vector3(0.05f, 0.02f, 0.05f), chrome);
+            return k;
+        }
+
+        static MeshKit Lavadora(bool drum)
+        {
+            var k = new MeshKit();
+            k.Box(new Vector3(0, 0.43f, 0), new Vector3(0.6f, 0.86f, 0.6f), appliance);
+            k.Cylinder(new Vector3(0, 0.38f, 0.3f), 0.0f, 0.0f, 0.0f, 3, chrome);
+            k.Box(new Vector3(0, 0.38f, 0.305f), new Vector3(0.36f, 0.36f, 0.012f), drum ? carGlass : appliance);
+            k.Box(new Vector3(0, 0.38f, 0.312f), new Vector3(0.28f, 0.28f, 0.006f), plastic);
+            k.Box(new Vector3(0, 0.76f, 0.305f), new Vector3(0.52f, 0.1f, 0.012f), plastic);
+            return k;
+        }
+
+        static MeshKit Coche(Material body)
+        {
+            // Largo en z, morro hacia +z. Silueta de berlina de los 90.
+            var k = new MeshKit();
+            Material g = body == carGrey || body == carBlue || body == carRed ? carGlass : carGlass;
+            k.Box(new Vector3(0, 0.45f, 0), new Vector3(1.7f, 0.42f, 4.3f), body);
+            k.Box(new Vector3(0, 0.82f, -0.25f), new Vector3(1.5f, 0.36f, 2.05f), g);
+            k.Box(new Vector3(0, 1.015f, -0.25f), new Vector3(1.44f, 0.04f, 1.85f), body);
+            k.Box(new Vector3(0, 0.66f, 2.14f), new Vector3(1.5f, 0.05f, 0.02f), body);
+            foreach (float z in new[] { -1.38f, 1.38f })
+                foreach (float x in new[] { -0.82f, 0.82f })
+                    k.Box(new Vector3(x, 0.3f, z), new Vector3(0.2f, 0.6f, 0.6f), tire);
+            k.Box(new Vector3(0, 0.38f, 2.17f), new Vector3(1.7f, 0.14f, 0.04f), plastic);
+            k.Box(new Vector3(0, 0.38f, -2.17f), new Vector3(1.7f, 0.14f, 0.04f), plastic);
+            foreach (float x in new[] { -0.62f, 0.62f })
+                k.Box(new Vector3(x, 0.55f, 2.16f), new Vector3(0.3f, 0.12f, 0.02f), chrome);
+            return k;
+        }
+
+        static GameObject Door(Transform parent, string name, float x, float z, bool alongX, float openYaw, bool locked = false, bool hingeAtEnd = false)
+        {
+            // Hoja a lo largo de +z; con yaw 90 la bisagra queda a lo largo de +x.
+            float yaw = alongX ? 90f : 0f;
+            var frameGo = Again("PuertaMarco", parent, alongX ? x + 0.45f : x, alongX ? z : z + 0.45f, yaw);
+            frameGo.name = name + "_Marco";
+            var leafGo = Again("PuertaHoja", parent, x + (alongX ? 0.02f : 0f), z + (alongX ? 0f : 0.02f), yaw);
+            GameObjectUtility.SetStaticEditorFlags(leafGo, 0);
+            leafGo.name = name;
+            var door = leafGo.AddComponent<Door>();
+            door.openYaw = openYaw;
+            door.locked = locked;
+            return leafGo;
+        }
+
+        /// <summary>Plafón con bombilla y su interruptor junto a la puerta.</summary>
+        static void RoomLight(Transform parent, string room, float x, float z, Vector3 switchPos, float switchYaw, Color color, float intensity, bool startsOn = false, float range = 7f, float ceiling = 2.6f)
+        {
+            var fixture = Again("Plafon", parent, x, z, 0f, ceiling);
+            fixture.name = "Plafon_" + room;
+            var glow = fixture.GetComponent<MeshRenderer>();
+            GameObjectUtility.SetStaticEditorFlags(fixture, StaticEditorFlags.BatchingStatic);
+            var light = SpotLight("Luz_" + room, parent, new Vector3(x, ceiling - 0.14f, z), Quaternion.Euler(90, 0, 0), color, intensity, range, 168f, ~0);
+            light.shadows = LightShadows.Soft;
+            light.shadowStrength = 0.85f;
+            // El techo y lo alto de las paredes también reciben algo de luz, sin sombra.
+            var fill = Point("Relleno_" + room, parent, new Vector3(x, ceiling - 0.35f, z), color, intensity * 0.12f, 3.5f);
+            var sw = Again("Interruptor", parent, switchPos.x, switchPos.z, switchYaw, switchPos.y);
+            sw.name = "Interruptor_" + room;
+            GameObjectUtility.SetStaticEditorFlags(sw, 0);
+            sw.GetComponent<BoxCollider>().size = new Vector3(0.1f, 0.25f, 0.2f);
+            var ls = sw.AddComponent<LightSwitch>();
+            ls.lights = new[] { light, fill };
+            ls.isOn = startsOn;
+            ls.emissive = glow;
+        }
+
+        static void Picture(Transform parent, string name, Material art, float x, float y, float z, float yaw, float w = 0.62f, float h = 0.47f)
+        {
+            var k = new MeshKit();
+            k.Box(Vector3.zero, new Vector3(w, h, 0.03f), woodDark);
+            k.Box(new Vector3(0, 0, -0.018f), new Vector3(w - 0.08f, h - 0.08f, 0.006f), art);
+            Put(name, k, parent, x, z, yaw, false, y);
+        }
+
+        // ---------- la casa ----------
+
+        [MenuItem("Tools/Ominous/Construir la casa")]
+        public static void BuildHouse()
+        {
+            OminousSetup.Configure();
+            Materials();
+            HouseMaterials();
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var house = new GameObject("Casa").transform;
+            var furniture = new GameObject("Muebles").transform; furniture.SetParent(house);
+            var doors = new GameObject("Puertas").transform; doors.SetParent(house);
+            var lights = new GameObject("Luces").transform;
+            var street = new GameObject("Calle").transform;
+
+            BuildStructure(house);
+            BuildPrefabs();
+            BuildSalon(furniture, lights);
+            BuildHall(furniture, doors, lights);
+            BuildKitchen(furniture, doors, lights);
+            BuildBedroom(furniture, doors, lights);
+            BuildBathroom(furniture, doors, lights);
+            BuildLaundry(furniture, doors, lights);
+            BuildGarage(furniture, doors, lights);
+            BuildExterior(street, lights);
+            BuildSound();
+            BuildPlayerAndSystems();
+
+            RenderSettings.skybox = null;
+            RenderSettings.ambientMode = AmbientMode.Flat;
+            // Esta luz solo cuenta al hornear: es el cielo de noche que entra por las ventanas.
+            RenderSettings.ambientLight = new Color(0.34f, 0.4f, 0.5f);
+            RenderSettings.ambientIntensity = 1f;
+            RenderSettings.fog = false;
+            RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
+
+            EditorSceneManager.SaveScene(scene, HousePath);
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene(MenuPath, true),
+                new EditorBuildSettingsScene(HousePath, true),
+                new EditorBuildSettingsScene(SistemasPath, true),
+            };
+            AssetDatabase.SaveAssets();
+            Debug.Log("Casa construida");
+        }
+
+        static void BuildStructure(Transform house)
+        {
+            var floors = new MeshKit();
+            const float y = -0.05f, t = 0.1f;
+            void Floor(float x0, float x1, float z0, float z1, Material m) => floors.Box(new Vector3((x0 + x1) / 2, y, (z0 + z1) / 2), new Vector3(x1 - x0, t, z1 - z0), m);
+            Floor(0, 5, 0, 4.4f, floorWood);        // Salón
+            Floor(5, 7, 0, 4.4f, floorWood);        // Recibidor
+            Floor(7, 8.2f, 0, 4.4f, concreteIn);    // Cuartito oculto
+            Floor(8.2f, 14, 0, 4.4f, linoleum);     // Cocina
+            Floor(14, 19, 0, 4.4f, concreteIn);     // Garaje
+            Floor(0, 14, 4.4f, 6, floorWood);       // Pasillo
+            Floor(0, 6, 6, 10, floorWood);          // Dormitorio
+            Floor(6, 6.8f, 6, 10, concreteIn);      // Hueco oculto
+            Floor(6.8f, 10, 6, 10, tileFloor);      // Baño
+            Floor(10, 14, 6, 10, linoleum);         // Colada
+            GameObject go = Instance("Casa_Suelos", floors, house, Vector3.zero, 0, false);
+            go.AddComponent<MeshCollider>(); Static(go);
+
+            var ceil = new MeshKit();
+            ceil.Box(new Vector3(7, Height + 0.05f, 5), new Vector3(14.2f, 0.1f, 10.2f), ceiling);
+            ceil.Box(new Vector3(16.5f, Height + 0.05f, 2.2f), new Vector3(5.2f, 0.1f, 4.6f), ceiling);
+            go = Instance("Casa_Techos", ceil, house, Vector3.zero, 0, false); Static(go);
+
+            var w = new MeshKit();
+            var saloonWin1 = new Opening(0.9f, 2.3f, 0.9f, 2.1f);
+            var saloonWin2 = new Opening(3f, 4.4f, 0.9f, 2.1f);
+            var frontDoor = new Opening(5.55f, 6.45f, 0f, DoorTop);
+            var kitchenWin = new Opening(9.5f, 10.9f, 1.05f, 2.05f);
+            var garageDoor = new Opening(15f, 18f, 0f, 2.2f);
+            var southOpenings = new[] { saloonWin1, saloonWin2, frontDoor, kitchenWin, garageDoor };
+            var northOpenings = new[] { new Opening(1.5f, 2.9f, 0.9f, 2.1f), new Opening(3.5f, 4.9f, 0.9f, 2.1f), new Opening(8f, 8.8f, 1.45f, 2.15f), new Opening(11.5f, 12.5f, 1.1f, 2.1f) };
+            var westOpenings = new[] { new Opening(1.8f, 3.2f, 0.9f, 2.1f), new Opening(4.75f, 5.65f, 0f, DoorTop) };
+            var eastNorthOpenings = new[] { new Opening(3.3f - 0.4f, 4.3f, 1.05f, 2.1f) }; // x = 14 desde z = 4.4
+            Wall(w, new Vector3(0, 0, 0), 19f, true, wall, southOpenings);
+            Wall(w, new Vector3(0, 0, 10), 14f, true, wall, northOpenings);
+            Wall(w, new Vector3(0, 0, 0), 10f, false, wall, westOpenings);
+            Wall(w, new Vector3(14, 0, 4.4f), 5.6f, false, wall, eastNorthOpenings);
+            Wall(w, new Vector3(19, 0, 0), 4.4f, false, wall);
+            Wall(w, new Vector3(14, 0, 4.4f), 5f, true, wall);
+            Wall(w, new Vector3(14, 0, 0), 4.4f, false, wall, new Opening(2.1f, 3f, 0, DoorTop));
+            Wall(w, new Vector3(0, 0, 4.4f), 14f, true, wall, new Opening(5.6f, 6.5f, 0, DoorTop), new Opening(10f, 10.9f, 0, DoorTop));
+            Wall(w, new Vector3(0, 0, 6), 14f, true, wall, new Opening(2.5f, 3.4f, 0, DoorTop), new Opening(8f, 8.9f, 0, DoorTop), new Opening(11.5f, 12.4f, 0, DoorTop));
+            Wall(w, new Vector3(5, 0, 0), 4.4f, false, wall, new Opening(2.1f, 3f, 0, DoorTop));
+            Wall(w, new Vector3(7, 0, 0), 4.4f, false, wall);
+            Wall(w, new Vector3(8.2f, 0, 0), 4.4f, false, wall);
+            Wall(w, new Vector3(6, 0, 6), 4f, false, wall);
+            Wall(w, new Vector3(6.8f, 0, 6), 4f, false, wall);
+            Wall(w, new Vector3(10, 0, 6), 4f, false, wall);
+
+            // Azulejo del baño hasta 1,6 m, y concreto en el garaje
+            void Lining(Vector3 a, float len, bool alongX, Material m, float top)
+            {
+                Vector3 c = a + (alongX ? Vector3.right : Vector3.forward) * (len / 2) + Vector3.up * (top / 2);
+                w.Box(c, alongX ? new Vector3(len, top, 0.008f) : new Vector3(0.008f, top, len), m);
+            }
+            Lining(new Vector3(6.87f, 0, 6.06f), 2.83f, false, tileWall, 1.6f); // Oeste del baño
+            Lining(new Vector3(9.93f, 0, 6.06f), 3.88f, false, tileWall, 1.6f); // Este del baño
+            Lining(new Vector3(6.86f, 0, 9.93f), 3.08f, true, tileWall, 1.45f); // Norte del baño
+            Lining(new Vector3(6.86f, 0, 6.07f), 1.14f, true, tileWall, 1.6f);
+            Lining(new Vector3(8.9f, 0, 6.07f), 1.04f, true, tileWall, 1.6f);
+            Lining(new Vector3(8.3f, 0, 0.07f), 1.2f, true, tileWall, 0.95f);   // Salpicadero de cocina
+            go = Instance("Casa_Paredes", w, house, Vector3.zero, 0, false);
+            go.AddComponent<MeshCollider>(); Static(go);
+
+            // Molduras
+            var trim = new MeshKit();
+            void Skirt(float x0, float x1, float z0, float z1) => trim.Box(new Vector3((x0 + x1) / 2, 0.05f, (z0 + z1) / 2), new Vector3(Mathf.Max(x1 - x0, 0.015f), 0.1f, Mathf.Max(z1 - z0, 0.015f)), woodDark);
+            Skirt(0.06f, 4.94f, 4.33f, 4.33f); Skirt(0.07f, 2.05f, 6.07f, 6.07f); Skirt(3.5f, 5.93f, 6.07f, 6.07f);
+            Skirt(0.06f, 5.93f, 9.93f, 9.93f); Skirt(0.07f, 0.07f, 0.06f, 1.8f); Skirt(0.07f, 0.07f, 3.2f, 4.33f);
+            Skirt(0.07f, 0.07f, 6.07f, 9.93f); Skirt(5.93f, 5.93f, 6.07f, 9.93f); Skirt(4.93f, 4.93f, 0.06f, 2.1f); Skirt(4.93f, 4.93f, 3f, 4.33f);
+            Skirt(0.1f, 2.5f, 4.47f, 4.47f); Skirt(0.1f, 7f, 5.93f, 5.93f); Skirt(9f, 11.5f, 5.93f, 5.93f); Skirt(12.5f, 13.93f, 5.93f, 5.93f);
+            Skirt(7f, 10f, 4.47f, 4.47f); Skirt(11f, 13.93f, 4.47f, 4.47f);
+            Instance("Casa_Molduras", trim, house, Vector3.zero, 0, false);
+            Static(GameObject.Find("Casa_Molduras"));
+
+            // Ventanas: marco, cristal y cortinas
+            var windows = new MeshKit();
+            void Win(float x, float z, float width, float height, float centerY, bool alongX, float inward, bool curtains = true)
+            {
+                if (curtains) WindowDressing(windows, new Vector3(x, centerY, z), width, height, alongX, inward);
+                else WindowFrameOnly(windows, new Vector3(x, centerY, z), width, height, alongX, inward);
+            }
+            Win(1.6f, 0, 1.4f, 1.2f, 1.5f, true, 1f);
+            Win(3.7f, 0, 1.4f, 1.2f, 1.5f, true, 1f);
+            Win(0, 2.5f, 1.4f, 1.2f, 1.5f, false, 1f);
+            Win(10.2f, 0, 1.4f, 1f, 1.55f, true, 1f, false);
+            Win(2.2f, 10, 1.4f, 1.2f, 1.5f, true, -1f);
+            Win(4.2f, 10, 1.4f, 1.2f, 1.5f, true, -1f);
+            Win(8.4f, 10, 0.8f, 0.7f, 1.8f, true, -1f, false);
+            Win(12f, 10, 1f, 1f, 1.6f, true, -1f, false);
+            Win(14, 8.1f, 1.4f, 1.05f, 1.575f, false, -1f, false);
+            go = Instance("Casa_Ventanas", windows, house, Vector3.zero, 0, false); Static(go);
+            foreach (var (x, z, sx, sz) in new[] { (1.6f, 0f, 1.4f, 0.2f), (3.7f, 0f, 1.4f, 0.2f), (0f, 2.5f, 0.2f, 1.4f), (10.2f, 0f, 1.4f, 0.2f), (2.2f, 10f, 1.4f, 0.2f), (4.2f, 10f, 1.4f, 0.2f), (8.4f, 10f, 0.8f, 0.2f), (12f, 10f, 1f, 0.2f), (14f, 8.1f, 0.2f, 1.4f) })
+                Blocker(house, new Vector3(x, 1.3f, z), new Vector3(sx, 2.6f, sz));
+
+            // Fachada: tablas por fuera, con los mismos huecos, y tejado
+            var outer = new MeshKit();
+            Wall(outer, new Vector3(0, 0, -0.07f), 19f, true, siding, 0.02f, southOpenings);
+            Wall(outer, new Vector3(0, 0, 10.07f), 14f, true, siding, 0.02f, northOpenings);
+            Wall(outer, new Vector3(-0.07f, 0, 0), 10f, false, siding, 0.02f, westOpenings);
+            Wall(outer, new Vector3(14.07f, 0, 4.4f), 5.6f, false, siding, 0.02f, eastNorthOpenings);
+            Wall(outer, new Vector3(19.07f, 0, 0), 4.4f, false, siding, 0.02f, new Opening[0]);
+            Wall(outer, new Vector3(14, 0, 4.47f), 5f, true, siding, 0.02f, new Opening[0]);
+            for (int i = 0; i < 5; i++)
+            {
+                float inset = i * 0.8f, h = Height + 0.15f + i * 0.28f;
+                outer.Box(new Vector3(7, h, 5), new Vector3(15f - inset * 2, 0.28f, 11f - inset * 2), roof);
+            }
+            outer.Box(new Vector3(16.5f, Height + 0.2f, 2.2f), new Vector3(5.8f, 0.3f, 5.2f), roof);
+            // Puerta de garaje vista desde fuera y desde dentro
+            outer.Box(new Vector3(16.5f, 1.1f, 0), new Vector3(3f, 2.2f, 0.05f), sidingFar);
+            for (int i = 1; i < 4; i++) outer.Box(new Vector3(16.5f, i * 0.55f, -0.03f), new Vector3(3f, 0.02f, 0.01f), roof);
+            go = Instance("Casa_Fachada", outer, house, Vector3.zero, 0, false);
+            GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.BatchingStatic);
+            go.layer = ExteriorLayer;
+            var bc = go.AddComponent<BoxCollider>(); bc.center = new Vector3(16.5f, 1.1f, 0); bc.size = new Vector3(3f, 2.2f, 0.1f);
+        }
+
+        static void WindowFrameOnly(MeshKit kit, Vector3 center, float width, float height, bool alongX, float inward)
+        {
+            const float bar = 0.05f, depth = 0.16f;
+            Vector3 along = alongX ? Vector3.right : Vector3.forward;
+            Vector3 normal = alongX ? Vector3.forward : Vector3.right;
+            Vector3 H(float w, float h, float d) => alongX ? new Vector3(w, h, d) : new Vector3(d, h, w);
+            kit.Box(center + Vector3.up * (height * 0.5f), H(width + bar * 2, bar, depth), frame);
+            kit.Box(center - Vector3.up * (height * 0.5f), H(width + bar * 2, bar, depth + 0.08f), frame);
+            kit.Box(center + along * (width * 0.5f), H(bar, height, depth), frame);
+            kit.Box(center - along * (width * 0.5f), H(bar, height, depth), frame);
+            kit.Box(center, H(0.03f, height, 0.03f), frame);
+            kit.Box(center - normal * (inward * 0.01f), H(width, height, 0.005f), glass);
+        }
+
+        static void BuildPrefabs()
+        {
+            var parent = new GameObject("_tmp").transform;
+            var leaf = new MeshKit();
+            leaf.Box(new Vector3(0, 1.0f, 0.43f), new Vector3(0.04f, 2.0f, 0.86f), door);
+            leaf.Box(new Vector3(-0.05f, 0.95f, 0.77f), new Vector3(0.05f, 0.03f, 0.1f), metal);
+            leaf.Box(new Vector3(0.05f, 0.95f, 0.77f), new Vector3(0.05f, 0.03f, 0.1f), metal);
+            Instance("PuertaHoja", leaf, parent, Vector3.zero);
+            Instance("PuertaMarco", PuertaMarco(), parent, Vector3.zero, 0, false);
+            var sw = new MeshKit();
+            sw.Box(Vector3.zero, new Vector3(0.02f, 0.12f, 0.08f), frame);
+            sw.Box(new Vector3(-0.015f, 0, 0), new Vector3(0.015f, 0.04f, 0.02f), metal);
+            Instance("Interruptor", sw, parent, Vector3.zero);
+            var fixture = new MeshKit();
+            fixture.Cylinder(new Vector3(0, -0.1f, 0), 0.17f, 0.2f, 0.1f, 10, paper);
+            Instance("Plafon", fixture, parent, Vector3.zero, 0, false);
+            Object.DestroyImmediate(parent.gameObject);
+        }
+
+        static void BuildSalon(Transform f, Transform lights)
+        {
+            Put("Alfombra", Alfombra(), f, 2.15f, 2.45f, 0, false);
+            Put("Sofa", Sofa(), f, 2.15f, 1.45f);
+            Put("Manta", Manta(), f, 1.6f, 1.45f, 0, false);
+            var tele = Put("Tele", Tele(), f, 2.15f, 4.08f);
+            Put("MesaBaja", MesaBaja(), f, 2.15f, 2.75f);
+            Put("EstanteriaSalon", Estanteria(), f, 4.2f, 4.17f);
+            var lampMesh = Put("Lampara", Lampara(), f, 0.4f, 0.5f);
+            GameObjectUtility.SetStaticEditorFlags(lampMesh, StaticEditorFlags.BatchingStatic);
+            Picture(f, "CuadroSalon", paintA, 0.08f, 1.65f, 3.75f, 90f);
+
+            var tv = SpotLight("LuzTele", lights, new Vector3(2.15f, 0.8f, 3.8f), Quaternion.Euler(4, 180, 0), new Color(0.72f, 0.8f, 0.95f), 3f, 8f, 150f, ~0);
+            tv.shadows = LightShadows.Soft;
+            tv.shadowStrength = 0.9f;
+            var flicker = tele.AddComponent<TVFlicker>();
+            flicker.tvLight = tv;
+            flicker.screen = tele.GetComponent<MeshRenderer>();
+            flicker.screenMaterialIndex = System.Array.IndexOf(flicker.screen.sharedMaterials, screen);
+
+            var lamp = Point("LuzLampara", lights, new Vector3(0.42f, 1.48f, 0.52f), new Color(1f, 0.72f, 0.42f), 1.8f, 5.5f);
+            lamp.shadows = LightShadows.Soft;
+            lamp.shadowStrength = 0.8f;
+            var sw = Again("Interruptor", f, 4.93f, 3.3f, 0f, 1.2f);
+            sw.name = "Interruptor_Salon";
+            GameObjectUtility.SetStaticEditorFlags(sw, 0);
+            sw.GetComponent<BoxCollider>().size = new Vector3(0.1f, 0.25f, 0.2f);
+            var ls = sw.AddComponent<LightSwitch>();
+            ls.lights = new[] { lamp };
+            ls.isOn = true;
+            ls.emissive = lampMesh.GetComponent<MeshRenderer>();
+        }
+
+        static void BuildHall(Transform f, Transform d, Transform lights)
+        {
+            // Recibidor
+            var mat = new MeshKit().Box(new Vector3(0, 0.008f, 0), new Vector3(0.8f, 0.016f, 0.5f), concreteIn);
+            Put("Felpudo", mat, f, 6f, 0.42f, 0, false);
+            var table = new MeshKit();
+            table.Box(new Vector3(0, 0.4f, 0), new Vector3(1f, 0.8f, 0.34f), woodDark);
+            table.Box(new Vector3(0, 0.82f, 0), new Vector3(1.04f, 0.03f, 0.38f), woodLight);
+            table.Box(new Vector3(-0.25f, 0.5f, 0.175f), new Vector3(0.42f, 0.5f, 0.012f), woodLight);
+            table.Box(new Vector3(0.25f, 0.5f, 0.175f), new Vector3(0.42f, 0.5f, 0.012f), woodLight);
+            table.Cylinder(new Vector3(0.2f, 0.835f, 0), 0.06f, 0.1f, 0.05f, 8, ceramic);
+            Put("MuebleRecibidor", table, f, 6.8f, 1.5f, 270f);
+            var hanger = new MeshKit();
+            hanger.Cylinder(Vector3.zero, 0.17f, 0.15f, 0.03f, 6, woodDark);
+            hanger.Cylinder(new Vector3(0, 0.03f, 0), 0.02f, 0.02f, 1.7f, 6, woodDark);
+            foreach (float a in new[] { 0f, 1.57f, 3.14f, 4.71f }) hanger.Box(new Vector3(Mathf.Cos(a) * 0.1f, 1.63f, Mathf.Sin(a) * 0.1f), new Vector3(0.2f, 0.02f, 0.02f), woodDark);
+            hanger.Box(new Vector3(0.1f, 1.35f, 0), new Vector3(0.1f, 0.65f, 0.34f), carBlue);
+            Put("Perchero", hanger, f, 5.28f, 0.5f);
+            var front = Door(d, "PuertaEntrada", 6.45f, 0f, true, 0f, true);
+            front.transform.rotation = Quaternion.Euler(0, 270, 0);
+
+            // Pasillo
+            Put("EstanteriaPasillo", Estanteria(), f, 7.6f, 4.62f, 180f);
+            var clock = new MeshKit();
+            clock.Cylinder(new Vector3(0, 0, 0), 0.0f, 0.0f, 0f, 3, paper);
+            clock.Box(Vector3.zero, new Vector3(0.32f, 0.32f, 0.03f), woodDark);
+            clock.Box(new Vector3(0, 0, -0.018f), new Vector3(0.27f, 0.27f, 0.004f), paper);
+            clock.Box(new Vector3(0, 0.05f, -0.023f), new Vector3(0.012f, 0.1f, 0.003f), plastic);
+            clock.Box(new Vector3(0.04f, 0, -0.024f), new Vector3(0.08f, 0.012f, 0.003f), plastic);
+            Put("Reloj", clock, f, 6.3f, 5.92f, 0f, false, 1.9f);
+            Picture(f, "CuadroPasillo1", paintA, 4.7f, 1.6f, 5.92f, 0f);
+            Picture(f, "CuadroPasillo2", paintB, 9.9f, 1.6f, 5.92f, 0f, 0.5f, 0.62f);
+            Door(d, "PuertaFondoPasillo", 0f, 4.75f, false, 0f, true);
+
+            RoomLight(lights, "Pasillo1", 3.5f, 5.2f, new Vector3(5.45f, 1.2f, 5.93f), 90f, new Color(1f, 0.74f, 0.46f), 2.2f);
+            RoomLight(lights, "Pasillo2", 10f, 5.2f, new Vector3(9.8f, 1.2f, 4.47f), 90f, new Color(1f, 0.74f, 0.46f), 2.2f);
+            RoomLight(lights, "Recibidor", 6f, 2.2f, new Vector3(6.93f, 1.2f, 0.55f), 0f, new Color(1f, 0.76f, 0.48f), 2.4f);
+
+            Door(d, "PuertaSalonRecibidor", 5f, 2.12f, false, 95f);
+            Door(d, "PuertaRecibidorPasillo", 5.6f, 4.4f, true, 95f);
+        }
+
+        static void BuildKitchen(Transform f, Transform d, Transform lights)
+        {
+            Put("Encimera", Encimera(), f, 10.5f, 0.38f);
+            Put("Nevera", Nevera(), f, 13.45f, 0.46f);
+            Put("MesaCocina", MesaCocina(), f, 11.3f, 3f);
+            Put("SillaCocina", Silla(), f, 10.9f, 3.55f, 0f);
+            Again("SillaCocina", f, 11.7f, 3.55f, 0f);
+            Again("SillaCocina", f, 10.9f, 2.45f, 180f);
+            Again("SillaCocina", f, 11.7f, 2.45f, 180f);
+            var cup = new MeshKit();
+            cup.Cylinder(Vector3.zero, 0.035f, 0.04f, 0.1f, 8, ceramic);
+            Put("Vaso", cup, f, 9.1f, 0.5f, 0, false, 0.92f);
+            var plate = new MeshKit();
+            plate.Cylinder(Vector3.zero, 0.1f, 0.12f, 0.02f, 10, ceramic);
+            Put("Plato", plate, f, 11.1f, 3f, 0, false, 0.76f);
+            RoomLight(lights, "Cocina", 11.1f, 2.2f, new Vector3(10.0f + 1.02f, 1.2f, 4.33f), 90f, new Color(0.86f, 0.98f, 0.92f), 3.2f, false, 7f);
+            Door(d, "PuertaCocinaPasillo", 10f, 4.4f, true, -95f);
+            Door(d, "PuertaCocinaGaraje", 14f, 2.12f, false, 95f);
+        }
+
+        static void BuildBedroom(Transform f, Transform d, Transform lights)
+        {
+            Put("Cama", Cama(), f, 1.1f, 8.1f, 270f);
+            Put("MesillaLampara", Mesilla(true), f, 0.32f, 9.2f, 90f);
+            Put("Mesilla", Mesilla(false), f, 0.32f, 7.0f, 90f);
+            Put("Armario", Armario(), f, 5.62f, 8.7f, 270f);
+            Put("ComodaDormitorio", ComodaSimple(), f, 3.2f, 9.72f, 180f);
+            var rugKit = new MeshKit().Box(new Vector3(0, 0.006f, 0), new Vector3(1.6f, 0.012f, 1.1f), sheet);
+            Put("AlfombraDormitorio", rugKit, f, 2.9f, 7.5f, 0, false);
+            RoomLight(lights, "Dormitorio", 3f, 8f, new Vector3(3.55f, 1.2f, 6.07f), 90f, new Color(1f, 0.74f, 0.46f), 2.8f);
+            Door(d, "PuertaDormitorio", 2.5f, 6f, true, -95f);
+        }
+
+        static void BuildBathroom(Transform f, Transform d, Transform lights)
+        {
+            Put("Banera", Banera(), f, 7.28f, 8.9f);
+            Put("Lavabo", Lavabo(), f, 9.6f, 7.2f, 270f);
+            var mirrorKit = new MeshKit();
+            mirrorKit.Box(Vector3.zero, new Vector3(0.015f, 0.7f, 0.55f), chrome);
+            mirrorKit.Box(new Vector3(-0.009f, 0, 0), new Vector3(0.004f, 0.66f, 0.51f), mirror);
+            Put("Espejo", mirrorKit, f, 9.92f, 7.2f, 0, false, 1.5f);
+            Put("Vater", Vater(), f, 9.4f, 9.55f, 180f);
+            var towel = new MeshKit();
+            towel.Box(new Vector3(0, 1.32f, 0), new Vector3(0.02f, 0.02f, 0.55f), chrome);
+            towel.Box(new Vector3(-0.012f, 1.03f, 0), new Vector3(0.018f, 0.58f, 0.42f), sheet);
+            Put("Toalla", towel, f, 9.93f, 8.35f, 0, false);
+            var tile = new MeshKit().Box(new Vector3(0, 0.004f, 0), new Vector3(0.3f, 0.012f, 0.3f), grime);
+            Put("BaldosaSuelta", tile, f, 7.6f, 7.6f, 3f, false);
+            RoomLight(lights, "Bano", 8.4f, 8f, new Vector3(7.93f + 1.02f, 1.2f, 6.07f), 90f, new Color(0.88f, 0.98f, 0.92f), 2.6f, false, 6f);
+            Door(d, "PuertaBano", 8f, 6f, true, -95f);
+        }
+
+        static void BuildLaundry(Transform f, Transform d, Transform lights)
+        {
+            Put("Lavadora", Lavadora(true), f, 10.38f, 9.05f, 90f);
+            Put("Secadora", Lavadora(false), f, 10.38f, 8.4f, 90f);
+            var shelf = new MeshKit();
+            shelf.Box(new Vector3(0, 0, 0), new Vector3(0.3f, 0.025f, 1.5f), woodLight);
+            shelf.Box(new Vector3(0, 0.35f, 0), new Vector3(0.3f, 0.025f, 1.5f), woodLight);
+            shelf.Box(new Vector3(0.01f, 0.1f, -0.45f), new Vector3(0.14f, 0.18f, 0.2f), carBlue);
+            shelf.Box(new Vector3(0.01f, 0.13f, 0f), new Vector3(0.12f, 0.24f, 0.09f), ceramic);
+            shelf.Box(new Vector3(0.01f, 0.45f, 0.35f), new Vector3(0.16f, 0.17f, 0.26f), paper);
+            Put("Baldas", shelf, f, 10.21f, 8.7f, 0, false, 1.55f);
+            var basket = new MeshKit();
+            basket.Cylinder(Vector3.zero, 0.19f, 0.24f, 0.55f, 8, woodLight);
+            basket.Cylinder(new Vector3(0, 0.55f, 0), 0.2f, 0.12f, 0.1f, 8, sheet);
+            Put("Cesto", basket, f, 13.45f, 9.45f);
+            var shoes = new MeshKit();
+            foreach (float x in new[] { -0.07f, 0.07f })
+            {
+                shoes.Box(new Vector3(x, 0.03f, 0.04f), new Vector3(0.08f, 0.06f, 0.24f), plastic);
+                shoes.Box(new Vector3(x, 0.07f, -0.03f), new Vector3(0.07f, 0.06f, 0.1f), plastic);
+            }
+            Put("ZapatosRoberta", shoes, f, 13.55f, 6.6f, 80f, false);
+            RoomLight(lights, "Colada", 12f, 8f, new Vector3(12.47f, 1.2f, 6.07f), 90f, new Color(0.86f, 0.98f, 0.92f), 2.8f, false, 6f);
+            Door(d, "PuertaColada", 11.5f, 6f, true, -95f);
+        }
+
+        static void BuildGarage(Transform f, Transform d, Transform lights)
+        {
+            Put("CocheChevas", Coche(carRed), f, 16.6f, 2.2f, 0f);
+            var shelves = new MeshKit();
+            foreach (float y in new[] { 0.3f, 0.95f, 1.6f }) shelves.Box(new Vector3(0, y, 0), new Vector3(1.4f, 0.03f, 0.42f), woodLight);
+            foreach (float x in new[] { -0.68f, 0.68f }) shelves.Box(new Vector3(x, 0.95f, -0.18f), new Vector3(0.04f, 1.9f, 0.04f), metal);
+            shelves.Box(new Vector3(-0.3f, 0.47f, 0), new Vector3(0.42f, 0.31f, 0.3f), paper);
+            shelves.Cylinder(new Vector3(0.35f, 0.965f, 0), 0.09f, 0.09f, 0.2f, 8, metal);
+            shelves.Box(new Vector3(-0.35f, 1.1f, 0), new Vector3(0.35f, 0.27f, 0.32f), carBlue);
+            Put("EstanteriaGaraje", shelves, f, 18.72f, 2.4f, 270f);
+            RoomGarageWall(f);
+            RoomLight(lights, "Garaje", 16.5f, 2.2f, new Vector3(14.07f, 1.2f, 3.3f), 0f, new Color(0.86f, 0.98f, 0.9f), 3.4f, false, 7f);
+        }
+
+        static void RoomGarageWall(Transform f)
+        {
+            // Cuadro eléctrico en la pared norte, con las latas delante: lo que dice el guion.
+            var box = new MeshKit();
+            box.Box(Vector3.zero, new Vector3(0.4f, 0.55f, 0.08f), metal);
+            box.Box(new Vector3(0.14f, 0, -0.045f), new Vector3(0.02f, 0.08f, 0.012f), chrome);
+            Put("CuadroElectrico", box, f, 14.8f, 4.28f, 0f, true, 1.05f);
+            var cans = new MeshKit();
+            foreach (var (x, z, h) in new[] { (0f, 0f, 0.22f), (0.26f, 0.04f, 0.22f), (0.12f, 0.22f, 0.18f), (0.14f, 0f, 0.0f) })
+                if (h > 0f) cans.Cylinder(new Vector3(x, 0, z), 0.1f, 0.1f, h, 8, metal);
+            Put("LatasPintura", cans, f, 14.55f, 3.92f);
+            var ladder = new MeshKit();
+            foreach (float x in new[] { -0.2f, 0.2f }) ladder.Box(new Vector3(x, 1.1f, 0), new Vector3(0.05f, 2.2f, 0.05f), woodLight);
+            for (int i = 0; i < 7; i++) ladder.Box(new Vector3(0, 0.25f + i * 0.3f, 0), new Vector3(0.4f, 0.03f, 0.04f), woodLight);
+            Put("Escalera", ladder, f, 15.6f, 4.22f);
+        }
+
+        static void BuildExterior(Transform street, Transform lights)
+        {
+            var g = new MeshKit();
+            g.Box(new Vector3(9, -0.15f, 10), new Vector3(120, 0.2f, 120), grass);
+            g.Box(new Vector3(9, -0.09f, -4.3f), new Vector3(120, 0.1f, 2.6f), asphalt);
+            g.Box(new Vector3(9, -0.06f, -2.75f), new Vector3(120, 0.1f, 0.5f), concrete);
+            g.Box(new Vector3(9, -0.06f, -5.85f), new Vector3(120, 0.1f, 0.5f), concrete);
+            g.Box(new Vector3(6f, -0.05f, -1.2f), new Vector3(1.2f, 0.1f, 2.4f), concrete); // Camino de entrada
+            g.Box(new Vector3(16.5f, -0.05f, -1.25f), new Vector3(3.2f, 0.1f, 2.5f), concrete); // Entrada de coches
+            g.Box(new Vector3(7f, -0.05f, -7.3f), new Vector3(1.2f, 0.1f, 2.8f), concrete);
+            Instance("Calle_Suelo", g, street, Vector3.zero, 0, false);
+            var groundCollider = GameObject.Find("Calle_Suelo").AddComponent<BoxCollider>();
+            groundCollider.center = new Vector3(9, -0.15f, 10); groundCollider.size = new Vector3(120, 0.2f, 120);
+
+            // Porche
+            var porch = new MeshKit();
+            porch.Box(new Vector3(6f, -0.03f, -0.7f), new Vector3(3.4f, 0.12f, 1.4f), concrete);
+            porch.Box(new Vector3(6f, 2.45f, -0.75f), new Vector3(3.5f, 0.1f, 1.5f), roof);
+            foreach (float x in new[] { 4.45f, 7.55f }) porch.Box(new Vector3(x, 1.2f, -1.32f), new Vector3(0.1f, 2.4f, 0.1f), frameExt);
+            Instance("Porche", porch, street, Vector3.zero, 0, false);
+
+            Instance("CasaChechu", CasaFachada(siding, true), street, new Vector3(7f, 0, -9.6f));
+            Instance("CasaVecinos", CasaFachada(sidingFar, false), street, new Vector3(-5f, 0, -9.6f));
+            void Inst(string name, float x, float z, float yaw)
+            {
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Ominous/Prefabs/{name}.prefab"), street);
+                go.transform.SetPositionAndRotation(new Vector3(x, 0, z), Quaternion.Euler(0, yaw, 0));
+            }
+            Inst("CasaVecinos", 19f, -9.6f, 0f);
+            Inst("CasaVecinos", -13f, 3f, 90f);   // Junto a la ventana oeste
+            Inst("CasaVecinos", 4f, 30f, 180f);   // Detrás del jardín
+            Inst("CasaVecinos", 18f, 30f, 180f);
+            Instance("Farola", Farola(), street, new Vector3(2f, 0, -2.6f));
+            Inst("Farola", 13f, -6.1f, 180f);
+            Inst("Farola", 26f, -2.6f, 0f);
+            Instance("Arbol", Arbol(), street, new Vector3(-1.6f, 0, -1.2f));
+            Inst("Arbol", 1.5f, -7.5f, 0f);
+            Inst("Arbol", 21f, -1.6f, 30f);
+            Inst("Arbol", 6f, 15.5f, 60f);
+            Inst("Arbol", 13f, 19f, 110f);
+            Inst("Arbol", -6f, 9f, 200f);
+            Instance("CocheAzul", Coche(carBlue), street, new Vector3(11.2f, -0.04f, -3.45f), 90f);
+            Instance("CocheGris", Coche(carGrey), street, new Vector3(-2.5f, -0.04f, -5.15f), 270f);
+            // Valla del jardín
+            var fence = new MeshKit();
+            fence.Box(new Vector3(7, 0.9f, 22), new Vector3(46, 0.05f, 0.03f), woodDark);
+            fence.Box(new Vector3(7, 0.45f, 22), new Vector3(46, 0.05f, 0.03f), woodDark);
+            for (int i = 0; i < 24; i++) fence.Box(new Vector3(-15f + i * 2f, 0.55f, 22f), new Vector3(0.08f, 1.1f, 0.08f), woodDark);
+            Instance("Valla", fence, street, Vector3.zero, 0, false);
+            foreach (var t in street.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = ExteriorLayer;
+
+            // Farolas: tiempo real con sombra, para que entren por las ventanas sin atravesar paredes
+            foreach (var (x, z) in new[] { (2.2f, -1.8f), (13f, -5.2f), (26f, -1.8f) })
+            {
+                var l = SpotLight("LuzFarola", lights, new Vector3(x, 4.4f, z), Quaternion.Euler(90, 0, 0), new Color(1f, 0.72f, 0.42f), 30f, 11f, 125f, ~0);
+                l.shadows = LightShadows.Soft;
+            }
+        }
+
+        static void BuildSound()
+        {
+            AudioSource Loop(string name, AudioClip clip, Vector3 pos, float volume, float maxDistance)
+            {
+                var go = new GameObject(name);
+                go.transform.position = pos;
+                var s = go.AddComponent<AudioSource>();
+                s.clip = clip; s.loop = true; s.volume = volume; s.playOnAwake = true;
+                s.spatialBlend = maxDistance > 0f ? 1f : 0f;
+                s.rolloffMode = AudioRolloffMode.Linear;
+                s.minDistance = 0.8f;
+                s.maxDistance = maxDistance > 0f ? maxDistance : 500f;
+                return s;
+            }
+            var root = new GameObject("Sonido").transform;
+            Loop("Nevera", AudioGen.Fridge(), new Vector3(13.45f, 0.9f, 0.5f), 0.32f, 8f).transform.SetParent(root);
+            Loop("Reloj", AudioGen.Clock(), new Vector3(6.3f, 1.9f, 5.9f), 0.2f, 7f).transform.SetParent(root);
+            Loop("Viento", AudioGen.Wind(), Vector3.zero, 0.12f, 0f).transform.SetParent(root);
+            Loop("Tele", AudioGen.TvMurmur(), new Vector3(2.15f, 0.8f, 3.85f), 0.3f, 9f).transform.SetParent(root);
+            var cars = new GameObject("Coches");
+            cars.transform.SetParent(root);
+            var src = cars.AddComponent<AudioSource>();
+            src.spatialBlend = 0f;
+            var a = cars.AddComponent<AmbientSounds>();
+            a.carSource = src;
+            a.carClip = AudioGen.Car();
+        }
+
+        static void BuildPlayerAndSystems()
+        {
+            var settings = AssetDatabase.LoadAssetAtPath<VideoLookSettings>(OminousSetup.SettingsPath);
+            var player = new GameObject("Jugador");
+            player.transform.SetPositionAndRotation(new Vector3(6f, 0.02f, 1.1f), Quaternion.identity);
+            var cc = player.AddComponent<CharacterController>();
+            cc.height = 1.7f; cc.radius = 0.25f; cc.center = new Vector3(0, 0.85f, 0); cc.stepOffset = 0.2f; cc.skinWidth = 0.02f;
+            var fp = player.AddComponent<FirstPersonController>();
+            var camGo = new GameObject("Camara");
+            camGo.tag = "MainCamera";
+            camGo.transform.SetParent(player.transform);
+            camGo.transform.localPosition = new Vector3(0, 1.6f, 0);
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = settings.exteriorFogColor;
+            cam.fieldOfView = 62f;
+            cam.nearClipPlane = 0.05f;
+            cam.farClipPlane = 80f;
+            camGo.AddComponent<AudioListener>();
+            var data = cam.GetUniversalAdditionalCameraData();
+            data.renderPostProcessing = true;
+            data.antialiasing = AntialiasingMode.None;
+            fp.cameraPivot = camGo.transform;
+            var interactor = player.AddComponent<PlayerInteractor>();
+            interactor.eye = camGo.transform;
+
+            var look = new GameObject("Imagen");
+            var controller = look.AddComponent<VideoLookController>();
+            controller.settings = settings;
+            var volume = look.AddComponent<Volume>();
+            volume.isGlobal = true;
+            volume.sharedProfile = OminousSetup.BuildVolumeProfile();
+            look.AddComponent<VideoLookPanel>().controller = controller;
+
+            var systems = new GameObject("Sistemas");
+            systems.AddComponent<GameDirector>();
+            systems.AddComponent<GameUI>();
+            systems.AddComponent<PauseMenu>();
+            systems.AddComponent<DialogueManager>().project = AssetDatabase.LoadAssetAtPath<YarnProject>(YarnProjectPath);
+        }
+
+        /// <summary>Hornea la luz que entra por las ventanas. Tarda varios minutos: se lanza en segundo plano.</summary>
+        [MenuItem("Tools/Ominous/Hornear la luz de la casa")]
+        public static void BakeHouse()
+        {
+            var settings = AssetDatabase.LoadAssetAtPath<LightingSettings>(LightingPath);
+            if (settings == null)
+            {
+                settings = new LightingSettings { name = "LightingHouse" };
+                AssetDatabase.CreateAsset(settings, LightingPath);
+            }
+            settings.bakedGI = true;
+            settings.realtimeGI = false;
+            settings.lightmapper = LightingSettings.Lightmapper.ProgressiveCPU;
+            settings.lightmapResolution = 10f;
+            settings.lightmapMaxSize = 1024;
+            settings.lightmapPadding = 3;
+            settings.directSampleCount = 16;
+            settings.indirectSampleCount = 96;
+            settings.environmentSampleCount = 96;
+            settings.maxBounces = 3;
+            settings.directionalityMode = LightmapsMode.NonDirectional;
+            settings.lightmapCompression = LightmapCompression.NormalQuality;
+            settings.filteringMode = LightingSettings.FilterMode.Auto;
+            EditorUtility.SetDirty(settings);
+            AssetDatabase.SaveAssets();
+            Lightmapping.lightingSettings = settings;
+            Lightmapping.BakeAsync();
+        }
+    }
+}

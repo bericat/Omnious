@@ -51,7 +51,8 @@ namespace Ominous.EditorTools
             EditorUtility.SetDirty(pipeline);
 
             var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);
-            data.renderingMode = RenderingMode.Forward;
+            // Forward+: una casa con muchas luces sin el límite por objeto; no respeta las máscaras de luz.
+            data.renderingMode = RenderingMode.ForwardPlus;
             foreach (var f in data.rendererFeatures.Where(f => f != null && !(f is FullScreenPassRendererFeature))) f.SetActive(false);
 
             var feature = data.rendererFeatures.OfType<FullScreenPassRendererFeature>().FirstOrDefault();

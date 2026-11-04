@@ -69,6 +69,8 @@ namespace Ominous.EditorTools
         static GameObject Instance(string name, MeshKit kit, Transform parent, Vector3 position, float yaw = 0f, bool collider = true)
         {
             var mesh = kit.Build(name, out var mats);
+            // Segundo juego de UV para hornear la luz.
+            Unwrapping.GenerateSecondaryUVSet(mesh);
             string meshPath = $"Assets/_Ominous/Art/Meshes/{name}.asset";
             AssetDatabase.DeleteAsset(meshPath);
             AssetDatabase.CreateAsset(mesh, meshPath);
@@ -92,14 +94,16 @@ namespace Ominous.EditorTools
         struct Opening { public float from, to, sill, top; public Opening(float f, float t, float s, float tp) { from = f; to = t; sill = s; top = tp; } }
 
         /// <summary>Pared con huecos. Recorre x (alongX) o z desde <paramref name="start"/> durante <paramref name="length"/>.</summary>
-        static void Wall(MeshKit kit, Vector3 start, float length, bool alongX, Material m, params Opening[] openings)
+        static void Wall(MeshKit kit, Vector3 start, float length, bool alongX, Material m, params Opening[] openings) => Wall(kit, start, length, alongX, m, Thick, openings);
+
+        static void Wall(MeshKit kit, Vector3 start, float length, bool alongX, Material m, float thick, Opening[] openings)
         {
             void Piece(float a, float b, float y0, float y1)
             {
                 if (b - a <= 0.001f || y1 - y0 <= 0.001f) return;
                 float mid = (a + b) * 0.5f;
                 Vector3 c = start + (alongX ? Vector3.right : Vector3.forward) * mid + Vector3.up * ((y0 + y1) * 0.5f);
-                Vector3 size = alongX ? new Vector3(b - a, y1 - y0, Thick) : new Vector3(Thick, y1 - y0, b - a);
+                Vector3 size = alongX ? new Vector3(b - a, y1 - y0, thick) : new Vector3(thick, y1 - y0, b - a);
                 kit.Box(c, size, m);
             }
             float cursor = 0f;

@@ -8,7 +8,7 @@ namespace Ominous
     public class MainMenu : MonoBehaviour
     {
         public const string SceneName = "MainMenu";
-        public const string GameScene = "Test_Sistemas";
+        public const string GameScene = "House";
 
         TextMeshProUGUI logo;
         GameObject column, options;
