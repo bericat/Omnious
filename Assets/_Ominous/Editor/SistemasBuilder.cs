@@ -158,6 +158,8 @@ namespace Ominous.EditorTools
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.015f, 0.012f, 0.012f);
             cam.gameObject.AddComponent<AudioListener>();
+            // La pasada de imagen también corre aquí, así que necesita sus ajustes para no dejar la pantalla negra.
+            new GameObject("Imagen").AddComponent<VideoLookController>().settings = AssetDatabase.LoadAssetAtPath<VideoLookSettings>(OminousSetup.SettingsPath);
             var go = new GameObject("Menu");
             go.AddComponent<MainMenu>();
             EditorSceneManager.SaveScene(scene, MenuPath);

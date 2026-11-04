@@ -85,7 +85,7 @@ namespace Ominous.EditorTools
             float fine = Fbm(u, v, 48, 3, seed + 50);
             Color dirty = new Color(c.r * 0.6f, c.g * 0.54f, c.b * 0.44f);
             Color o = Color.Lerp(c, dirty, big * amount);
-            return Mul(o, Mathf.Lerp(1f, 0.74f + fine * 0.52f, amount));
+            return Mul(o, Mathf.Lerp(1f, 0.8f + fine * 0.4f, amount));
         }
 
         /// <summary>Superficie genérica con suciedad.</summary>
@@ -101,7 +101,7 @@ namespace Ominous.EditorTools
             int seed = Seed(name);
             return Make(name, Texture(name, 256, 256, (u, v) =>
             {
-                Color c = Stain(color, u, v, seed, 0.85f);
+                Color c = Stain(color, u, v, seed, 0.55f);
                 return c;
             }), 2f);
         }
