@@ -10,10 +10,10 @@ Pensamiento: Debería contestarle algo. #line:test_003
 -> Mejor me voy. #line:test_008
     Figura: Como quieras. #line:test_009
 Figura: Voy a guardar la partida y a pasar al acto 2. Mira la pared, junto a la tele. #line:test_010
-<<punto_control prueba>>
 <<acto 2>>
 <<hora 03:05>>
 <<objetivo "Busca el cuadro nuevo en la pared">>
+<<punto_control prueba>>
 Pensamiento: Ese cuadro no estaba ahí. #line:test_011
 ===
 title: Test_Mando

@@ -9,10 +9,18 @@
 - Conexión de Claude con el Editor. Prueba superada: crear un objeto, pulsar Play, detenerlo, leer la consola y borrar el objeto.
 
 ## Falta
-- Fase 3: interacción, diálogos con Yarn, GameDirector y variantes, guardado, menús y opciones.
-- Sin confirmar por Toni: los 60 fps mientras anda (medidos solo con el jugador quieto) y si el suelo ya no se estira.
-- Estilo: se sigue Buckshot Roulette (nítido, pocos colores, tramado); Toni no pidió lo contrario.
+- Fase 3: prueba de Toni en `Test_Sistemas` (build `Builds/Ominous_Test/Ominous`). Con su visto bueno, etiqueta `fase-3-ok`.
+- Falta una fuente pixel con licencia libre: de momento se usa LiberationSans de TextMeshPro. Toni debe autorizar la descarga.
+- Sin confirmar por Toni: los 60 fps mientras anda y si el suelo ya no se estira.
+- Estilo: se sigue Buckshot Roulette; Toni no pidió lo contrario.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
+
+## Fase 3: cómo está montada
+- Yarn Spinner 3.2.8 por git. Proyecto `Assets/_Ominous/Dialogue/Ominous.yarnproject`; todo el guion compila.
+- Regenerar escenas: `Tools/Ominous/Construir escena de sistemas y menú`. Ese comando sobrescribe `Test_Salon`, `Test_Sistemas` y `MainMenu`.
+- Yarn no admite `#line` y `#shadow` en la misma línea: las frases repetidas llevan solo `#shadow`.
+- Comandos del guion que aún no hacen nada: lista en `DialogueManager` (se implementan en las fases 5 a 8).
+- Si el Editor está en Play no se puede construir ni importar paquetes.
 
 ## Fase 2: cómo está montada
 - Escena `Assets/_Ominous/Scenes/Test_Salon.unity`, regenerable con `Tools/Ominous/Construir salón de pruebas`.
