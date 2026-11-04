@@ -25,4 +25,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Aprobó el plano, la frase fija y las ideas nuevas. Pidió un acto 2 más sutil, con todo lo de Chechu explicable hasta el acto 3; el jugador intenta arreglar el grifo y rompe la herramienta; sin pensamientos que razonen lo del grifo; sin desmayo ni fundido hasta que el jugador se tire. En la visita 4, Chevas va a casa de Chechu. Pendiente: número de visitas y antecedente de la pareja.
+Aprobó el plano, la frase fija y las ideas nuevas. Pidió un acto 2 más sutil, con todo lo de Chechu explicable hasta el acto 3; el jugador intenta arreglar el grifo y rompe la herramienta; sin pensamientos que razonen lo del grifo; sin desmayo ni fundido hasta que el jugador se tire. En la visita 4, Chevas va a casa de Chechu. Aprobó 4 visitas y el antecedente de la pareja. Falta su visto bueno final al guion revisado para cerrar la fase 1.
