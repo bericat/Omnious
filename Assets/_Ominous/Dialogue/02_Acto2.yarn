@@ -171,21 +171,32 @@ title: Habitacion2_Agujero_Bano
 // Sin más comentario: el jugador une las piezas.
 Pensamiento: Se ve el lavabo. Se ve el grifo. #line:a2_061
 ===
+title: Visita4_Salir
+---
+// Tras encontrar el hueco. Desde la ventana del salón se ve luz en casa de Chechu.
+Pensamiento: Hay luz en casa del vecino. #line:a2_v4_001
+<<objetivo "Ve a casa de Chechu">>
+===
 title: Visita4
 ---
+// Chevas cruza la calle y llama él. Es la única vez que el jugador sale antes del final.
 <<visita 4>>
 <<hora 03:28>>
-<<sonido llamada_puerta_suave>>
-Chevas: ¿Has visto a mi mujer? #line:a2_062
-Chechu: ¿A estas horas? No. ¿Qué ha pasado? #line:a2_063
--> No está en la cama. #line:a2_064
-    Chechu: Tendrá sed. O insomnio, como todos en esta calle. #line:a2_065
--> Nada. Déjalo. #line:a2_066
-    Chechu: Claro. No grites, que la despiertas. #line:a2_067
-Chechu: ¿Has mirado en la cocina? Cuando alguien se pierde de noche, siempre está en la cocina. #line:a2_068
-Chevas: Ya he mirado. #line:a2_069
-Chechu: Mira otra vez. #line:a2_070
-<<chechu_se_va>>
+<<sonido llamada_puerta>>
+<<esperar 4>>
+<<puerta_chechu_se_abre>>
+Chevas: Perdona la hora. ¿Has visto a mi mujer? #line:a2_v4_002
+Chechu: ¿A estas horas? No. ¿Qué ha pasado? #line:a2_v4_003
+-> No está en la cama. #line:a2_v4_004
+    Chechu: Tendrá sed. O insomnio, como todos en esta calle. #line:a2_v4_005
+-> Nada. Déjalo. #line:a2_v4_006
+    Chechu: Claro. No grites, que la despiertas. #line:a2_v4_007
+// Detrás de Chechu se ve una casa vacía y a oscuras, sin muebles ni cajas. Nadie lo comenta.
+Chechu: ¿Has mirado en la cocina? Cuando alguien se pierde de noche, siempre está en la cocina. #line:a2_v4_008
+Chevas: Ya he mirado. #line:a2_v4_009
+Chechu: Mira otra vez. #line:a2_v4_010
+<<puerta_chechu_se_cierra>>
+<<objetivo "Vuelve a casa">>
 ===
 title: Roberta_Cocina
 ---

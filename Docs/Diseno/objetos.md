@@ -30,5 +30,7 @@ Puertas, marcos, ventanas con cortina, interruptores, enchufes, rodapiés, lámp
 ## Exterior
 Calle, aceras, tres casas vecinas, casa de Chechu con cartel «Vendida», dos farolas, tres coches aparcados, árboles, buzones. En el acto 3: versión de la calle sin una farola y con la casa de enfrente iluminada.
 
+En la visita 4 se recorre la calle a pie: la acera, el porche y la puerta de Chechu deben verse de cerca, y tras la puerta, un recibidor vacío y a oscuras.
+
 ## Personajes
 Roberta (pijama; posturas: sentada, andando, tumbada, dentro del coche). Chechu (chaqueta; posturas: en la puerta, en el baño). Coche de Chevas para el inicio.
