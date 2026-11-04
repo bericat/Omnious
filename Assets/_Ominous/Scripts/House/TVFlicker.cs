@@ -16,6 +16,17 @@ namespace Ominous
         MaterialPropertyBlock block;
         float nextShot, shotMix, target = 1f, level = 1f;
 
+        public void TurnOff()
+        {
+            enabled = false;
+            if (tvLight != null) tvLight.enabled = false;
+            if (screen == null) return;
+            block ??= new MaterialPropertyBlock();
+            screen.GetPropertyBlock(block, screenMaterialIndex);
+            block.SetColor(Emission, Color.black);
+            screen.SetPropertyBlock(block, screenMaterialIndex);
+        }
+
         void Update()
         {
             if (Time.time >= nextShot)

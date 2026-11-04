@@ -21,15 +21,15 @@ namespace Ominous
         static readonly string[] PendingNoArgs =
         {
             "reloj_parado",
-            "animacion_llave_grifo", "estanteria_cede", "chechu_entrega_tornillo", "roberta_desaparece",
+            "chechu_entrega_tornillo", 
             "chechu_desaparece", "chechu_desaparece_riendo", "pasillo_alargado", "esperar_salto_jugador", "caida",
-            "reiniciar_noche", "puerta_se_abre", "corte_negro", "creditos", "puerta_chechu_se_abre",
-            "puerta_chechu_se_cierra",
+            "reiniciar_noche", "puerta_se_abre", "corte_negro", "creditos", 
+            
         };
 
         static readonly string[] PendingOneArg =
         {
-            "susto", "objeto_roto", "roberta_aparece", "chechu_aparece", "fundido_negro",
+            "chechu_aparece", "fundido_negro",
         };
 
         void Awake()

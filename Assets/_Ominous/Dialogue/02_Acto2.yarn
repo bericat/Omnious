@@ -30,7 +30,6 @@ title: Visita2
 ---
 <<visita 2>>
 <<hora 03:05>>
-<<sonido llamada_puerta>>
 Chevas: Hola otra vez. #line:a2_005
 Chechu: Perdona, de verdad. Te prometo que es la última. #line:a2_006
 Chechu: Se me ha ido la luz. #line:a2_007
@@ -97,7 +96,6 @@ title: Visita3
 ---
 <<visita 3>>
 <<hora 03:20>>
-<<sonido llamada_puerta>>
 Chevas: ¿Otra vez? #line:a2_030
 Chechu: Dije que era la última y he mentido. Te traigo esto, que se te ha caído en el porche. #line:a2_031
 <<chechu_entrega_tornillo>>
@@ -150,7 +148,6 @@ Pensamiento: Vuelta y media. Sigue cerrada por dentro. #line:a2_054
 title: Roberta_Busqueda_Armario
 ---
 // Se desbloquea tras revisar al menos tres sitios. El ruido lleva al jugador al armario.
-<<sonido golpe_dentro_armario>>
 Pensamiento: ¿Rober? ¿Estás en el armario? #line:a2_055
 Pensamiento: Aquí no hay nadie. Pero el fondo suena hueco. #line:a2_056
 <<objetivo "Abre el fondo del armario">>

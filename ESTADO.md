@@ -1,6 +1,6 @@
 # Estado de Ominous
 
-**Fase actual:** 5, prólogo y acto 1 jugables.
+**Fase actual:** 6, el acto 2.
 
 ## Hecho
 - Unity 6.3 LTS (6000.3.28f1) en Steam Deck (Unity Hub en Flatpak), con módulo de build Linux.
@@ -19,7 +19,9 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
-- Fase 5: prueba de Toni jugando del principio al final del acto 1, y de alguien que no conozca el juego. Con su visto bueno, etiqueta `fase-5-ok`. Si no da miedo, se corrige aquí antes de seguir.
+- Fase 6: acto 2.
+- Pendiente de la fase 5: Toni no dijo si el prólogo y el acto 1 dan miedo ni lo ha probado con un tercero; pidió seguir. Revisar el ritmo al tener toda la historia.
+- Defecto conocido: línea punteada en la fachada, sobre la puerta de entrada (seguramente la sombra del porche).
 - No hay animaciones ni voces: las figuras se deslizan y Roberta murmura con sonido sintetizado.
 - El sonido se deja para las fases de pulido (decisión de Toni): no perder tiempo en él antes.
 - El coche es feo y cutre, lo dijo Toni: mejorarlo con los assets de la fase 10.
@@ -63,4 +65,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Textos abajo, más pequeños y más lentos; fuente adecuada al estilo (Noto Sans Mono, licencia OFL). El sonido se deja para el pulido.
+Terminar toda la historia y pulir los gráficos después. Pidió pasar a la fase 6.

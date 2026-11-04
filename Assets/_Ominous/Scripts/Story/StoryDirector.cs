@@ -7,9 +7,10 @@ using Yarn.Unity;
 namespace Ominous
 {
     /// <summary>Lleva la noche paso a paso: prólogo y acto 1. El guion está en Yarn; aquí se decide cuándo pasa cada cosa.</summary>
-    public class StoryDirector : MonoBehaviour
+    public partial class StoryDirector : MonoBehaviour
     {
-        public enum Step { Llegada, Tareas, HablarRoberta, Conversacion, ApagarLuces, Deambular, Llamada, EsperaPuerta, Visita, CerrarPuerta, MirarVentana, Fin }
+        public enum Step { Llegada, Tareas, HablarRoberta, Conversacion, ApagarLuces, Deambular, Llamada, EsperaPuerta, Visita, CerrarPuerta, MirarVentana,
+            GrifoArreglar, GrifoRoto, EsperaV2, VisitaV2, CerrarV2, Explorar, FotoCaida, FotoEnMano, EstanteriaCedida, Cuartito, EsperaV3, VisitaV3, CerrarV3, IrDormitorio, Busqueda, ArmarioGolpe, ArmarioFondo, Hueco, SalirCasa, VisitaV4, Volver, RobertaCocina, Fin }
 
         public static StoryDirector Instance { get; private set; }
         public Step Current { get; private set; }
@@ -87,6 +88,7 @@ namespace Ominous
             r.AddCommandHandler("chechu_se_va", () => WalkChechuAway());
             r.AddCommandHandler("mirar", (string who) => LookAtActor(who));
             r.AddCommandHandler("sonido", (string name) => Sfx.Play(name, SoundPosition(name)));
+            RegisterAct2Commands(r);
         }
 
         Vector3 SoundPosition(string name) => name.StartsWith("llamada") ? frontDoor.transform.position + Vector3.up * 1.2f : player.transform.position;
@@ -107,6 +109,7 @@ namespace Ominous
             chechu.Show(false);
             threshold.SetActive(false);
             frontDoor.locked = false;
+            BeginAct2State();
             StartMonologue();
             DialogueManager.Instance.Play("Prologo_Coche");
         }
@@ -129,20 +132,21 @@ namespace Ominous
 
         public bool CanUse(string id) => id switch
         {
-            "roberta" => Current == Step.HablarRoberta || (Current >= Step.Deambular && !usedOnce.Contains("cama")),
+            "roberta" => Current == Step.HablarRoberta || (Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("cama")),
             "cuenco" => !keysLeft && Current >= Step.Tareas && Current <= Step.ApagarLuces,
             "tele" => Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("tele"),
             "nevera" => Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("nevera"),
             "ventana" => (Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("ventana")) || Current == Step.MirarVentana,
-            "vaso" => Current >= Step.Tareas && !usedOnce.Contains("vaso"),
-            "grifo" => Current >= Step.Tareas && !usedOnce.Contains("grifo"),
-            "mirilla" => Current == Step.EsperaPuerta && !peeping,
-            _ => false,
+            "vaso" => Current >= Step.Tareas && Current <= Step.MirarVentana && !usedOnce.Contains("vaso"),
+            "grifo" => (Current >= Step.Tareas && Current <= Step.MirarVentana && !usedOnce.Contains("grifo")) || Current == Step.GrifoArreglar,
+            "mirilla" => (Current == Step.EsperaPuerta || Current == Step.EsperaV2 || Current == Step.EsperaV3) && !peeping,
+            _ => CanUseAct2(id),
         };
 
         public string PromptFor(string id, string fallback) => id switch
         {
             "roberta" => Current == Step.HablarRoberta ? "Hablar con Roberta" : "Mirar",
+            "grifo" => Current == Step.GrifoArreglar ? (hasWrench ? "Arreglar el grifo" : "Arreglar el grifo") : fallback,
             _ => fallback,
         };
 
@@ -162,6 +166,7 @@ namespace Ominous
                     dm.Play("Prologo_Agua");
                     break;
                 case "grifo":
+                    if (Current == Step.GrifoArreglar) { UseFaucet(); break; }
                     usedOnce.Add("grifo");
                     dm.Play("Prologo_Grifo_Examinar");
                     break;
@@ -184,8 +189,9 @@ namespace Ominous
                 case "ventana":
                     if (Current == Step.MirarVentana)
                     {
-                        Set(Step.Fin);
-                        dm.Play("Acto1_VentanaFinal", EndDemo);
+                        Set(Step.GrifoArreglar);
+                        dm.Play("Acto1_VentanaFinal");
+                        dm.Play("Acto2_Inicio");
                     }
                     else
                     {
@@ -195,6 +201,9 @@ namespace Ominous
                     break;
                 case "mirilla":
                     StartCoroutine(Peep());
+                    break;
+                default:
+                    OnUseAct2(id);
                     break;
             }
         }
@@ -240,6 +249,7 @@ namespace Ominous
                 dm.Play("Visita1", () => { Set(Step.CerrarPuerta); });
                 return;
             }
+            if (OnFrontDoorAct2()) return;
             if (Current == Step.CerrarPuerta && !frontDoor.IsOpen)
             {
                 frontDoor.locked = true;
@@ -262,6 +272,14 @@ namespace Ominous
 
         void WalkRobertaToBed()
         {
+            if (Current >= Step.Volver)
+            {
+                roberta.Walk(new[]
+                {
+                    new Vector3(10.45f, 0f, 3.8f), new Vector3(10.45f, 0f, 5.2f), new Vector3(2.95f, 0f, 5.2f), new Vector3(2.95f, 0f, 6.9f), new Vector3(2.35f, 0f, 7.4f),
+                }, PutRobertaInBed);
+                return;
+            }
             if (tvSound != null) tvSound.volume *= 0.45f;
             roberta.Slump(0f);
             roberta.Walk(new[]
@@ -295,7 +313,8 @@ namespace Ominous
                 wanderTime += Time.deltaTime;
                 if (wanderUses >= 2 && wanderTime > 25f || wanderTime > 180f) Knock();
             }
-            if (Current == Step.EsperaPuerta && !DialogueManager.Instance.IsBusy && !peeping)
+            UpdateAct2();
+            if ((Current == Step.EsperaPuerta || Current == Step.EsperaV2 || Current == Step.EsperaV3) && !DialogueManager.Instance.IsBusy && !peeping)
             {
                 knockTimer += Time.deltaTime;
                 if (knockTimer > 28f)
@@ -370,13 +389,14 @@ namespace Ominous
             Current = step;
             keysLeft = doorClosed = true;
             outsideBounds.SetActive(false);
-            frontDoor.locked = step != Step.EsperaPuerta;
+            frontDoor.locked = !(step == Step.EsperaPuerta || step == Step.EsperaV2 || step == Step.EsperaV3 || step == Step.SalirCasa);
             PutRobertaInBed();
             foreach (var s in FindObjectsByType<LightSwitch>(FindObjectsSortMode.None))
                 if (s.isOn) s.Interact();
             if (tvSound != null) tvSound.volume *= 0.45f;
-            if (step == Step.EsperaPuerta) PlaceChechu();
+            if (step == Step.EsperaPuerta || step == Step.EsperaV2 || step == Step.EsperaV3) PlaceChechu();
             else chechu.Show(false);
+            RestoreAct2(step);
             GameDirector.Instance.SetObjective(GameDirector.Instance.Night.objective);
         }
     }

@@ -105,13 +105,28 @@ namespace Ominous.EditorTools
 
         static MeshKit Armario()
         {
+            // Hueco: se puede entrar. Frente hacia +z; las hojas y el fondo son piezas aparte.
             var k = new MeshKit();
-            k.Box(new Vector3(0, 1.05f, 0), new Vector3(1.4f, 2.1f, 0.58f), woodLight);
-            k.Box(new Vector3(-0.35f, 1.05f, 0.295f), new Vector3(0.67f, 2f, 0.015f), woodDark);
-            k.Box(new Vector3(0.35f, 1.05f, 0.295f), new Vector3(0.67f, 2f, 0.015f), woodDark);
-            k.Box(new Vector3(-0.05f, 1.05f, 0.31f), new Vector3(0.02f, 0.14f, 0.02f), metal);
-            k.Box(new Vector3(0.05f, 1.05f, 0.31f), new Vector3(0.02f, 0.14f, 0.02f), metal);
+            k.Box(new Vector3(0, 2.08f, 0), new Vector3(1.4f, 0.04f, 0.58f), woodLight);
+            k.Box(new Vector3(-0.69f, 1.04f, 0), new Vector3(0.02f, 2.08f, 0.58f), woodLight);
+            k.Box(new Vector3(0.69f, 1.04f, 0), new Vector3(0.02f, 2.08f, 0.58f), woodLight);
+            k.Box(new Vector3(0, 1.75f, -0.05f), new Vector3(1.36f, 0.02f, 0.46f), woodLight);
+            k.Box(new Vector3(0, 1.62f, 0), new Vector3(1.36f, 0.02f, 0.02f), metal);
             return k;
+        }
+
+        static GameObject Part(string name, MeshKit kit, Transform parent, Vector3 local)
+        {
+            var mesh = kit.Build(name, out var mats);
+            string path = $"Assets/_Ominous/Art/Meshes/{name}.asset";
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(mesh, path);
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = local;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            go.AddComponent<MeshRenderer>().sharedMaterials = mats;
+            return go;
         }
 
         static MeshKit ComodaSimple()
@@ -397,13 +412,13 @@ namespace Ominous.EditorTools
             Wall(w, new Vector3(19, 0, 0), 4.4f, false, wall);
             Wall(w, new Vector3(14, 0, 4.4f), 5f, true, wall);
             Wall(w, new Vector3(14, 0, 0), 4.4f, false, wall, new Opening(2.1f, 3f, 0, DoorTop));
-            Wall(w, new Vector3(0, 0, 4.4f), 14f, true, wall, new Opening(5.6f, 6.5f, 0, DoorTop), new Opening(10f, 10.9f, 0, DoorTop));
+            Wall(w, new Vector3(0, 0, 4.4f), 14f, true, wall, new Opening(5.6f, 6.5f, 0, DoorTop), new Opening(7.2f, 8f, 0, 1.85f), new Opening(10f, 10.9f, 0, DoorTop));
             Wall(w, new Vector3(0, 0, 6), 14f, true, wall, new Opening(2.5f, 3.4f, 0, DoorTop), new Opening(8f, 8.9f, 0, DoorTop), new Opening(11.5f, 12.4f, 0, DoorTop));
             Wall(w, new Vector3(5, 0, 0), 4.4f, false, wall, new Opening(2.1f, 3f, 0, DoorTop));
             Wall(w, new Vector3(7, 0, 0), 4.4f, false, wall);
             Wall(w, new Vector3(8.2f, 0, 0), 4.4f, false, wall);
-            Wall(w, new Vector3(6, 0, 6), 4f, false, wall);
-            Wall(w, new Vector3(6.8f, 0, 6), 4f, false, wall);
+            Wall(w, new Vector3(6, 0, 6), 4f, false, wall, new Opening(1.35f, 1.5f, 1.52f, 1.66f), new Opening(2.3f, 3.1f, 0, 1.9f));
+            Wall(w, new Vector3(6.8f, 0, 6), 4f, false, wall, new Opening(1.2f, 1.35f, 1.66f, 1.78f));
             Wall(w, new Vector3(10, 0, 6), 4f, false, wall);
 
             // Azulejo del baño hasta 1,6 m, y concreto en el garaje
@@ -520,6 +535,7 @@ namespace Ominous.EditorTools
             GameObjectUtility.SetStaticEditorFlags(lampMesh, StaticEditorFlags.BatchingStatic);
             Picture(f, "CuadroSalon", paintA, 0.08f, 1.65f, 3.75f, 90f);
 
+            var tvFillLight = Point("LuzTeleResplandor", lights, new Vector3(2.15f, 1f, 3.65f), new Color(0.72f, 0.8f, 0.95f), 0.5f, 3f);
             var tv = SpotLight("LuzTele", lights, new Vector3(2.15f, 0.8f, 3.8f), Quaternion.Euler(4, 180, 0), new Color(0.72f, 0.8f, 0.95f), 3f, 8f, 150f, ~0);
             tv.shadows = LightShadows.Soft;
             tv.shadowStrength = 0.9f;
@@ -563,7 +579,8 @@ namespace Ominous.EditorTools
             front.transform.rotation = Quaternion.Euler(0, 270, 0);
 
             // Pasillo
-            Put("EstanteriaPasillo", Estanteria(), f, 7.6f, 4.62f, 180f);
+            var hallShelf = Put("EstanteriaPasillo", Estanteria(), f, 7.6f, 4.62f, 180f);
+            GameObjectUtility.SetStaticEditorFlags(hallShelf, 0);
             var clock = new MeshKit();
             clock.Cylinder(new Vector3(0, 0, 0), 0.0f, 0.0f, 0f, 3, paper);
             clock.Box(Vector3.zero, new Vector3(0.32f, 0.32f, 0.03f), woodDark);
@@ -609,7 +626,9 @@ namespace Ominous.EditorTools
             Put("Cama", Cama(), f, 1.1f, 8.1f, 270f);
             Put("MesillaLampara", Mesilla(true), f, 0.32f, 9.2f, 90f);
             Put("Mesilla", Mesilla(false), f, 0.32f, 7.0f, 90f);
-            Put("Armario", Armario(), f, 5.62f, 8.7f, 270f);
+            var closet = Put("Armario", Armario(), f, 5.62f, 8.7f, 270f, false);
+            GameObjectUtility.SetStaticEditorFlags(closet, 0);
+            closet.AddComponent<MeshCollider>();
             Put("ComodaDormitorio", ComodaSimple(), f, 3.2f, 9.72f, 180f);
             var rugKit = new MeshKit().Box(new Vector3(0, 0.006f, 0), new Vector3(1.6f, 0.012f, 1.1f), sheet);
             Put("AlfombraDormitorio", rugKit, f, 2.9f, 7.5f, 0, false);
@@ -791,6 +810,11 @@ namespace Ominous.EditorTools
             Add("interruptor", AudioGen.Click(), 0.45f);
             Add("llaves", AudioGen.Keys(), 0.5f);
             Add("paso", AudioGen.Step(), 0.22f);
+            // Provisionales: el sonido definitivo llega en el pulido.
+            Add("objeto_cae", AudioGen.SoftThud(), 0.75f);
+            Add("golpe_armario", AudioGen.Knock(), 0.8f);
+            Add("llave_se_parte", AudioGen.Rattle(), 0.85f);
+            Add("tuberia_golpe", AudioGen.SoftThud(), 0.7f);
             return tvAudio;
         }
 
@@ -984,11 +1008,13 @@ namespace Ominous.EditorTools
             }
 
             var dir = story.AddComponent<StoryDirector>();
+            BuildAct2(dir, t);
             dir.frontDoor = GameObject.Find("PuertaEntrada").GetComponent<Door>();
             dir.roberta = roberta;
             dir.chechu = chechu;
             dir.robertaVoice = voice;
             dir.tvSound = tvAudio;
+            dir.tvFill = GameObject.Find("LuzTeleResplandor").GetComponent<Light>();
             dir.threshold = threshold;
             dir.outsideBounds = bounds;
             dir.project = AssetDatabase.LoadAssetAtPath<YarnProject>(YarnProjectPath);
@@ -996,6 +1022,145 @@ namespace Ominous.EditorTools
             // Luces al llegar: recibidor y lámpara del salón encendidas, como las dejó Roberta
             var hall = GameObject.Find("Interruptor_Recibidor").GetComponent<LightSwitch>();
             hall.isOn = true;
+        }
+
+        static void BuildAct2(StoryDirector dir, Transform t)
+        {
+            // Llave inglesa encima de las latas del garaje, y el bote que cae
+            var wrenchKit = new MeshKit();
+            wrenchKit.Box(Vector3.zero, new Vector3(0.28f, 0.015f, 0.03f), chrome);
+            wrenchKit.Box(new Vector3(0.14f, 0, 0), new Vector3(0.05f, 0.016f, 0.07f), chrome);
+            var wr = Instance("LlaveInglesa", wrenchKit, t, new Vector3(14.62f, 0.235f, 3.92f), 20f, false);
+            dir.wrench = wr;
+            Use("llave", "Coger la llave inglesa", new Vector3(14.62f, 0.3f, 3.92f), new Vector3(0.5f, 0.35f, 0.4f), wr.transform);
+            var canKit = new MeshKit().Cylinder(Vector3.zero, 0.06f, 0.06f, 0.15f, 8, metal);
+            dir.fallenCan = Instance("BoteCaido", canKit, t, new Vector3(15.1f, 0.06f, 3.3f), 0f, false);
+            dir.fallenCan.transform.rotation = Quaternion.Euler(90f, 30f, 0f);
+
+            // Baldosa floja
+            Use("baldosa", "Pisar la baldosa", new Vector3(7.6f, 0.03f, 7.6f), new Vector3(0.4f, 0.1f, 0.4f), t);
+
+            // Armario de cocina abierto: aparece con el susto
+            var cab = new MeshKit().Box(new Vector3(-0.25f, 0f, 0f), new Vector3(0.5f, 0.68f, 0.02f), woodDark);
+            dir.kitchenCabinetOpen = Instance("HojaArmarioCocina", cab, t, new Vector3(9.3f, 1.82f, 0.46f), 70f, false);
+
+            // Cuadro nuevo: esta casa vista desde enfrente
+            var houseArt = ProceduralAssets.Painting("CuadroCasa", new Color(0.24f, 0.26f, 0.3f), new Color(0.42f, 0.42f, 0.38f));
+            var pictureKit = new MeshKit();
+            pictureKit.Box(Vector3.zero, new Vector3(0.62f, 0.47f, 0.03f), woodDark);
+            pictureKit.Box(new Vector3(0, 0, -0.018f), new Vector3(0.54f, 0.39f, 0.006f), houseArt);
+            pictureKit.Box(new Vector3(0, -0.04f, -0.022f), new Vector3(0.34f, 0.15f, 0.003f), siding);
+            pictureKit.Box(new Vector3(0, 0.05f, -0.022f), new Vector3(0.38f, 0.05f, 0.003f), roof);
+            pictureKit.Box(new Vector3(0, -0.06f, -0.024f), new Vector3(0.05f, 0.11f, 0.003f), plastic);
+            dir.newPicture = Instance("CuadroCasa", pictureKit, t, new Vector3(2.3f, 1.6f, 5.92f), 0f, false);
+
+            // Foto de la boda en la estantería del pasillo y su copia en el suelo
+            var photo = new MeshKit();
+            photo.Box(Vector3.zero, new Vector3(0.16f, 0.21f, 0.015f), woodLight);
+            photo.Box(new Vector3(0, 0, -0.009f), new Vector3(0.13f, 0.18f, 0.003f), paper);
+            dir.photoOnShelf = Instance("FotoBoda", photo, t, new Vector3(7.9f, 1.05f, 4.55f), 180f, false);
+            dir.photoOnFloor = Instance("FotoBodaSuelo", photo, t, new Vector3(7.4f, 0.02f, 4.95f), 0f, false);
+            dir.photoOnFloor.transform.rotation = Quaternion.Euler(90f, 25f, 0f);
+            var pick = new GameObject("Uso_foto_suelo");
+            pick.transform.SetParent(dir.photoOnFloor.transform, false);
+            var pc = pick.AddComponent<BoxCollider>(); pc.isTrigger = true; pc.size = new Vector3(0.4f, 0.4f, 0.2f);
+            var ps = pick.AddComponent<StoryObject>(); ps.id = "foto_suelo"; ps.prompt = "Recoger la foto";
+            Use("foto_balda", "Poner la foto en la estantería", new Vector3(7.6f, 1.15f, 4.72f), new Vector3(0.9f, 1.4f, 0.1f), t);
+
+            // Estantería del pasillo: primero cede un poco; luego se aparta
+            var shelfRoot = GameObject.Find("EstanteriaPasillo");
+            dir.shelfNudge = shelfRoot.AddComponent<SimpleHinge>();
+            dir.shelfNudge.openOffset = new Vector3(0f, 0f, 0.06f);
+            dir.shelfNudge.openYaw = 3f;
+            dir.shelfNudge.seconds = 0.5f;
+            dir.shelfAside = shelfRoot.AddComponent<SimpleHinge>();
+            dir.shelfAside.openOffset = new Vector3(1.05f, 0f, 0.03f);
+            dir.shelfAside.openYaw = -3f;
+            dir.shelfAside.seconds = 2.2f;
+            Use("estanteria", "Apartar la estantería", new Vector3(7.6f, 1f, 4.82f), new Vector3(1f, 1.8f, 0.1f), t);
+
+            // Habitación oculta 1
+            var room1 = new GameObject("Habitacion1").transform;
+            room1.SetParent(t);
+            Again("SillaCocina", room1, 7.6f, 2.4f, 270f);
+            var blanket1 = new MeshKit().Box(new Vector3(0, 0.03f, 0), new Vector3(0.7f, 0.06f, 1.5f), blanket);
+            Instance("MantaCuartito", blanket1, room1, new Vector3(7.65f, 0, 1.0f), 0f, false);
+            var cansRoom = new MeshKit();
+            foreach (var (x, z) in new[] { (0f, 0f), (0.12f, 0.1f), (-0.1f, 0.16f), (0.05f, 0.28f) })
+                cansRoom.Cylinder(new Vector3(x, 0, z), 0.04f, 0.04f, 0.11f, 7, metal);
+            Instance("LatasCuartito", cansRoom, room1, new Vector3(7.5f, 0, 3.4f), 0f, false);
+            var coat = new MeshKit();
+            coat.Box(new Vector3(0, 0, 0), new Vector3(0.1f, 0.68f, 0.42f), ProceduralAssets.Fabric("Chaqueta", new Color(0.24f, 0.27f, 0.23f)));
+            coat.Box(new Vector3(0.06f, 0.3f, 0), new Vector3(0.03f, 0.03f, 0.03f), metal);
+            Instance("ChaquetaColgada", coat, room1, new Vector3(8.09f, 1.3f, 3.0f), 0f, false);
+            Use("chaqueta", "Mirar la chaqueta", new Vector3(8.05f, 1.2f, 3f), new Vector3(0.25f, 0.9f, 0.6f), t);
+            Use("silla", "Mirar la silla", new Vector3(7.6f, 0.6f, 2.4f), new Vector3(0.5f, 1.2f, 0.5f), t);
+
+            // Armario del dormitorio con su fondo falso: hojas y fondo en piezas móviles
+            var closet = GameObject.Find("Armario").transform;
+            var leafKit = new MeshKit();
+            leafKit.Box(new Vector3(0.34f, 1.03f, 0), new Vector3(0.68f, 2.04f, 0.018f), woodDark);
+            leafKit.Box(new Vector3(0.62f, 1.03f, 0.016f), new Vector3(0.02f, 0.14f, 0.02f), metal);
+            var left = Part("ArmarioHojaIzq", leafKit, closet, new Vector3(-0.68f, 0.02f, 0.295f));
+            dir.closetLeft = left.AddComponent<SimpleHinge>();
+            dir.closetLeft.openYaw = -105f;
+            var rightKit = new MeshKit();
+            rightKit.Box(new Vector3(-0.34f, 1.03f, 0), new Vector3(0.68f, 2.04f, 0.018f), woodDark);
+            rightKit.Box(new Vector3(-0.62f, 1.03f, 0.016f), new Vector3(0.02f, 0.14f, 0.02f), metal);
+            var right = Part("ArmarioHojaDer", rightKit, closet, new Vector3(0.68f, 0.02f, 0.295f));
+            dir.closetRight = right.AddComponent<SimpleHinge>();
+            dir.closetRight.openYaw = 105f;
+            var backKit = new MeshKit().Box(new Vector3(0.68f, 1.04f, 0), new Vector3(1.36f, 2.08f, 0.02f), woodLight);
+            var back = Part("ArmarioFondo", backKit, closet, new Vector3(-0.68f, 0f, -0.28f));
+            dir.closetBack = back.AddComponent<SimpleHinge>();
+            dir.closetBack.openYaw = -82f;
+            dir.closetBack.seconds = 1.6f;
+            var backCollider = back.AddComponent<BoxCollider>();
+            backCollider.center = new Vector3(0.68f, 1.04f, 0);
+            backCollider.size = new Vector3(1.36f, 2.08f, 0.04f);
+            Use("armario", "Abrir el armario", new Vector3(5.28f, 1.1f, 8.7f), new Vector3(0.1f, 1.6f, 1.3f), t);
+            Use("fondo", "Empujar el fondo", new Vector3(5.88f, 1.1f, 8.7f), new Vector3(0.1f, 1.6f, 1.2f), t);
+
+            // Habitación oculta 2: agujeros
+            Use("agujero_cama", "Mirar por el agujero", new Vector3(6.08f, 1.59f, 7.43f), new Vector3(0.1f, 0.35f, 0.4f), t);
+            Use("agujero_bano", "Mirar por el agujero", new Vector3(6.72f, 1.72f, 7.27f), new Vector3(0.1f, 0.35f, 0.4f), t);
+
+            // La tele, para apagarla
+            dir.tv = GameObject.Find("Tele").GetComponent<TVFlicker>();
+
+            // Casa de Chechu: luz, silueta y puerta
+            var street = GameObject.Find("Calle").transform;
+            var lit = ProceduralAssets.Solid("VentanaEncendida", new Color(0.05f, 0.05f, 0.04f), new Color(0.62f, 0.5f, 0.3f));
+            var winKit = new MeshKit().Box(Vector3.zero, new Vector3(1.4f, 1.15f, 0.01f), lit);
+            dir.chechuWindowLight = Instance("VentanaChechuLuz", winKit, street, new Vector3(4.4f, 1.5f, -9.565f), 0f, false);
+            var sil = new MeshKit();
+            sil.Box(new Vector3(0, -0.27f, 0), new Vector3(0.38f, 0.62f, 0.01f), plastic);
+            sil.Box(new Vector3(0, 0.17f, 0), new Vector3(0.2f, 0.24f, 0.01f), plastic);
+            dir.chechuSilhouette = Instance("SiluetaChechu", sil, street, new Vector3(4.4f, 1.48f, -9.55f), 0f, false);
+            var doorDark = new MeshKit().Box(Vector3.zero, new Vector3(0.95f, 2.05f, 0.02f), windowLit);
+            dir.chechuDoorDark = Instance("PuertaChechuHueco", doorDark, street, new Vector3(7f, 1.0f, -9.54f), 0f, false);
+            var leaf = new MeshKit().Box(Vector3.zero, new Vector3(0.95f, 2.05f, 0.02f), doorExt);
+            leaf.Box(new Vector3(0.36f, -0.05f, 0.02f), new Vector3(0.1f, 0.03f, 0.03f), metalExt);
+            dir.chechuDoorLeaf = Instance("PuertaChechuHoja", leaf, street, new Vector3(7f, 1.0f, -9.53f), 0f, false);
+            Use("puerta_chechu", "Llamar a la puerta", new Vector3(7f, 1.1f, -9.4f), new Vector3(1f, 1.9f, 0.2f), t);
+
+            // Calle en la visita 4: del porche a la puerta de Chechu y poco más
+            var limits = new GameObject("LimitesCalle");
+            limits.transform.SetParent(t);
+            foreach (var (c, size) in new[]
+            {
+                (new Vector3(3.2f, 1f, -5f), new Vector3(0.2f, 2f, 10f)),
+                (new Vector3(10.6f, 1f, -5f), new Vector3(0.2f, 2f, 10f)),
+                (new Vector3(7f, 1f, -9.75f), new Vector3(8f, 2f, 0.2f)),
+            })
+            {
+                var w = new GameObject("Limite");
+                w.transform.SetParent(limits.transform);
+                w.transform.position = c;
+                w.AddComponent<BoxCollider>().size = size;
+            }
+            dir.streetBounds = limits;
+            foreach (var x in street.GetComponentsInChildren<Transform>(true)) x.gameObject.layer = ExteriorLayer;
         }
 
         /// <summary>Hornea la luz que entra por las ventanas. Tarda varios minutos: se lanza en segundo plano.</summary>
