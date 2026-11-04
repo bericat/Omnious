@@ -21,7 +21,10 @@ namespace Ominous
         void Awake()
         {
             // 60 fps con sincronía vertical: sin tearing y sin gastar batería de más en la Deck.
-            if (Application.isPlaying) QualitySettings.vSyncCount = 1;
+            if (!Application.isPlaying) return;
+            QualitySettings.vSyncCount = 1;
+            // Copia en ejecución: los ajustes del jugador no tocan el asset del proyecto.
+            if (settings != null) settings = Instantiate(settings);
         }
 
         void OnEnable() => Apply();
@@ -30,11 +33,12 @@ namespace Ominous
         public void Apply()
         {
             if (settings == null) return;
-            float height = settings.internalHeight;
+            float intensity = OminousOptions.PsxIntensity;
+            float height = Mathf.Lerp(480f, settings.internalHeight, intensity);
             float aspect = Screen.height > 0 ? (float)Screen.width / Screen.height : 16f / 10f;
-            Shader.SetGlobalVector(SnapRes, new Vector4(height * aspect * 0.5f, height * 0.5f, settings.vertexSnap, 0));
-            Shader.SetGlobalVector(Params, new Vector4(settings.affine, settings.fogStart, settings.fogEnd, 0));
-            Shader.SetGlobalVector(Post, new Vector4(settings.dither, settings.colorLevels, settings.brightness, 0));
+            Shader.SetGlobalVector(SnapRes, new Vector4(height * aspect * 0.5f, height * 0.5f, settings.vertexSnap * intensity, 0));
+            Shader.SetGlobalVector(Params, new Vector4(settings.affine * intensity, settings.fogStart, settings.fogEnd, 0));
+            Shader.SetGlobalVector(Post, new Vector4(settings.dither * intensity, Mathf.Lerp(48f, settings.colorLevels, intensity), settings.brightness * OminousOptions.Brightness, 0));
             Shader.SetGlobalColor(Ambient, settings.ambient.linear);
             Shader.SetGlobalColor(FogColor, settings.fogColor.linear);
             Shader.SetGlobalColor(ExteriorFogColor, settings.exteriorFogColor.linear);

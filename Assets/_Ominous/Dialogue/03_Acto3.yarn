@@ -87,7 +87,7 @@ title: Habitacion3_Libreta
 ---
 Pensamiento: Una libreta en la mesilla. En mi lado. #line:a3_040
 <<hablante Libreta>>
-Tengo que arreglar el grifo del baño antes de que se entere de que lo rompí yo. #line:a3_libreta #shadow:pro_grifo
+Tengo que arreglar el grifo del baño antes de que se entere de que lo rompí yo. #shadow:pro_grifo
 <<esperar 3>>
 Pensamiento: Es mi letra. #line:a3_041
 ===

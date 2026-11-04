@@ -13,7 +13,13 @@ namespace Ominous
         public float mouseSensitivity = 0.08f;
         public float standHeight = 1.7f;
         public float crouchHeight = 1.05f;
-        public static bool InputBlocked;
+        static readonly System.Collections.Generic.HashSet<object> blockers = new();
+        /// <summary>Hay algo que impide moverse: un diálogo, la pausa o un panel.</summary>
+        public static bool InputBlocked => blockers.Count > 0;
+        public static void SetBlocked(object owner, bool blocked)
+        {
+            if (blocked) blockers.Add(owner); else blockers.Remove(owner);
+        }
 
         CharacterController controller;
         float pitch, verticalVelocity, currentHeight, bobTime;
@@ -25,6 +31,16 @@ namespace Ominous
         }
 
         void Start() => SetCursorLocked(true);
+
+        void OnDestroy() => blockers.Clear();
+
+        public void Teleport(Vector3 position, float yaw)
+        {
+            if (controller != null) controller.enabled = false;
+            transform.SetPositionAndRotation(position, Quaternion.Euler(0f, yaw, 0f));
+            pitch = 0f;
+            if (controller != null) controller.enabled = true;
+        }
 
         static void SetCursorLocked(bool locked)
         {
@@ -38,12 +54,10 @@ namespace Ominous
             var mouse = Mouse.current;
             if (keyboard == null || mouse == null) return;
 
-            if (keyboard.escapeKey.wasPressedThisFrame) SetCursorLocked(false);
-            else if (!InputBlocked && mouse.leftButton.wasPressedThisFrame) SetCursorLocked(true);
-            if (InputBlocked) SetCursorLocked(false);
+            SetCursorLocked(!InputBlocked);
 
-            bool active = !InputBlocked && Cursor.lockState == CursorLockMode.Locked;
-            Vector2 look = active ? mouse.delta.ReadValue() * mouseSensitivity : Vector2.zero;
+            bool active = !InputBlocked;
+            Vector2 look = active ? mouse.delta.ReadValue() * (mouseSensitivity * OminousOptions.Sensitivity) : Vector2.zero;
             transform.Rotate(0f, look.x, 0f);
             pitch = Mathf.Clamp(pitch - look.y, -85f, 85f);
 

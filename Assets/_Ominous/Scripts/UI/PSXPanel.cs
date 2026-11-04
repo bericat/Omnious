@@ -6,7 +6,8 @@ namespace Ominous
     /// <summary>Panel de pruebas (F1): ajustes PSX en vivo y medición de fps.</summary>
     public class PSXPanel : MonoBehaviour
     {
-        public PSXSettings settings;
+        public PSXController controller;
+        PSXSettings settings => controller != null ? controller.settings : null;
         bool open;
         float smooth = 1f / 60f, worst, worstTimer;
         GUIStyle style;
@@ -40,11 +41,11 @@ namespace Ominous
             if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
             {
                 open = !open;
-                FirstPersonController.InputBlocked = open;
+                FirstPersonController.SetBlocked(this, open);
             }
         }
 
-        void OnDisable() => FirstPersonController.InputBlocked = false;
+        void OnDisable() => FirstPersonController.SetBlocked(this, false);
 
         float Slider(string label, float value, float min, float max)
         {

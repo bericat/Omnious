@@ -11,7 +11,7 @@ namespace Ominous.EditorTools
     /// Coordenadas en metros: x hacia el este, z hacia el norte; la calle queda al sur.
     /// El salón ocupa x 0-5, z 0-4.4, altura 2.6 (ver Docs/Diseno/plano.svg).
     /// </summary>
-    public static class SalonBuilder
+    public static partial class SalonBuilder
     {
         const string ScenePath = "Assets/_Ominous/Scenes/Test_Salon.unity";
         const float Height = 2.6f, Thick = 0.12f;
@@ -225,9 +225,15 @@ namespace Ominous.EditorTools
 
         static MeshKit PuertaInterior()
         {
-            var k = new MeshKit();
+            var k = PuertaMarco();
             k.Box(new Vector3(0, 1.0f, 0), new Vector3(0.04f, 2.0f, 0.86f), door);
             k.Box(new Vector3(-0.05f, 0.95f, -0.34f), new Vector3(0.05f, 0.03f, 0.1f), metal);
+            return k;
+        }
+
+        static MeshKit PuertaMarco()
+        {
+            var k = new MeshKit();
             k.Box(new Vector3(0, 2.03f, 0), new Vector3(0.16f, 0.06f, 1.0f), frame);
             k.Box(new Vector3(0, 1.0f, 0.46f), new Vector3(0.16f, 2.0f, 0.06f), frame);
             k.Box(new Vector3(0, 1.0f, -0.46f), new Vector3(0.16f, 2.0f, 0.06f), frame);
@@ -386,8 +392,9 @@ namespace Ominous.EditorTools
 
             // Control del efecto PSX
             var psx = new GameObject("PSX");
-            psx.AddComponent<PSXController>().settings = settings;
-            psx.AddComponent<PSXPanel>().settings = settings;
+            var controller = psx.AddComponent<PSXController>();
+            controller.settings = settings;
+            psx.AddComponent<PSXPanel>().controller = controller;
 
             RenderSettings.skybox = null;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
@@ -396,9 +403,7 @@ namespace Ominous.EditorTools
             RenderSettings.defaultReflectionMode = UnityEngine.Rendering.DefaultReflectionMode.Custom;
 
             EditorSceneManager.SaveScene(scene, ScenePath);
-            var scenes = new List<EditorBuildSettingsScene> { new(ScenePath, true) };
-            EditorBuildSettings.scenes = scenes.ToArray();
-            AssetDatabase.SaveAssets();
+                        AssetDatabase.SaveAssets();
             Debug.Log("Salón de pruebas construido");
         }
 

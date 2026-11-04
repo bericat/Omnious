@@ -1,0 +1,14 @@
+{
+  "projectFileVersion": 4,
+  "sourceFiles": [
+    "**/*.yarn"
+  ],
+  "excludeFiles": [
+    "**/*~/*"
+  ],
+  "localisation": {},
+  "baseLanguage": "es",
+  "compilerOptions": {
+    "diagnosticsSeverity": {}
+  }
+}

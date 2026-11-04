@@ -45,7 +45,7 @@ title: Bucle_Puerta
 <<puerta_se_abre>>
 <<esperar 2>>
 <<hablante Chechu>>
-¿Sí…? Son casi las tres. ¿Pasa algo? #line:fin_frase_puerta #shadow:frase_puerta
+¿Sí…? Son casi las tres. ¿Pasa algo? #shadow:frase_puerta
 <<esperar 1>>
 Roberta: ¿Quién es a estas horas? #line:fin_013
 <<corte_negro>>

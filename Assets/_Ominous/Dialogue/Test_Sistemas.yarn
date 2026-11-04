@@ -1,0 +1,38 @@
+title: Test_Conversacion
+---
+Figura: Hola. Soy una figura de prueba. #line:test_001
+Figura: Sirvo para comprobar los diálogos, las elecciones y el guardado. #line:test_002
+Pensamiento: Debería contestarle algo. #line:test_003
+-> ¿Quién te ha puesto ahí? #line:test_004
+    Figura: Un script de editor. #line:test_005
+-> Esto tiene mala pinta. #line:test_006
+    Figura: Es provisional. #line:test_007
+-> Mejor me voy. #line:test_008
+    Figura: Como quieras. #line:test_009
+Figura: Voy a guardar la partida y a pasar al acto 2. Mira la pared, junto a la tele. #line:test_010
+<<punto_control prueba>>
+<<acto 2>>
+<<hora 03:05>>
+<<objetivo "Busca el cuadro nuevo en la pared">>
+Pensamiento: Ese cuadro no estaba ahí. #line:test_011
+===
+title: Test_Mando
+---
+Pensamiento: El mando. Le faltan pilas desde hace meses. #line:test_012
+===
+title: Test_Tele
+---
+Pensamiento: El señor de los cuchillos sigue ahí. #line:test_013
+===
+title: Test_Caja
+---
+Pensamiento: Una caja vacía. Era solo para ver si la puerta se abre. #line:test_014
+===
+title: Test_Llave
+---
+Pensamiento: Una llave pequeña. No sé de qué es. #line:test_015
+===
+title: Test_Cuadro
+---
+Pensamiento: Es esta casa. Vista desde enfrente. #line:test_016
+===
