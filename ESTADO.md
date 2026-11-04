@@ -1,6 +1,6 @@
 # Estado de Ominous
 
-**Fase actual:** 1, guion y diseño cerrado.
+**Fase actual:** 2, estilo PSX y primera estancia.
 
 ## Hecho
 - Unity 6.3 LTS (6000.3.28f1) en Steam Deck (Unity Hub en Flatpak), con módulo de build Linux.
@@ -9,9 +9,9 @@
 - Conexión de Claude con el Editor. Prueba superada: crear un objeto, pulsar Play, detenerlo, leer la consola y borrar el objeto.
 
 ## Falta
-- Fase 1: Toni tiene que aprobar el guion (`Assets/_Ominous/Dialogue`), el plano, la lista de objetos y la tabla de escalada (`Docs/Diseno`).
-- El guion no se ha podido compilar: Yarn Spinner se instala en la fase 3.
-- Pendiente de la fase 0, sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto. Hasta entonces no hay copia fuera de la microSD.
+- Fase 2: shader y post-proceso PSX, salón provisional, ventana con exterior, luz de noche y medir rendimiento.
+- Guion: ampliar diálogos si hace falta cuando se juegue en la fase 5. No se ha compilado: Yarn Spinner llega en la fase 3.
+- Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
 
 ## Conexión con Unity
 La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el paquete `com.unity.pipeline`:
@@ -25,4 +25,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Aprobó el plano, la frase fija y las ideas nuevas. Pidió un acto 2 más sutil, con todo lo de Chechu explicable hasta el acto 3; el jugador intenta arreglar el grifo y rompe la herramienta; sin pensamientos que razonen lo del grifo; sin desmayo ni fundido hasta que el jugador se tire. En la visita 4, Chevas va a casa de Chechu. Aprobó 4 visitas y el antecedente de la pareja. Falta su visto bueno final al guion revisado para cerrar la fase 1.
+Aprobó el guion revisado, el plano, las 4 visitas y el antecedente, y pidió pasar a la fase 2.
