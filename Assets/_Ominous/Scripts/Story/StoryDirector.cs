@@ -56,6 +56,16 @@ namespace Ominous
             var night = GameDirector.Instance.Night;
             if (GameDirector.Instance.Restored) ApplyRestored((Step)night.storyStep);
             else BeginNight();
+
+            // Para probar sin rejugar todo: ./Ominous -saltar acto2
+            var args = System.Environment.GetCommandLineArgs();
+            int i = System.Array.IndexOf(args, "-saltar");
+            if (i >= 0 && i + 1 < args.Length && args[i + 1] == "acto2" && !GameDirector.Instance.Restored)
+            {
+                JumpForTest(Step.GrifoArreglar);
+                player.Teleport(new Vector3(6f, 0.02f, 1.6f), 0f);
+                DialogueManager.Instance.Play("Acto2_Inicio");
+            }
         }
 
         void Set(Step step)
