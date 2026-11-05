@@ -32,6 +32,9 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - `HouseBuilder.Model(nombre, ...)` coloca el modelo si existe y si no, deja el provisional. Rehace los materiales con el sombreado del juego (`Materials/Modelos/`), usando la textura que se llama igual, y le genera UV de luz y una caja de colisión.
 - En la Deck: `git pull`, `git lfs pull` y reconstruir la casa.
 - Coches (rojo en el garaje; azul y gris en la calle) y niebla oliva de exterior, según una foto de referencia de Toni. Capturas en `Docs/Capturas/fase10_coches_niebla_antes_despues.png` y `fase10_niebla_farola.png`.
+- Modelos descargados en `Art/Externos/` (licencias en su `LEEME.md`): Land Cruiser en el garaje y en la calle, GMC Sierra en la calle, y Chicken man como Chechu provisional. `HouseBuilder.ExternalCar` y `ExternalCharacter` los colocan.
+- Sofá nuevo de la nube (madera con cojines de cuadros) en el salón.
+- Ojo: los coches son CC BY-NC, así que no se pueden usar si el juego se vende. Sus cristales están pintados en la textura, de modo que no se ve a Roberta dentro del coche en el acto 3.
 - Primer modelo: el mueble del recibidor con su cuenco. Captura en `Docs/Capturas/fase10_mueble_antes_despues.png`.
 
 ## Fase 9: cómo está montada
