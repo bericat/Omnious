@@ -25,7 +25,7 @@ s.render.engine = "CYCLES"
 s.cycles.samples = 48
 s.cycles.use_denoising = True
 s.render.resolution_x, s.render.resolution_y = 960, 720
-s.view_settings.view_transform = "AgX"
+s.view_settings.view_transform = "Standard"
 mundo = bpy.data.worlds.new("Mundo"); s.world = mundo
 mundo.use_nodes = True
 mundo.node_tree.nodes["Background"].inputs[1].default_value = 0.35

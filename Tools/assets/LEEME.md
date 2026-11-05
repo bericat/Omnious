@@ -25,3 +25,16 @@ venv/bin/python Tools/assets/vista_previa.py Assets/_Ominous/Art/Models/MuebleRe
 - En Blender se modela con Z arriba y el frente a -Y; la x de Unity es la x de Blender cambiada de signo.
 - UV a escala real: una textura cubre 1 m x 1 m.
 - Estilo: realista y con poco detalle, colores apagados (cámara doméstica de principios de los 2000).
+
+## Estilo (referencia: Fears to Fathom)
+Objetos realistas, usados y sucios. `hornear.py` lo hace en dos pasos:
+1. `material_sucio(...)`: color base (o textura CC0) con suciedad en rincones (oclusión), polvo de abajo,
+   manchas, cantos gastados y mugre fotográfica (`Suciedad_*` de `Assets/_Ominous/Art/CC0`).
+2. `atlas(objeto, nombre)`: UV automáticas y horneado de todo a una textura JPG por objeto
+   (`poco_detalle` da menos resolución a lo que apenas se ve).
+
+Texturas fotográficas CC0 (ambientCG) en `Assets/_Ominous/Art/CC0/<Categoria>_<ID>/`, fuentes en `LICENCIAS.md`.
+Antes de usarlas en la nube: `git lfs pull --include="Assets/_Ominous/Art/CC0/<carpeta>/*"` (solo las que hagan falta:
+la cuota de LFS del plan gratuito es 1 GB al mes). Atlas en JPG por la misma razón.
+
+`coche_2000.py` es un experimento (coche redondeado por subdivisión); no se usa en el juego.

@@ -16,6 +16,20 @@ import numpy as np
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 MODELOS = os.path.join(RAIZ, "Assets", "_Ominous", "Art", "Models")
 TEXTURAS = os.path.join(MODELOS, "Texturas")
+CC0 = os.path.join(RAIZ, "Assets", "_Ominous", "Art", "CC0")
+
+
+def cc0(carpeta, mapa="Color", no_color=False):
+    """Carga un mapa de una textura CC0 de Assets/_Ominous/Art/CC0/<carpeta>/ (Color, NormalGL, Roughness, AO, Opacity).
+    Hace falta `git lfs pull --include="Assets/_Ominous/Art/CC0/<carpeta>/*"` antes."""
+    d = os.path.join(CC0, carpeta)
+    for f in sorted(os.listdir(d)):
+        if f.endswith("_" + mapa + ".jpg") or f.endswith("_" + mapa + ".png"):
+            img = bpy.data.images.load(os.path.join(d, f), check_existing=True)
+            if no_color:
+                img.colorspace_settings.name = "Non-Color"
+            return img
+    raise FileNotFoundError(f"{carpeta}: no hay mapa {mapa}")
 
 
 def escena_vacia():
