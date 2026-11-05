@@ -114,6 +114,7 @@ Shader "Ominous/Video Lit"
                 if (_Exterior > 0.5)
                 {
                     float fog = saturate((d - _Video_ExteriorFog.x) / max(0.001, _Video_ExteriorFog.y - _Video_ExteriorFog.x));
+                    fog = 1.0 - (1.0 - fog) * (1.0 - fog); // cierra antes, como niebla real
                     color = lerp(color, _Video_ExteriorFogColor.rgb, fog);
                 }
                 else
