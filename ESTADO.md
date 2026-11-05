@@ -29,7 +29,7 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
 
 ## Fase 7: cómo está montada
-- `Scripts/Story/StoryDirector.Act3.cs` y `HouseBuilder.BuildAct3`. El sótano está lejos, en (40, -40, 0), y se llega con un parpadeo; también la puerta de más y la habitación repetida.
+- `Scripts/Story/StoryDirector.Act3.cs` y `HouseBuilder.BuildAct3`. El sótano está lejos, en (40, -40, 0): un parpadeo lleva de la puerta de la colada a lo alto de una escalera estrecha que se baja andando. La puerta de más y la habitación repetida también usan parpadeo.
 - Pasillo largo: sale por la puerta del fondo, tiene 16 m y solo existe mientras el jugador está en el pasillo. Lleva a `PuertaAlVacio`, cerrada hasta la fase 8.
 - Opción `Reducir efectos`: menos balanceo, pulso de mano, distorsión y variación de exposición.
 - Para probar: `-saltar acto3` tras pulsar Nueva partida.
@@ -76,4 +76,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Pidió pasar a la fase 7 (fase 6 dada por buena).
+Quitar el sonido de la tele hasta el pulido (sonaba fortísimo). Chechu aparece en el baño tras ver a Roberta en dos de los tres sitios. Al sótano se llega por una escalera estrecha.

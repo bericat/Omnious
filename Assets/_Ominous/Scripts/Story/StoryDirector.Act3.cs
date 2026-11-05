@@ -84,8 +84,8 @@ namespace Ominous
         {
             "puerta_de_mas" => Current == Step.Acto3,
             "puerta_sotano" => Current == Step.SotanoPuerta,
-            "fotos" => Current == Step.Sotano && !usedOnce.Contains("fotos"),
-            "libreta" => Current == Step.Sotano && !notebookRead,
+            "fotos" => Current == Step.Sotano && basementSeen && !usedOnce.Contains("fotos"),
+            "libreta" => Current == Step.Sotano && basementSeen && !notebookRead,
             "salir_sotano" => Current == Step.SotanoSalir,
             _ => false,
         };
@@ -109,10 +109,7 @@ namespace Ominous
                     dm.Play("Sotano_Puerta", () => StartCoroutine(Blink(() =>
                     {
                         basementRoot.SetActive(true);
-                        GameDirector.Instance.SetObjective("");
                         player.Teleport(basementArrival.position, basementArrival.eulerAngles.y);
-                        dm.Play("Habitacion3");
-                        GameDirector.Instance.OpenRoom(3);
                     })));
                     return true;
                 case "fotos":
@@ -158,6 +155,14 @@ namespace Ominous
             bool corridor = InRoom(-20f, 14f, 4.4f, 6f);
             // El pasillo largo solo existe mientras se está en el pasillo: no se puede ver desde fuera.
             if (Current >= Step.SotanoPuerta) longHall.SetActive(corridor);
+            // La habitación se descubre al terminar de bajar la escalera.
+            if (Current == Step.Sotano && !basementSeen && !dm.IsBusy && player.transform.position.y < -39f && player.transform.position.x < 46f)
+            {
+                basementSeen = true;
+                GameDirector.Instance.SetObjective("");
+                GameDirector.Instance.OpenRoom(3);
+                dm.Play("Habitacion3");
+            }
             if (Current == Step.Acto3 || Current == Step.SotanoPuerta)
             {
                 if (dm.IsBusy) return;

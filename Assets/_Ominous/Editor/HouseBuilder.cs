@@ -791,8 +791,8 @@ namespace Ominous.EditorTools
             Loop("Nevera", AudioGen.Fridge(), new Vector3(13.45f, 0.9f, 0.5f), 0.32f, 8f).transform.SetParent(root);
             Loop("Reloj", AudioGen.Clock(), new Vector3(6.3f, 1.9f, 5.9f), 0.2f, 7f).transform.SetParent(root);
             Loop("Viento", AudioGen.Wind(), Vector3.zero, 0.12f, 0f).transform.SetParent(root);
-            var tvAudio = Loop("Tele", AudioGen.TvMurmur(), new Vector3(2.15f, 0.8f, 3.85f), 0.3f, 9f);
-            tvAudio.transform.SetParent(root);
+            // La tele va sin sonido por ahora: sonaba demasiado fuerte y el sonido llega en el pulido.
+            AudioSource tvAudio = null;
             var drip = Loop("Grifo", AudioGen.Drip(), new Vector3(9.6f, 0.9f, 7.1f), 0.28f, 5f);
             drip.transform.SetParent(root);
             var cars = new GameObject("Coches");
@@ -1100,7 +1100,11 @@ namespace Ominous.EditorTools
             shell.Box(new Vector3(3f, -0.05f, 8f), new Vector3(6.24f, 0.1f, 4.24f), floorWood);
             shell.Box(new Vector3(3f, Height + 0.05f, 8f), new Vector3(6.24f, 0.1f, 4.24f), ceiling);
             shell.Box(new Vector3(0f, Height / 2, 8f), new Vector3(Thick, Height, 4.24f), wall);
-            shell.Box(new Vector3(6f, Height / 2, 8f), new Vector3(Thick, Height, 4.24f), wall);
+            // Pared este con el hueco de la escalera (z 8,3 a 9,2)
+            shell.Box(new Vector3(6f, Height / 2, 7.09f), new Vector3(Thick, Height, 2.42f), wall);
+            shell.Box(new Vector3(6f, Height / 2, 9.66f), new Vector3(Thick, Height, 0.92f), wall);
+            // El dintel queda alto: en los primeros peldaños la cabeza ya pasa de 2 m.
+            shell.Box(new Vector3(6f, 2.5f, 8.75f), new Vector3(Thick, 0.2f, 0.9f), wall);
             shell.Box(new Vector3(3f, Height / 2, 10f), new Vector3(6.24f, Height, Thick), wall);
             shell.Box(new Vector3(3f, Height / 2, 6f), new Vector3(6.24f, Height, Thick), wall);
             var shellGo = Instance("Sotano_Estructura", shell, root, o, 0f, false);
@@ -1143,17 +1147,35 @@ namespace Ominous.EditorTools
             }
             UseAt("fotos", "Mirar las fotos", new Vector3(3f, 1.4f, 6.1f), new Vector3(2.4f, 1.1f, 0.1f));
             UseAt("libreta", "Leer la libreta", new Vector3(0.34f, 0.62f, 9.15f), new Vector3(0.4f, 0.25f, 0.45f));
-            // Escalera de vuelta
-            var stairDoor = new GameObject("PuertaEscalera");
-            Copy("PuertaHoja", 5.94f, 8.3f, 0f);
-            Copy("PuertaMarco", 5.94f, 8.75f, 0f);
-            UseAt("salir_sotano", "Subir", new Vector3(5.88f, 1f, 8.75f), new Vector3(0.1f, 2f, 0.9f));
-            Object.DestroyImmediate(stairDoor);
+            // Escalera estrecha: baja de verdad desde la puerta de arriba hasta el dormitorio copiado
+            const int steps = 14;
+            const float rise = 0.18f, run = 0.28f, stairZ = 8.75f, stairWidth = 0.9f;
+            float topY = steps * rise, landingX = 6.06f + steps * run;
+            var stairs = new MeshKit();
+            for (int i = 0; i < steps; i++)
+            {
+                float x = 6.06f + (i + 0.5f) * run, y = (i + 1) * rise;
+                stairs.Box(new Vector3(x, y / 2f, stairZ), new Vector3(run, y, stairWidth), woodDark);
+                stairs.Box(new Vector3(x, y + 2.25f, stairZ), new Vector3(run, 0.1f, stairWidth + 0.2f), ceiling);
+            }
+            stairs.Box(new Vector3(landingX + 0.5f, topY / 2f, stairZ), new Vector3(1f, topY, stairWidth), woodDark);
+            stairs.Box(new Vector3(landingX + 0.5f, topY + 2.25f, stairZ), new Vector3(1f, 0.1f, stairWidth + 0.2f), ceiling);
+            float wallTop = topY + 2.4f, wallLength = landingX + 1f - 6f;
+            stairs.Box(new Vector3(6f + wallLength / 2f, wallTop / 2f, stairZ - stairWidth / 2f - 0.05f), new Vector3(wallLength, wallTop, 0.1f), wall);
+            stairs.Box(new Vector3(6f + wallLength / 2f, wallTop / 2f, stairZ + stairWidth / 2f + 0.05f), new Vector3(wallLength, wallTop, 0.1f), wall);
+            stairs.Box(new Vector3(landingX + 1.05f, wallTop / 2f, stairZ), new Vector3(0.1f, wallTop, stairWidth + 0.2f), wall);
+            var stairsGo = Instance("EscaleraSotano", stairs, root, o, 0f, false);
+            stairsGo.AddComponent<MeshCollider>();
+            var topLeaf = Copy("PuertaHoja", landingX + 0.98f, stairZ - 0.43f, 0f, topY);
+            Object.DestroyImmediate(topLeaf.GetComponent<BoxCollider>());
+            Copy("PuertaMarco", landingX + 0.98f, stairZ, 0f, topY);
+            UseAt("salir_sotano", "Abrir", new Vector3(landingX + 0.92f, topY + 1f, stairZ), new Vector3(0.1f, 2f, 0.9f));
+            var stairLight = Point("LuzEscalera", root, o + new Vector3(landingX - 0.4f, topY + 1.9f, stairZ), new Color(1f, 0.72f, 0.42f), 0.9f, 5f);
             var bulb = SpotLight("LuzSotano", root, o + new Vector3(3f, 2.45f, 8f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.72f, 0.42f), 2f, 6f, 165f, ~0);
             bulb.shadows = LightShadows.Soft;
-            var arrival = new GameObject("LlegadaSotano");
+var arrival = new GameObject("LlegadaSotano");
             arrival.transform.SetParent(root);
-            arrival.transform.SetPositionAndRotation(o + new Vector3(5.3f, 0.02f, 8.75f), Quaternion.Euler(0, 270, 0));
+            arrival.transform.SetPositionAndRotation(o + new Vector3(landingX + 0.45f, topY + 0.05f, stairZ), Quaternion.Euler(0, 270, 0));
             dir.basementArrival = arrival.transform;
             dir.basementRoot = root.gameObject;
             root.gameObject.SetActive(false);
