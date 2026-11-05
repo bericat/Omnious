@@ -62,6 +62,56 @@ namespace Ominous.EditorTools
             return go;
         }
 
+        /// <summary>
+        /// Coloca un modelo definitivo de Art/Models (generado con Python en la nube). Sus materiales se
+        /// rehacen con el sombreado del juego y la textura que se llama igual en Art/Models/Texturas.
+        /// </summary>
+        static GameObject Model(string name, Transform parent, float x, float z, float yaw)
+        {
+            string path = $"Assets/_Ominous/Art/Models/{name}.fbx";
+            if (AssetImporter.GetAtPath(path) is not ModelImporter importer) return null;
+            if (!importer.generateSecondaryUV)
+            {
+                importer.generateSecondaryUV = true;
+                importer.SaveAndReimport();
+            }
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path), parent);
+            go.name = name;
+            go.transform.SetPositionAndRotation(new Vector3(x, 0f, z), Quaternion.Euler(0, yaw, 0));
+            var bounds = new Bounds();
+            bool first = true;
+            foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
+            {
+                r.sharedMaterials = System.Array.ConvertAll(r.sharedMaterials, m => ModelMaterial(m.name));
+                Static(r.gameObject);
+                var mesh = r.GetComponent<MeshFilter>().sharedMesh;
+                var local = r.transform.localPosition;
+                var b = new Bounds(mesh.bounds.center + local, mesh.bounds.size);
+                if (first) bounds = b; else bounds.Encapsulate(b);
+                first = false;
+            }
+            Static(go);
+            var box = go.AddComponent<BoxCollider>();
+            box.center = bounds.center;
+            box.size = bounds.size;
+            return go;
+        }
+
+        static Material ModelMaterial(string name)
+        {
+            string path = $"Assets/_Ominous/Materials/Modelos/{name}.mat";
+            System.IO.Directory.CreateDirectory("Assets/_Ominous/Materials/Modelos");
+            var template = name.Contains("Madera") ? woodDark : name.Contains("Ceramica") ? ceramic : chrome;
+            var mat = new Material(template) { name = name };
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{name}.png");
+            mat.SetTexture("_BaseMap", tex);
+            mat.SetTextureScale("_BaseMap", Vector2.one);
+            mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(0.42f, 0.33f, 0.18f));
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(mat, path);
+            return mat;
+        }
+
         static GameObject Again(string prefab, Transform parent, float x, float z, float yaw = 0f, float y = 0f)
         {
             var go = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Ominous/Prefabs/{prefab}.prefab"), parent);
@@ -568,7 +618,8 @@ namespace Ominous.EditorTools
             table.Box(new Vector3(-0.25f, 0.5f, 0.175f), new Vector3(0.42f, 0.5f, 0.012f), woodLight);
             table.Box(new Vector3(0.25f, 0.5f, 0.175f), new Vector3(0.42f, 0.5f, 0.012f), woodLight);
             table.Cylinder(new Vector3(0.2f, 0.835f, 0), 0.06f, 0.1f, 0.05f, 8, ceramic);
-            Put("MuebleRecibidor", table, f, 6.8f, 1.5f, 270f);
+            // Modelo definitivo (fase 10) si existe; si no, el provisional.
+            if (Model("MuebleRecibidor", f, 6.8f, 1.5f, 270f) == null) Put("MuebleRecibidor", table, f, 6.8f, 1.5f, 270f);
             var hanger = new MeshKit();
             hanger.Cylinder(Vector3.zero, 0.17f, 0.15f, 0.03f, 6, woodDark);
             hanger.Cylinder(new Vector3(0, 0.03f, 0), 0.02f, 0.02f, 1.7f, 6, woodDark);

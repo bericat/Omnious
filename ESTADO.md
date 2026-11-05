@@ -27,6 +27,12 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 
+## Fase 10: cómo está montada
+- Los generadores están en `Tools/assets/` (Python + Blender sin interfaz, en la nube). Los FBX van a `Assets/_Ominous/Art/Models/` y sus texturas, a `Models/Texturas/`, con LFS.
+- `HouseBuilder.Model(nombre, ...)` coloca el modelo si existe y si no, deja el provisional. Rehace los materiales con el sombreado del juego (`Materials/Modelos/`), usando la textura que se llama igual, y le genera UV de luz y una caja de colisión.
+- En la Deck: `git pull`, `git lfs pull` y reconstruir la casa.
+- Primer modelo: el mueble del recibidor con su cuenco. Captura en `Docs/Capturas/fase10_mueble_antes_despues.png`.
+
 ## Fase 9: cómo está montada
 - `Scripts/Story/AutoPlayer.cs` (solo en el Editor): juega la partida entera apuntando y usando como el jugador, y solo va a sitios a los que se llega andando. Escribe en `Temp/bot.log`. `AutoPlayer.PickLast = true` elige la última opción de cada diálogo. Las dos pasadas llegan a los créditos sin errores.
 - Bloqueos que encontró y están arreglados: cerrar la puerta de entrada desde fuera en el prólogo te dejaba en la calle, y el colisionador de la casa de Chechu tapaba su porche, así que no se llegaba a su puerta en la visita 4.
