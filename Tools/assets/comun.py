@@ -225,3 +225,18 @@ def exportar_fbx(nombre, objetos):
         embed_textures=False,
     )
     return ruta
+
+
+def caja_mat(bm, centro, tam, mat, biselado=0.0, segmentos=2, rot=None):
+    """Caja con bisel opcional, girada (rot, Matrix 3x3) y con el material 'mat'. Devuelve sus vértices."""
+    marcar(bm)
+    vs = caja(bm, (0, 0, 0), tam)
+    if biselado:
+        bmesh.ops.bevel(bm, geom=list({e for v in vs for e in v.link_edges}), offset=biselado,
+                        segments=segmentos, profile=0.5, affect="EDGES", clamp_overlap=True)
+    vs = nuevos(bm)
+    if rot is not None:
+        bmesh.ops.transform(bm, matrix=rot.to_4x4(), verts=vs)
+    bmesh.ops.translate(bm, vec=centro, verts=vs)
+    asignar(bm, {f for v in vs for f in v.link_faces}, mat)
+    return vs
