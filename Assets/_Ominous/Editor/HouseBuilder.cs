@@ -972,15 +972,6 @@ namespace Ominous.EditorTools
             roberta.head.localPosition = new Vector3(0, 1.25f, 0);
             Actor("Chechu", skin, jacket, jeans, hairC, new[] { "depie" }, new Vector3(0.6f, 1.75f, 0.5f), out var chechu);
 
-            // Voz de Roberta: se oye más o menos según dónde esté el jugador
-            var voiceGo = new GameObject("Voz");
-            voiceGo.transform.SetParent(roberta.transform, false);
-            voiceGo.transform.localPosition = new Vector3(0, 1.2f, 0);
-            var voice = voiceGo.AddComponent<AudioSource>();
-            voice.clip = AudioGen.VoiceMumble();
-            voice.loop = true; voice.playOnAwake = false; voice.volume = 0.55f; voice.spatialBlend = 1f;
-            voice.rolloffMode = AudioRolloffMode.Linear; voice.minDistance = 1f; voice.maxDistance = 9f;
-
             var t = story.transform;
             Use("cuenco", "Dejar las llaves", new Vector3(6.6f, 0.9f, 1.3f), new Vector3(0.5f, 0.25f, 0.5f), t);
             Use("vaso", "Beber agua", new Vector3(9.1f, 1.0f, 0.5f), new Vector3(0.3f, 0.3f, 0.3f), t);
@@ -989,6 +980,7 @@ namespace Ominous.EditorTools
             Use("nevera", "Abrir la nevera", new Vector3(13.45f, 1.1f, 0.85f), new Vector3(0.75f, 1.4f, 0.1f), t);
             Use("ventana", "Mirar por la ventana", new Vector3(3.7f, 1.5f, 0.12f), new Vector3(1.4f, 1.2f, 0.1f), t);
             Use("ventana", "Mirar por la ventana", new Vector3(1.6f, 1.5f, 0.12f), new Vector3(1.4f, 1.2f, 0.1f), t);
+            Use("cama", "Intentar dormir", new Vector3(1.1f, 0.7f, 8.1f), new Vector3(2.1f, 0.8f, 1.6f), t);
             Use("mirilla", "Mirar por la mirilla", new Vector3(6f, 1.6f, 0.05f), new Vector3(0.35f, 0.3f, 0.1f), t);
 
             // Umbral: en la visita el jugador no sale a la calle
@@ -1019,8 +1011,7 @@ namespace Ominous.EditorTools
             dir.frontDoor = GameObject.Find("PuertaEntrada").GetComponent<Door>();
             dir.roberta = roberta;
             dir.chechu = chechu;
-            dir.robertaVoice = voice;
-            dir.tvSound = tvAudio;
+                        dir.tvSound = tvAudio;
             dir.tvFill = GameObject.Find("LuzTeleResplandor").GetComponent<Light>();
             dir.threshold = threshold;
             dir.outsideBounds = bounds;

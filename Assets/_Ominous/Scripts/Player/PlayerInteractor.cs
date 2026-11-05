@@ -7,23 +7,50 @@ namespace Ominous
     public class PlayerInteractor : MonoBehaviour
     {
         public Transform eye;
-        public float reach = 2.1f;
+        public float reach = 2.4f;
         public Interactable Current { get; private set; }
 
-        readonly RaycastHit[] hits = new RaycastHit[12];
+        const float AimRadius = 0.3f;
+        readonly RaycastHit[] hits = new RaycastHit[16];
 
-        /// <summary>Lo primero que se pueda usar en línea de mirada; una zona inactiva no tapa lo que hay detrás.</summary>
+        /// <summary>
+        /// Basta estar cerca y apuntar más o menos. Paredes y puertas cerradas tapan lo de detrás;
+        /// los muebles no, para que se pueda hablar con alguien sentado en el sofá.
+        /// </summary>
         Interactable FindTarget()
         {
-            int count = Physics.RaycastNonAlloc(eye.position, eye.forward, hits, reach, ~0, QueryTriggerInteraction.Collide);
-            System.Array.Sort(hits, 0, count, System.Collections.Generic.Comparer<RaycastHit>.Create((a, b) => a.distance.CompareTo(b.distance)));
+            Vector3 origin = eye.position, dir = eye.forward;
+            float blocked = reach;
+            int count = Physics.RaycastNonAlloc(origin, dir, hits, reach, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
             {
-                var found = hits[i].collider.GetComponentInParent<Interactable>();
-                if (found != null && found.CanUse) return found;
-                if (!hits[i].collider.isTrigger && found == null) return null;
+                var c = hits[i].collider;
+                var door = c.GetComponentInParent<Door>();
+                bool closedDoor = door != null && !door.IsOpen;
+                if ((c is MeshCollider || closedDoor) && hits[i].distance < blocked) blocked = hits[i].distance;
             }
-            return null;
+
+            count = Physics.SphereCastNonAlloc(origin, AimRadius, dir, hits, reach, ~0, QueryTriggerInteraction.Collide);
+            Interactable best = null;
+            float bestScore = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                var c = hits[i].collider;
+                var found = c.GetComponentInParent<Interactable>();
+                if (found == null || !found.CanUse) continue;
+                Vector3 nearest = c.bounds.ClosestPoint(origin + dir * Mathf.Min(blocked, 1f));
+                float along = Vector3.Dot(nearest - origin, dir);
+                if (along > blocked + 0.05f) continue;
+                // Lo más cercano a la línea de mirada.
+                float score = Vector3.Cross(dir, c.bounds.center - origin).magnitude / Mathf.Max(0.3f, (c.bounds.center - origin).magnitude);
+                if (c.bounds.IntersectRay(new Ray(origin, dir))) score -= 1f;
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    best = found;
+                }
+            }
+            return best;
         }
 
         void Update()

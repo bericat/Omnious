@@ -187,7 +187,7 @@ namespace Ominous
                     shelfAside.Open();
                     hiddenRoomLight.enabled = true;
                     Sfx.Play("objeto_cae", shelfAside.transform.position);
-                    GameDirector.Instance.SetObjective("");
+                    GameDirector.Instance.SetObjective("Entra a ver qué hay detrás");
                     stepTime = 0f;
                     break;
                 case "chaqueta":
@@ -208,7 +208,7 @@ namespace Ominous
                     closetBack.Open();
                     Sfx.Play("objeto_cae", closetBack.transform.position);
                     Set(Step.Hueco);
-                    GameDirector.Instance.SetObjective("");
+                    GameDirector.Instance.SetObjective("Entra en el hueco y mira por los agujeros");
                     break;
                 case "agujero_cama":
                     holeBed = true;
@@ -299,7 +299,7 @@ namespace Ominous
                 frontDoor.locked = true;
                 threshold.SetActive(false);
                 Set(Step.Explorar);
-                GameDirector.Instance.SetObjective("");
+                GameDirector.Instance.SetObjective("Da una vuelta por la casa");
                 stepTime = 0f;
                 return true;
             }
@@ -354,6 +354,7 @@ namespace Ominous
                     {
                         cuartitoSeen = true;
                         stepTime = 0f;
+                        GameDirector.Instance.SetObjective("Mira lo que hay en el cuartito");
                         GameDirector.Instance.OpenRoom(1);
                         dm.Play("Habitacion1");
                     }

@@ -18,8 +18,7 @@ namespace Ominous
         public Door frontDoor;
         public ActorFigure roberta;
         public ActorFigure chechu;
-        public AudioSource robertaVoice;
-        public AudioSource tvSound;
+                public AudioSource tvSound;
         public GameObject threshold;
         public GameObject outsideBounds;
         public YarnProject project;
@@ -134,14 +133,12 @@ namespace Ominous
         void StartMonologue()
         {
             if (monologue.IsDialogueRunning) return;
-            if (robertaVoice != null) robertaVoice.Play();
-            _ = monologue.StartDialogue("Prologo_RobertaTele");
+                        _ = monologue.StartDialogue("Prologo_RobertaTele");
         }
 
         void StopMonologue()
         {
-            if (robertaVoice != null) robertaVoice.Stop();
-            if (monologue.IsDialogueRunning) _ = monologue.Stop();
+                        if (monologue.IsDialogueRunning) _ = monologue.Stop();
             GameUI.Instance?.SetAmbientLine(null, 0f);
         }
 
@@ -156,6 +153,7 @@ namespace Ominous
             "ventana" => (Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("ventana")) || Current == Step.MirarVentana || ((Current == Step.Acto3 || Current == Step.SotanoPuerta) && !(streetSeen && robertaWindow)),
             "vaso" => Current >= Step.Tareas && Current <= Step.MirarVentana && !usedOnce.Contains("vaso"),
             "grifo" => (Current >= Step.Tareas && Current <= Step.MirarVentana && !usedOnce.Contains("grifo")) || Current == Step.GrifoArreglar,
+            "cama" => Current == Step.Deambular && !usedOnce.Contains("acostarse"),
             "mirilla" => (Current == Step.EsperaPuerta || Current == Step.EsperaV2 || Current == Step.EsperaV3) && !peeping,
             _ => CanUseAct2(id),
         };
@@ -195,6 +193,10 @@ namespace Ominous
                         Wander("Acto1_Dormitorio");
                     }
                     break;
+                case "cama":
+                    usedOnce.Add("acostarse");
+                    StartCoroutine(TryToSleep());
+                    break;
                 case "tele":
                     usedOnce.Add("tele");
                     Wander("Acto1_Tele");
@@ -224,6 +226,19 @@ namespace Ominous
                     OnUseAct2(id);
                     break;
             }
+        }
+
+        IEnumerator TryToSleep()
+        {
+            FirstPersonController.SetBlocked(this, true);
+            yield return GameUI.Instance.Fade(1f, 1.2f);
+            yield return new WaitForSecondsRealtime(2.5f);
+            yield return GameUI.Instance.Fade(0f, 1.2f);
+            FirstPersonController.SetBlocked(this, false);
+            DialogueManager.Instance.Play("Acto1_Cama");
+            // Justo cuando deja de intentarlo, llaman a la puerta.
+            wanderUses = 2;
+            wanderTime = 20f;
         }
 
         void Wander(string node)
@@ -321,7 +336,7 @@ namespace Ominous
             if (anyOn) return;
             Set(Step.Deambular);
             DialogueManager.Instance.Play("Prologo_Fin");
-            DialogueManager.Instance.Play("Acto1_Deambular");
+            DialogueManager.Instance.Play("Acto1_Deambular", () => GameDirector.Instance.SetObjective("No tienes sueño: da una vuelta por la casa o intenta acostarte"));
         }
 
         void Update()
@@ -329,7 +344,7 @@ namespace Ominous
             if (Current == Step.Deambular && !DialogueManager.Instance.IsBusy)
             {
                 wanderTime += Time.deltaTime;
-                if (wanderUses >= 2 && wanderTime > 25f || wanderTime > 180f) Knock();
+                if (wanderUses >= 2 && wanderTime > 25f || wanderTime > 90f) Knock();
             }
             UpdateAct2();
             UpdateAct3();

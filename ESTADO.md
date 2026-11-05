@@ -21,7 +21,7 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 ## Falta
 - Fase 7: prueba de Toni. Con su visto bueno, etiqueta `fase-7-ok`. El acto 3 acaba al subir del sótano y vuelve al menú porque el desenlace no existe.
 - Pendiente de la fase 5: Toni no dijo si el prólogo y el acto 1 dan miedo ni lo ha probado con un tercero; pidió seguir. Revisar el ritmo al tener toda la historia.
-- No hay animaciones ni voces: las figuras se deslizan y Roberta murmura con sonido sintetizado.
+- No hay animaciones ni voces: las figuras se deslizan y Roberta le habla a la tele solo con subtítulos, hasta el doblaje.
 - El sonido se deja para las fases de pulido (decisión de Toni): no perder tiempo en él antes.
 - El coche es feo y cutre, lo dijo Toni: mejorarlo con los assets de la fase 10.
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
@@ -76,4 +76,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Quitar el sonido de la tele hasta el pulido (sonaba fortísimo). Chechu aparece en el baño tras ver a Roberta en dos de los tres sitios. Al sótano se llega por una escalera estrecha.
+Quitar el ruido de Roberta al hablar (lo doblará). Poder usar objetos estando cerca y apuntando más o menos. Tras apagar las luces debe poder acostarse y saber qué hacer.

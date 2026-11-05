@@ -5,6 +5,11 @@ title: Acto1_Deambular
 // Tiempo libre. El jugador puede usar la tele, la nevera y la ventana.
 // Tras usar dos, o tras tres minutos, salta Acto1_Llamada.
 ===
+title: Acto1_Cama
+---
+Pensamiento: Nada. Con los ojos cerrados se está peor. #line:a1_cama_001
+Pensamiento: Mejor me levanto. #line:a1_cama_002
+===
 title: Acto1_Tele
 ---
 Pensamiento: El señor de los cuchillos sigue ahí. Debe de estar tan cansado como yo. #line:a1_001
