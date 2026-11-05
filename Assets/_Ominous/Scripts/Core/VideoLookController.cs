@@ -17,6 +17,7 @@ namespace Ominous
         static readonly int Grade = Shader.PropertyToID("_Video_Grade");
         static readonly int ShadowTint = Shader.PropertyToID("_Video_ShadowTint");
         static readonly int LightTint = Shader.PropertyToID("_Video_LightTint");
+        static readonly int Detail = Shader.PropertyToID("_Video_Detail");
         static readonly int Ambient = Shader.PropertyToID("_Video_Ambient");
         static readonly int FogColor = Shader.PropertyToID("_Video_FogColor");
         static readonly int Fog = Shader.PropertyToID("_Video_Fog");
@@ -61,6 +62,7 @@ namespace Ominous
             Shader.SetGlobalVector(Grade, new Vector4(settings.liftedBlacks * i, Mathf.Lerp(1f, settings.dirtyWhites, i), Mathf.Lerp(1f, settings.saturation, i), settings.contrast));
             Shader.SetGlobalColor(ShadowTint, Color.Lerp(Color.white, settings.shadowTint, i));
             Shader.SetGlobalColor(LightTint, Color.Lerp(Color.white, settings.lightTint, i));
+            Shader.SetGlobalVector(Detail, new Vector4(settings.painterly * i, settings.sharpen * i, 0, 0));
             Shader.SetGlobalColor(Ambient, settings.ambient.linear);
             Shader.SetGlobalColor(FogColor, settings.fogColor.linear);
             Shader.SetGlobalVector(Fog, new Vector4(settings.fogStart, settings.fogEnd, 0, 0));

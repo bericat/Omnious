@@ -19,6 +19,32 @@ Shader "Hidden/Ominous/Video Post"
             float4 _Video_Grade;   // x: negros levantados, y: blancos, z: saturación, w: contraste
             float4 _Video_ShadowTint;
             float4 _Video_LightTint;
+            float4 _Video_Detail;  // x: aspecto pintado, y: afilado
+
+            half3 Tap(float2 uv) { return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, uv).rgb; }
+
+            // Kuwahara de cuatro cuadrantes: se queda con la zona más uniforme. Da el aspecto algo
+            // pintado de las texturas reescaladas, sin emborronar los bordes.
+            half3 Painterly(float2 uv, float2 t)
+            {
+                half3 best = 0; half bestVar = 1e5;
+                [unroll] for (int q = 0; q < 4; q++)
+                {
+                    float2 dir = float2(q % 2 == 0 ? -1 : 1, q < 2 ? -1 : 1);
+                    half3 sum = 0, sum2 = 0;
+                    [unroll] for (int y = 0; y < 2; y++)
+                    [unroll] for (int x = 0; x < 2; x++)
+                    {
+                        half3 c = Tap(uv + float2(x + 0.5, y + 0.5) * dir * t);
+                        sum += c; sum2 += c * c;
+                    }
+                    half3 mean = sum * 0.25;
+                    half3 v = sum2 * 0.25 - mean * mean;
+                    half var = v.r + v.g + v.b;
+                    if (var < bestVar) { bestVar = var; best = mean; }
+                }
+                return best;
+            }
 
             float Hash(float2 p)
             {
@@ -49,6 +75,15 @@ Shader "Hidden/Ominous/Video Post"
                 // El rojo y el azul se difuminan más que el verde, como en los sensores baratos.
                 c.r = lerp(c.r, SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, uv + ca + float2(texel.x * 1.5, 0)).r, 0.35);
                 c.b = lerp(c.b, SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, uv - ca - float2(texel.x * 1.5, 0)).b, 0.35);
+
+                // Aspecto pintado y afilado fuerte, como un juego reescalado y grabado.
+                float2 px = _BlitTexture_TexelSize.xy;
+                c = lerp(c, Painterly(uv, px), _Video_Detail.x);
+                half3 around = (Tap(uv + px * float2(1.5, 0)) + Tap(uv - px * float2(1.5, 0)) +
+                                Tap(uv + px * float2(0, 1.5)) + Tap(uv - px * float2(0, 1.5))) * 0.25;
+                half lumaC = dot(c, half3(0.299, 0.587, 0.114));
+                half lumaA = dot(around, half3(0.299, 0.587, 0.114));
+                c = max(0, c + (lumaC - lumaA) * _Video_Detail.y);
 
                 #if !defined(UNITY_COLORSPACE_GAMMA)
                 c = LinearToSRGB(c);
