@@ -1151,16 +1151,18 @@ namespace Ominous.EditorTools
             const int steps = 14;
             const float rise = 0.18f, run = 0.28f, stairZ = 8.75f, stairWidth = 0.9f;
             float topY = steps * rise, landingX = 6.06f + steps * run;
+            float wallTop = topY + 2.4f, wallLength = landingX + 1f - 6f;
             var stairs = new MeshKit();
             for (int i = 0; i < steps; i++)
             {
                 float x = 6.06f + (i + 0.5f) * run, y = (i + 1) * rise;
-                stairs.Box(new Vector3(x, y / 2f, stairZ), new Vector3(run, y, stairWidth), woodDark);
-                stairs.Box(new Vector3(x, y + 2.25f, stairZ), new Vector3(run, 0.1f, stairWidth + 0.2f), ceiling);
+                stairs.Box(new Vector3(x, y / 2f, stairZ), new Vector3(run, y, stairWidth), woodLight);
+                // Techo en escalones, macizo hasta arriba para que no queden huecos.
+                float ceilingY = y + 2.2f;
+                stairs.Box(new Vector3(x, (ceilingY + wallTop) / 2f, stairZ), new Vector3(run, wallTop - ceilingY, stairWidth + 0.2f), ceiling);
             }
-            stairs.Box(new Vector3(landingX + 0.5f, topY / 2f, stairZ), new Vector3(1f, topY, stairWidth), woodDark);
+            stairs.Box(new Vector3(landingX + 0.5f, topY / 2f, stairZ), new Vector3(1f, topY, stairWidth), woodLight);
             stairs.Box(new Vector3(landingX + 0.5f, topY + 2.25f, stairZ), new Vector3(1f, 0.1f, stairWidth + 0.2f), ceiling);
-            float wallTop = topY + 2.4f, wallLength = landingX + 1f - 6f;
             stairs.Box(new Vector3(6f + wallLength / 2f, wallTop / 2f, stairZ - stairWidth / 2f - 0.05f), new Vector3(wallLength, wallTop, 0.1f), wall);
             stairs.Box(new Vector3(6f + wallLength / 2f, wallTop / 2f, stairZ + stairWidth / 2f + 0.05f), new Vector3(wallLength, wallTop, 0.1f), wall);
             stairs.Box(new Vector3(landingX + 1.05f, wallTop / 2f, stairZ), new Vector3(0.1f, wallTop, stairWidth + 0.2f), wall);
@@ -1170,7 +1172,8 @@ namespace Ominous.EditorTools
             Object.DestroyImmediate(topLeaf.GetComponent<BoxCollider>());
             Copy("PuertaMarco", landingX + 0.98f, stairZ, 0f, topY);
             UseAt("salir_sotano", "Abrir", new Vector3(landingX + 0.92f, topY + 1f, stairZ), new Vector3(0.1f, 2f, 0.9f));
-            var stairLight = Point("LuzEscalera", root, o + new Vector3(landingX - 0.4f, topY + 1.9f, stairZ), new Color(1f, 0.72f, 0.42f), 0.9f, 5f);
+            var stairLight = Point("LuzEscalera", root, o + new Vector3(landingX + 0.3f, topY + 2f, stairZ), new Color(1f, 0.72f, 0.42f), 0.35f, 3.5f);
+            Point("LuzEscaleraMedia", root, o + new Vector3(8f, 1.26f + 1.9f, stairZ), new Color(1f, 0.72f, 0.42f), 0.3f, 3.5f);
             var bulb = SpotLight("LuzSotano", root, o + new Vector3(3f, 2.45f, 8f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.72f, 0.42f), 2f, 6f, 165f, ~0);
             bulb.shadows = LightShadows.Soft;
 var arrival = new GameObject("LlegadaSotano");
