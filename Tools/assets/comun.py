@@ -124,6 +124,19 @@ def material(nombre, imagen=None, color=(0.8, 0.8, 0.8), rugosidad=0.6, metal=0.
 
 # ---------- geometría ----------
 
+def marcar(bm):
+    """Marca los vértices que ya hay. Tras operaciones como bevel o subdivide, guardar BMVert en un
+    set no sirve (los huecos se reutilizan); después, nuevos(bm) devuelve solo los creados."""
+    capa = bm.verts.layers.int.get("viejo") or bm.verts.layers.int.new("viejo")
+    for v in bm.verts:
+        v[capa] = 1
+
+
+def nuevos(bm):
+    capa = bm.verts.layers.int.get("viejo")
+    return [v for v in bm.verts if capa is None or v[capa] == 0]
+
+
 def caja(bm, centro, tam, biselado=0.0, segmentos=1):
     """Añade una caja (centro y tamaño en metros) a un bmesh, con bisel opcional."""
     r = bmesh.ops.create_cube(bm, size=1.0)

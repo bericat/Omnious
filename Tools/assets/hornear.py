@@ -27,7 +27,7 @@ def _n(nt, tipo, x, y, **props):
 
 def material_sucio(nombre, color, rugosidad=0.6, metal=0.0, suciedad=0.6, polvo=0.5,
                    manchas=0.3, desgaste=0.0, color_desgaste=(0.5, 0.48, 0.45), color_sucio=(0.16, 0.13, 0.09),
-                   imagen=None, escala_manchas=3.0, semilla=0.0, mugre=0.0,
+                   imagen=None, escala=1.0, escala_manchas=3.0, semilla=0.0, mugre=0.0,
                    mugre_cc0="Suciedad_SurfaceImperfections015", mugre_escala=1.0):
     """Material con el color ya envejecido. Todo es procedural salvo 'imagen' (opcional, se multiplica).
 
@@ -46,7 +46,13 @@ def material_sucio(nombre, color, rugosidad=0.6, metal=0.0, suciedad=0.6, polvo=
     base.outputs[0].default_value = (*color, 1)
     col = base.outputs[0]
     if imagen is not None:
-        tex = _n(nt, "ShaderNodeTexImage", -1400, 100, image=imagen)
+        # Proyección por caja en coordenadas del objeto: 'escala' = metros que cubre la imagen
+        tci = _n(nt, "ShaderNodeTexCoord", -1800, 100)
+        mpi = _n(nt, "ShaderNodeMapping", -1600, 100)
+        mpi.inputs["Scale"].default_value = (1 / escala,) * 3
+        L(tci.outputs["Object"], mpi.inputs["Vector"])
+        tex = _n(nt, "ShaderNodeTexImage", -1400, 100, image=imagen, projection="BOX", projection_blend=0.15)
+        L(mpi.outputs["Vector"], tex.inputs["Vector"])
         mul = _n(nt, "ShaderNodeMix", -1150, 250, data_type="RGBA", blend_type="MULTIPLY")
         mul.inputs["Factor"].default_value = 1.0
         L(col, mul.inputs[6]); L(tex.outputs["Color"], mul.inputs[7])
