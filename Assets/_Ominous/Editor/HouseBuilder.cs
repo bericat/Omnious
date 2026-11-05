@@ -66,9 +66,10 @@ namespace Ominous.EditorTools
         /// Coloca un modelo definitivo de Art/Models (generado con Python en la nube). Sus materiales se
         /// rehacen con el sombreado del juego y la textura que se llama igual en Art/Models/Texturas.
         /// </summary>
-        static GameObject Model(string name, Transform parent, float x, float z, float yaw)
+        static GameObject Model(string file, Transform parent, float x, float z, float yaw, string name = null,
+            float y = 0f, bool exterior = false, Vector3? boxSize = null)
         {
-            string path = $"Assets/_Ominous/Art/Models/{name}.fbx";
+            string path = $"Assets/_Ominous/Art/Models/{file}.fbx";
             if (AssetImporter.GetAtPath(path) is not ModelImporter importer) return null;
             if (!importer.generateSecondaryUV)
             {
@@ -76,39 +77,59 @@ namespace Ominous.EditorTools
                 importer.SaveAndReimport();
             }
             var go = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path), parent);
-            go.name = name;
-            go.transform.SetPositionAndRotation(new Vector3(x, 0f, z), Quaternion.Euler(0, yaw, 0));
+            go.name = name ?? file;
+            go.transform.SetPositionAndRotation(new Vector3(x, y, z), Quaternion.Euler(0, yaw, 0));
             var bounds = new Bounds();
             bool first = true;
             foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
             {
-                r.sharedMaterials = System.Array.ConvertAll(r.sharedMaterials, m => ModelMaterial(m.name));
+                r.sharedMaterials = System.Array.ConvertAll(r.sharedMaterials, m => ModelMaterial(m, exterior));
                 Static(r.gameObject);
                 var mesh = r.GetComponent<MeshFilter>().sharedMesh;
-                var local = r.transform.localPosition;
-                var b = new Bounds(mesh.bounds.center + local, mesh.bounds.size);
+                var b = new Bounds(mesh.bounds.center + r.transform.localPosition, mesh.bounds.size);
                 if (first) bounds = b; else bounds.Encapsulate(b);
                 first = false;
             }
             Static(go);
             var box = go.AddComponent<BoxCollider>();
             box.center = bounds.center;
-            box.size = bounds.size;
+            box.size = boxSize ?? bounds.size;
             return go;
         }
 
-        static Material ModelMaterial(string name)
+        // Materiales de modelos ya hechos en esta construcción: varios modelos comparten nombres.
+        static readonly System.Collections.Generic.Dictionary<string, Material> modelMaterials = new();
+
+        static Material ModelMaterial(Material source, bool exterior)
         {
+            string name = source.name + (exterior ? "_Exterior" : "");
+            if (modelMaterials.TryGetValue(name, out var made) && made != null) return made;
             string path = $"Assets/_Ominous/Materials/Modelos/{name}.mat";
             System.IO.Directory.CreateDirectory("Assets/_Ominous/Materials/Modelos");
-            var template = name.Contains("Madera") ? woodDark : name.Contains("Ceramica") ? ceramic : chrome;
-            var mat = new Material(template) { name = name };
-            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{name}.png");
-            mat.SetTexture("_BaseMap", tex);
-            mat.SetTextureScale("_BaseMap", Vector2.one);
-            mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(0.42f, 0.33f, 0.18f));
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{source.name}.png");
+            Color color = source.HasProperty("_BaseColor") ? source.GetColor("_BaseColor") : source.HasProperty("_Color") ? source.GetColor("_Color") : Color.white;
+            Material mat;
+            if (source.name.Contains("Cristal"))
+            {
+                mat = new Material(glass) { name = name };
+                mat.SetColor("_Tint", new Color(color.r, color.g, color.b, 1f));
+                mat.SetFloat("_Base", 0.6f);
+            }
+            else
+            {
+                string n = source.name;
+                var template = n.Contains("Madera") ? woodDark : n.Contains("Ceramica") ? ceramic
+                    : n.Contains("Cromo") || n.Contains("Tapacubos") || n.Contains("Pomo") ? chrome
+                    : n.Contains("Neumatico") ? tire : n.Contains("Pintura") ? carRed : plastic;
+                mat = new Material(template) { name = name };
+                mat.SetTexture("_BaseMap", tex);
+                mat.SetTextureScale("_BaseMap", Vector2.one);
+                mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(color.r, color.g, color.b, 1f));
+                if (mat.HasProperty("_Exterior")) mat.SetFloat("_Exterior", exterior ? 1f : 0f);
+            }
             AssetDatabase.DeleteAsset(path);
             AssetDatabase.CreateAsset(mat, path);
+            modelMaterials[name] = mat;
             return mat;
         }
 
@@ -380,6 +401,7 @@ namespace Ominous.EditorTools
         public static void BuildHouse()
         {
             OminousSetup.Configure();
+            modelMaterials.Clear();
             Materials();
             HouseMaterials();
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -736,7 +758,9 @@ namespace Ominous.EditorTools
 
         static void BuildGarage(Transform f, Transform d, Transform lights)
         {
-            Put("CocheChevas", Coche(carRed, glass, tireIn), f, 16.6f, 2.2f, 0f);
+            var carBox = new Vector3(1.68f, 1.41f, 4.25f);
+            if (Model("CocheRojo", f, 16.6f, 2.2f, 0f, "CocheChevas", 0f, false, carBox) == null)
+                Put("CocheChevas", Coche(carRed, glass, tireIn), f, 16.6f, 2.2f, 0f);
             var shelves = new MeshKit();
             foreach (float y in new[] { 0.3f, 0.95f, 1.6f }) shelves.Box(new Vector3(0, y, 0), new Vector3(1.4f, 0.03f, 0.42f), woodLight);
             foreach (float x in new[] { -0.68f, 0.68f }) shelves.Box(new Vector3(x, 0.95f, -0.18f), new Vector3(0.04f, 1.9f, 0.04f), metal);
@@ -810,8 +834,11 @@ namespace Ominous.EditorTools
             Inst("Arbol", 6f, 15.5f, 60f);
             Inst("Arbol", 13f, 19f, 110f);
             Inst("Arbol", -6f, 9f, 200f);
-            Instance("CocheAzul", Coche(carBlue, carGlass, tire), street, new Vector3(11.2f, -0.04f, -3.45f), 90f);
-            Instance("CocheGris", Coche(carGrey, carGlass, tire), street, new Vector3(-2.5f, -0.04f, -5.15f), 270f);
+            var streetCarBox = new Vector3(1.68f, 1.41f, 4.25f);
+            if (Model("CocheAzul", street, 11.2f, -3.45f, 90f, null, -0.04f, true, streetCarBox) == null)
+                Instance("CocheAzul", Coche(carBlue, carGlass, tire), street, new Vector3(11.2f, -0.04f, -3.45f), 90f);
+            if (Model("CocheGris", street, -2.5f, -5.15f, 270f, null, -0.04f, true, streetCarBox) == null)
+                Instance("CocheGris", Coche(carGrey, carGlass, tire), street, new Vector3(-2.5f, -0.04f, -5.15f), 270f);
             // Valla del jardín
             var fence = new MeshKit();
             fence.Box(new Vector3(7, 0.9f, 22), new Vector3(46, 0.05f, 0.03f), fenceWood);
