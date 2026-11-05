@@ -1,6 +1,6 @@
 # Estado de Ominous
 
-**Fase actual:** 9, cierre de la primera versión.
+**Fase actual:** 10, assets definitivos. Primera versión cerrada con la etiqueta `v1.0`.
 
 ## Hecho
 - Unity 6.3 LTS (6000.3.28f1) en Steam Deck (Unity Hub en Flatpak), con módulo de build Linux.
@@ -33,7 +33,7 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - `Scripts/Core/GameInput.cs`: teclas reasignables (Opciones, Teclas) y mando: stick izquierdo para andar, derecho para mirar, A para usar y pasar el texto, B o pulsar el stick para agacharse, Start para la pausa. Los menús se recorren con la cruceta.
 - Opciones nuevas: fondo de los subtítulos (no, suave o fuerte) y tamaño de texto hasta el doble.
 - Rendimiento medido en una build: 60 fps de media en el prólogo y los actos 2, 3 y el final.
-- Windows: el módulo está instalado, pero el Editor no lo reconoce hasta que se reinicia. Falta la build de Windows.
+- Windows: build en `Builds/Ominous_Windows/Ominous.exe`. Arranca con Proton 11 en la Deck (Direct3D 12) sin errores en el registro; sin probar en un PC con Windows.
 
 ## Fase 8: cómo está montada
 - `Scripts/Story/StoryDirector.Final.cs`. La puerta al vacío apaga la calle y su suelo; la caída no empieza hasta que el jugador pasa de x = -16,15, sin límite de tiempo.
@@ -89,4 +89,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Aprobó la fase 8 y pidió la 9.
+Reinició Unity para el módulo de Windows y pidió pasar a la fase 10.
