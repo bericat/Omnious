@@ -973,7 +973,7 @@ namespace Ominous.EditorTools
             Actor("Chechu", skin, jacket, jeans, hairC, new[] { "depie" }, new Vector3(0.6f, 1.75f, 0.5f), out var chechu);
 
             var t = story.transform;
-            Use("cuenco", "Dejar las llaves", new Vector3(6.6f, 0.9f, 1.3f), new Vector3(0.5f, 0.25f, 0.5f), t);
+            Use("cuenco", "Dejar las llaves", new Vector3(6.8f, 0.87f, 1.7f), new Vector3(0.26f, 0.14f, 0.26f), t);
             Use("vaso", "Beber agua", new Vector3(9.1f, 1.0f, 0.5f), new Vector3(0.3f, 0.3f, 0.3f), t);
             Use("grifo", "Mirar el grifo", new Vector3(9.5f, 0.95f, 7.2f), new Vector3(0.45f, 0.3f, 0.5f), t);
             Use("tele", "Mirar la tele", new Vector3(2.15f, 0.85f, 3.82f), new Vector3(0.8f, 0.6f, 0.1f), t);
@@ -1054,11 +1054,19 @@ namespace Ominous.EditorTools
             hall.Box(new Vector3(-len / 2, Height + 0.05f, 5.2f), new Vector3(len, 0.1f, 1.72f), ceiling);
             hall.Box(new Vector3(-len / 2, Height / 2, 4.4f), new Vector3(len, Height, Thick), wall);
             hall.Box(new Vector3(-len / 2, Height / 2, 6f), new Vector3(len, Height, Thick), wall);
-            hall.Box(new Vector3(-len, Height / 2, 5.2f), new Vector3(Thick, Height, 1.72f), wall);
+            // Pared del fondo, con el hueco de la puerta al vacío
+            hall.Box(new Vector3(-len, Height / 2, 4.57f), new Vector3(Thick, Height, 0.46f), wall);
+            hall.Box(new Vector3(-len, Height / 2, 5.83f), new Vector3(Thick, Height, 0.46f), wall);
+            hall.Box(new Vector3(-len, 2.3f, 5.2f), new Vector3(Thick, 0.6f, 0.9f), wall);
             var hallGo = Instance("PasilloLargo", hall, t, Vector3.zero, 0f, false);
             hallGo.AddComponent<MeshCollider>();
             dir.longHall = hallGo;
-            var endDoor = Door(hallGo.transform, "PuertaAlVacio", -len + 0.07f, 4.75f, false, 0f, true);
+            var endDoor = Door(hallGo.transform, "PuertaAlVacio", -len, 4.75f, false, 95f, true);
+            dir.voidDoor = endDoor.GetComponent<Door>();
+            dir.streetRoot = GameObject.Find("Calle");
+            dir.hallSwitch = GameObject.Find("Interruptor_Recibidor").GetComponent<LightSwitch>();
+            dir.lampSwitch = GameObject.Find("Interruptor_Salon").GetComponent<LightSwitch>();
+            Use("llamar", "Llamar a la puerta", new Vector3(6f, 1.1f, -0.14f), new Vector3(0.9f, 1.9f, 0.08f), t);
             GameObjectUtility.SetStaticEditorFlags(endDoor, 0);
             var hallLight = SpotLight("LuzPasilloLargo", hallGo.transform, new Vector3(-len / 2, 2.45f, 5.2f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.72f, 0.42f), 1.4f, 5f, 150f, ~0);
             hallLight.shadows = LightShadows.None;

@@ -7,6 +7,9 @@ namespace Ominous
     [ExecuteAlways]
     public class VideoLookController : MonoBehaviour
     {
+        /// <summary>Al otro lado de la puerta del final no hay ni niebla.</summary>
+        public static bool BlackVoid;
+
         public VideoLookSettings settings;
 
         static readonly int Optics = Shader.PropertyToID("_Video_Optics");
@@ -64,7 +67,7 @@ namespace Ominous
             Shader.SetGlobalColor(ExteriorFogColor, settings.exteriorFogColor.linear);
             Shader.SetGlobalVector(ExteriorFog, new Vector4(settings.exteriorFogStart, settings.exteriorFogEnd, 0, 0));
             var cam = Camera.main;
-            if (cam != null) cam.backgroundColor = settings.exteriorFogColor;
+            if (cam != null) cam.backgroundColor = BlackVoid ? Color.black : settings.exteriorFogColor;
 
             var pipeline = UniversalRenderPipeline.asset;
             if (pipeline != null && Screen.height > 0)

@@ -17,7 +17,21 @@ namespace Ominous
 
         public void SetPose(string pose)
         {
-            foreach (var p in poses) p.root.SetActive(p.name == pose);
+            foreach (var p in poses)
+            {
+                p.root.SetActive(p.name == pose);
+                if (p.name == pose) FitCollider(p.root);
+            }
+        }
+
+        /// <summary>La zona de interacción coincide con lo que se ve, sea cual sea la postura.</summary>
+        void FitCollider(GameObject pose)
+        {
+            var box = GetComponent<BoxCollider>();
+            var filter = pose.GetComponent<MeshFilter>();
+            if (box == null || filter == null || filter.sharedMesh == null) return;
+            box.center = filter.sharedMesh.bounds.center;
+            box.size = filter.sharedMesh.bounds.size;
         }
 
         public void Show(bool visible) => gameObject.SetActive(visible);

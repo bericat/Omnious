@@ -72,6 +72,7 @@ namespace Ominous
             if (controller != null) controller.enabled = false;
             transform.SetPositionAndRotation(position, Quaternion.Euler(0f, yaw, 0f));
             pitch = pitchTarget = 0f;
+            verticalVelocity = 0f;
             yawTarget = yaw;
             if (controller != null) controller.enabled = true;
         }

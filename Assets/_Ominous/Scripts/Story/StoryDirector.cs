@@ -10,7 +10,7 @@ namespace Ominous
     public partial class StoryDirector : MonoBehaviour
     {
         public enum Step { Llegada, Tareas, HablarRoberta, Conversacion, ApagarLuces, Deambular, Llamada, EsperaPuerta, Visita, CerrarPuerta, MirarVentana,
-            GrifoArreglar, GrifoRoto, EsperaV2, VisitaV2, CerrarV2, Explorar, FotoCaida, FotoEnMano, EstanteriaCedida, Cuartito, EsperaV3, VisitaV3, CerrarV3, IrDormitorio, Busqueda, ArmarioGolpe, ArmarioFondo, Hueco, SalirCasa, VisitaV4, Volver, RobertaCocina, Acto3, SotanoPuerta, Sotano, SotanoSalir, Fin }
+            GrifoArreglar, GrifoRoto, EsperaV2, VisitaV2, CerrarV2, Explorar, FotoCaida, FotoEnMano, EstanteriaCedida, Cuartito, EsperaV3, VisitaV3, CerrarV3, IrDormitorio, Busqueda, ArmarioGolpe, ArmarioFondo, Hueco, SalirCasa, VisitaV4, Volver, RobertaCocina, Acto3, SotanoPuerta, Sotano, SotanoSalir, FinalPasillo, FinalPuerta, Caida, BucleLlegada, BucleLlamar, BucleFinal, Fin }
 
         public static StoryDirector Instance { get; private set; }
         public Step Current { get; private set; }
@@ -48,6 +48,7 @@ namespace Ominous
             player = FindAnyObjectByType<FirstPersonController>();
             RegisterCommands();
             frontDoor.onInteract.AddListener(OnFrontDoor);
+            voidDoor.onInteract.AddListener(OnVoidDoor);
             foreach (var s in FindObjectsByType<LightSwitch>(FindObjectsSortMode.None))
                 s.onInteract.AddListener(OnLightChanged);
             BuildMonologue();
@@ -64,6 +65,11 @@ namespace Ominous
                 JumpForTest(Step.GrifoArreglar);
                 player.Teleport(new Vector3(6f, 0.02f, 1.6f), 0f);
                 DialogueManager.Instance.Play("Acto2_Inicio");
+            }
+            if (i >= 0 && i + 1 < args.Length && args[i + 1] == "final" && !GameDirector.Instance.Restored)
+            {
+                StartFinalForTest();
+                player.Teleport(new Vector3(12f, 0.02f, 5.2f), 270f);
             }
             if (i >= 0 && i + 1 < args.Length && args[i + 1] == "acto3" && !GameDirector.Instance.Restored)
             {
@@ -104,6 +110,7 @@ namespace Ominous
             r.AddCommandHandler("sonido", (string name) => Sfx.Play(name, SoundPosition(name)));
             RegisterAct2Commands(r);
             RegisterAct3Commands(r);
+            RegisterFinalCommands(r);
         }
 
         Vector3 SoundPosition(string name) => name.StartsWith("llamada") ? frontDoor.transform.position + Vector3.up * 1.2f : player.transform.position;
@@ -348,6 +355,7 @@ namespace Ominous
             }
             UpdateAct2();
             UpdateAct3();
+            UpdateFinal();
             if ((Current == Step.EsperaPuerta || Current == Step.EsperaV2 || Current == Step.EsperaV3) && !DialogueManager.Instance.IsBusy && !peeping)
             {
                 knockTimer += Time.deltaTime;
@@ -432,6 +440,7 @@ namespace Ominous
             else chechu.Show(false);
             RestoreAct2(step);
             RestoreAct3(step);
+            if (step >= Step.FinalPasillo) { hallDoor.locked = false; voidDoor.locked = false; }
             GameDirector.Instance.SetObjective(GameDirector.Instance.Night.objective);
         }
     }

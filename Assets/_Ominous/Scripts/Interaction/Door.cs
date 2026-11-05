@@ -10,6 +10,8 @@ namespace Ominous
         public bool locked;
         [TextArea] public string lockedNode;
         public bool IsOpen { get; private set; }
+        /// <summary>Se avisa cuando alguien intenta abrirla estando cerrada con llave.</summary>
+        public System.Action onLockedTry;
 
         float closedYaw, current;
 
@@ -22,6 +24,7 @@ namespace Ominous
             if (locked)
             {
                 Sfx.Play("puerta_cerrada", transform.position + Vector3.up);
+                onLockedTry?.Invoke();
                 if (!string.IsNullOrEmpty(lockedNode)) DialogueManager.Instance?.Play(lockedNode);
                 return;
             }

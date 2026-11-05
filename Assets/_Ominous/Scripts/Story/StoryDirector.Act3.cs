@@ -87,7 +87,7 @@ namespace Ominous
             "fotos" => Current == Step.Sotano && basementSeen && !usedOnce.Contains("fotos"),
             "libreta" => Current == Step.Sotano && basementSeen && !notebookRead,
             "salir_sotano" => Current == Step.SotanoSalir,
-            _ => false,
+            _ => CanUseFinal(id),
         };
 
         bool OnUseAct3(string id)
@@ -127,13 +127,11 @@ namespace Ominous
                     {
                         player.Teleport(new Vector3(13.2f, 0.02f, 6.7f), 270f);
                         basementRoot.SetActive(false);
-                        hallDoor.locked = false;
-                        Set(Step.Fin);
-                        EndDemo();
+                        StartFinalHall();
                     }));
                     return true;
             }
-            return false;
+            return OnUseFinal(id);
         }
 
         IEnumerator Blink(System.Action middle)
@@ -154,7 +152,7 @@ namespace Ominous
             var dm = DialogueManager.Instance;
             bool corridor = InRoom(-20f, 14f, 4.4f, 6f);
             // El pasillo largo solo existe mientras se está en el pasillo: no se puede ver desde fuera.
-            if (Current >= Step.SotanoPuerta) longHall.SetActive(corridor);
+            if (Current >= Step.SotanoPuerta && Current <= Step.Caida) longHall.SetActive(corridor || Current >= Step.FinalPuerta);
             // La habitación se descubre al terminar de bajar la escalera.
             if (Current == Step.Sotano && !basementSeen && !dm.IsBusy && player.transform.position.y < -39f && player.transform.position.x < 46f)
             {

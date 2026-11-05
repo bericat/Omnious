@@ -124,6 +124,34 @@ namespace Ominous
             fade.color = new Color(0, 0, 0, target);
         }
 
+        public void SetBlack() => fade.color = Color.black;
+
+        /// <summary>Créditos sobre negro, por encima de todo lo demás.</summary>
+        public System.Collections.IEnumerator Credits()
+        {
+            SetHudVisible(false);
+            SetAmbientLine(null, 0f);
+            objective.text = "";
+            string[] pages =
+            {
+                "Ominous",
+                "Un juego de Toni",
+                "Personajes\nChevas · Roberta · Chechu",
+                "Desarrollo con Claude",
+                "Fuente: Noto Sans Mono\n© The Noto Project Authors. Licencia SIL OFL 1.1",
+                "Sonido generado por script para este juego",
+            };
+            var page = UIKit.Label(UIKit.Rect(Canvas.transform, "Creditos", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1000, 200)), "", 20f, UIKit.Ink);
+            foreach (string text in pages)
+            {
+                page.text = text;
+                yield return new WaitForSecondsRealtime(3.2f);
+                page.text = "";
+                yield return new WaitForSecondsRealtime(0.7f);
+            }
+            Destroy(page.gameObject);
+        }
+
         public void HideSubtitle() => subtitleBox.gameObject.SetActive(false);
 
         public void ShowOptions(DialogueOption[] options, Action<int> choose)

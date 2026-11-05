@@ -1,6 +1,6 @@
 # Estado de Ominous
 
-**Fase actual:** 7, lo surrealista (acto 3).
+**Fase actual:** 8, el desenlace.
 
 ## Hecho
 - Unity 6.3 LTS (6000.3.28f1) en Steam Deck (Unity Hub en Flatpak), con módulo de build Linux.
@@ -27,6 +27,12 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
+
+## Fase 8: cómo está montada
+- `Scripts/Story/StoryDirector.Final.cs`. La puerta al vacío apaga la calle y su suelo; la caída no empieza hasta que el jugador pasa de x = -16,15, sin límite de tiempo.
+- El bucle reutiliza la casa: `RestartNight` la deja como al llegar, con la puerta de entrada cerrada.
+- La frase de Chechu es `#shadow:frase_puerta`: mismo ID de doblaje que la de Chevas en el acto 1.
+- Para probar: `-saltar final` tras pulsar Nueva partida.
 
 ## Fase 7: cómo está montada
 - `Scripts/Story/StoryDirector.Act3.cs` y `HouseBuilder.BuildAct3`. El sótano está lejos, en (40, -40, 0): un parpadeo lleva de la puerta de la colada a lo alto de una escalera estrecha que se baja andando. La puerta de más y la habitación repetida también usan parpadeo.
@@ -76,4 +82,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-Quitar el ruido de Roberta al hablar (lo doblará). Poder usar objetos estando cerca y apuntando más o menos. Tras apagar las luces debe poder acostarse y saber qué hacer.
+El aviso de interacción sale justo al apuntar al objeto. Pidió pasar a la fase 8.

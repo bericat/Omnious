@@ -22,15 +22,11 @@ namespace Ominous
         {
             
             "chechu_entrega_tornillo", 
-            "chechu_desaparece", "pasillo_alargado", "esperar_salto_jugador", "caida",
-            "reiniciar_noche", "puerta_se_abre", "corte_negro", "creditos", 
-            
-        };
+            "chechu_desaparece", };
 
         static readonly string[] PendingOneArg =
         {
-            "fundido_negro",
-        };
+            };
 
         void Awake()
         {

@@ -16,6 +16,12 @@ namespace Ominous
         MaterialPropertyBlock block;
         float nextShot, shotMix, target = 1f, level = 1f;
 
+        public void TurnOn()
+        {
+            enabled = true;
+            if (tvLight != null) tvLight.enabled = true;
+        }
+
         public void TurnOff()
         {
             enabled = false;
