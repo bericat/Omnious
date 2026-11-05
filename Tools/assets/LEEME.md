@@ -7,12 +7,16 @@ Los modelos de personas no se generan aquí: los aporta Toni.
 ```
 python3.13 -m venv venv && venv/bin/pip install -r Tools/assets/requirements.txt
 ```
+Si pip se queda parado bajando `bpy` (unos 400 MB), bájalo con `curl` desde files.pythonhosted.org e instala el `.whl`.
+En la nube el entorno trae `git lfs` con el smudge desactivado: tras un `checkout`, `git lfs pull` para tener los FBX de verdad.
 
 ## Generar
 ```
 venv/bin/python Tools/assets/mueble_recibidor.py
+venv/bin/python Tools/assets/coche.py              # CocheRojo, CocheAzul y CocheGris
 venv/bin/python Tools/assets/vista_previa.py Assets/_Ominous/Art/Models/MuebleRecibidor.fbx /tmp/vistas
 ```
+`vista_previa.py` encuadra la cámara según el tamaño del objeto.
 
 ## Convenciones
 - FBX en `Assets/_Ominous/Art/Models/`, texturas en `Assets/_Ominous/Art/Models/Texturas/` (con LFS).
