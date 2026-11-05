@@ -17,7 +17,7 @@ MonoBehaviour:
   aberration: 0.006
   softness: 0.55
   vignette: 0.28
-  noise: 0.04
+  noise: 0.055
   exposureDrift: 0.02
   imperfectionEvery: {x: 25, y: 70}
   liftedBlacks: 0.035
@@ -25,12 +25,12 @@ MonoBehaviour:
   saturation: 0.72
   contrast: 1.05
   brightness: 1.15
-  shadowTint: {r: 0.95, g: 1, b: 1.02, a: 1}
-  lightTint: {r: 1.03, g: 1.01, b: 0.9, a: 1}
-  ambient: {r: 0.2, g: 0.2, b: 0.21, a: 1}
-  fogColor: {r: 0.02, g: 0.024, b: 0.03, a: 1}
+  shadowTint: {r: 1, g: 1.04, b: 0.8, a: 1}
+  lightTint: {r: 1.06, g: 0.98, b: 0.72, a: 1}
+  ambient: {r: 0.2, g: 0.2, b: 0.17, a: 1}
+  fogColor: {r: 0.025, g: 0.028, b: 0.018, a: 1}
   fogStart: 14
   fogEnd: 50
-  exteriorFogColor: {r: 0.085, g: 0.095, b: 0.1, a: 1}
-  exteriorFogStart: 2
-  exteriorFogEnd: 22
+  exteriorFogColor: {r: 0.08, g: 0.1, b: 0.055, a: 1}
+  exteriorFogStart: 1
+  exteriorFogEnd: 18
