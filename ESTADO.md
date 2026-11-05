@@ -19,13 +19,13 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
+- Fase 10: los modelos de Roberta y Chechu los pasa Toni; el resto de assets se generan con Python en una sesión en la nube sobre el repositorio `github.com/bericat/Omnious` (privado, rama `main`, Git LFS). En la Deck: `git pull` e importar en Unity.
 - Pendiente de la fase 5: Toni no dijo si el prólogo y el acto 1 dan miedo ni lo ha probado con un tercero; pidió seguir. Revisar el ritmo al tener toda la historia.
 - No hay animaciones ni voces: las figuras se deslizan y Roberta le habla a la tele solo con subtítulos, hasta el doblaje.
 - El sonido se deja para las fases de pulido (decisión de Toni): no perder tiempo en él antes.
 - El coche es feo y cutre, lo dijo Toni: mejorarlo con los assets de la fase 10.
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
-- Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
 
 ## Fase 9: cómo está montada
 - `Scripts/Story/AutoPlayer.cs` (solo en el Editor): juega la partida entera apuntando y usando como el jugador, y solo va a sitios a los que se llega andando. Escribe en `Temp/bot.log`. `AutoPlayer.PickLast = true` elige la última opción de cada diálogo. Las dos pasadas llegan a los créditos sin errores.
