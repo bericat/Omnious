@@ -110,6 +110,12 @@ namespace Ominous.EditorTools
                 ?? AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{source.name}.jpg");
             Color color = source.HasProperty("_BaseColor") ? source.GetColor("_BaseColor") : source.HasProperty("_Color") ? source.GetColor("_Color") : Color.white;
             Material mat;
+            if (source.name.Contains("Pantalla"))
+            {
+                // La pantalla de la tele usa el material de siempre, que es el que parpadea.
+                modelMaterials[name] = screen;
+                return screen;
+            }
             if (source.name.Contains("Cristal"))
             {
                 mat = new Material(glass) { name = name };
@@ -688,9 +694,24 @@ namespace Ominous.EditorTools
             Put("Alfombra", Alfombra(), f, 2.15f, 2.45f, 0, false);
             if (Model("Sofa", f, 2.15f, 1.45f, 0f, null, 0f, false, new Vector3(2.0f, 0.94f, 0.86f)) == null) Put("Sofa", Sofa(), f, 2.15f, 1.45f);
             Put("Manta", Manta(), f, 1.6f, 1.45f, 0, false);
-            var tele = Put("Tele", Tele(), f, 2.15f, 4.08f);
-            Put("MesaBaja", MesaBaja(), f, 2.15f, 2.75f);
-            Put("EstanteriaSalon", Estanteria(), f, 4.2f, 4.17f);
+            // La tele definitiva mira a +Z: va girada. Su pantalla es un objeto aparte para el parpadeo.
+            var tele = Model("Tele", f, 2.15f, 4.08f, 180f);
+            Renderer teleScreen = null;
+            if (tele != null)
+            {
+                foreach (var r in tele.GetComponentsInChildren<MeshRenderer>())
+                {
+                    if (r.name == "Pantalla") teleScreen = r;
+                    else r.name = "TeleMueble";
+                }
+            }
+            else
+            {
+                tele = Put("Tele", Tele(), f, 2.15f, 4.08f);
+                teleScreen = tele.GetComponent<MeshRenderer>();
+            }
+            if (Model("MesaBaja", f, 2.15f, 2.75f, 0f) == null) Put("MesaBaja", MesaBaja(), f, 2.15f, 2.75f);
+            if (Model("Estanteria", f, 4.2f, 4.17f, 180f, "EstanteriaSalon") == null) Put("EstanteriaSalon", Estanteria(), f, 4.2f, 4.17f);
             var lampMesh = Put("Lampara", Lampara(), f, 0.4f, 0.5f);
             GameObjectUtility.SetStaticEditorFlags(lampMesh, StaticEditorFlags.BatchingStatic);
             Picture(f, "CuadroSalon", paintA, 0.08f, 1.65f, 3.75f, 90f);
@@ -701,8 +722,8 @@ namespace Ominous.EditorTools
             tv.shadowStrength = 0.9f;
             var flicker = tele.AddComponent<TVFlicker>();
             flicker.tvLight = tv;
-            flicker.screen = tele.GetComponent<MeshRenderer>();
-            flicker.screenMaterialIndex = System.Array.IndexOf(flicker.screen.sharedMaterials, screen);
+            flicker.screen = teleScreen;
+            flicker.screenMaterialIndex = Mathf.Max(0, System.Array.IndexOf(flicker.screen.sharedMaterials, screen));
 
             var lamp = Point("LuzLampara", lights, new Vector3(0.42f, 1.48f, 0.52f), new Color(1f, 0.72f, 0.42f), 1.8f, 5.5f);
             lamp.shadows = LightShadows.Soft;
@@ -742,8 +763,9 @@ namespace Ominous.EditorTools
             GameObject.Find("PuertaEntrada_Marco").transform.position = new Vector3(6f, 0f, 0f);
 
             // Pasillo
-            var hallShelf = Put("EstanteriaPasillo", Estanteria(), f, 7.6f, 4.62f, 180f);
-            GameObjectUtility.SetStaticEditorFlags(hallShelf, 0);
+            var hallShelf = Model("Estanteria", f, 7.6f, 4.62f, 0f, "EstanteriaPasillo") ?? Put("EstanteriaPasillo", Estanteria(), f, 7.6f, 4.62f, 180f);
+            // Se mueve en el acto 2: ni ella ni sus piezas pueden ser estáticas.
+            foreach (var t in hallShelf.GetComponentsInChildren<Transform>()) GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
             var clock = new MeshKit();
             clock.Cylinder(new Vector3(0, 0, 0), 0.0f, 0.0f, 0f, 3, paper);
             clock.Box(Vector3.zero, new Vector3(0.32f, 0.32f, 0.03f), woodDark);
