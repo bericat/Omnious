@@ -106,7 +106,8 @@ namespace Ominous.EditorTools
             if (modelMaterials.TryGetValue(name, out var made) && made != null) return made;
             string path = $"Assets/_Ominous/Materials/Modelos/{name}.mat";
             System.IO.Directory.CreateDirectory("Assets/_Ominous/Materials/Modelos");
-            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{source.name}.png");
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{source.name}.png")
+                ?? AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{source.name}.jpg");
             Color color = source.HasProperty("_BaseColor") ? source.GetColor("_BaseColor") : source.HasProperty("_Color") ? source.GetColor("_Color") : Color.white;
             Material mat;
             if (source.name.Contains("Cristal"))
@@ -120,7 +121,7 @@ namespace Ominous.EditorTools
                 string n = source.name;
                 var template = n.Contains("Madera") ? woodDark : n.Contains("Ceramica") ? ceramic
                     : n.Contains("Cromo") || n.Contains("Tapacubos") || n.Contains("Pomo") ? chrome
-                    : n.Contains("Neumatico") ? tire : n.Contains("Pintura") ? carRed : plastic;
+                    : n.Contains("Neumatico") ? tire : n.Contains("Pintura") ? carRed : n.Contains("Sofa") ? sofa : plastic;
                 mat = new Material(template) { name = name };
                 mat.SetTexture("_BaseMap", tex);
                 mat.SetTextureScale("_BaseMap", Vector2.one);
@@ -131,6 +132,93 @@ namespace Ominous.EditorTools
             AssetDatabase.CreateAsset(mat, path);
             modelMaterials[name] = mat;
             return mat;
+        }
+
+        /// <summary>Largo al que se dejan los coches descargados: tienen que caber en el garaje (5 m).</summary>
+        const float ExternalCarLength = 4.4f;
+
+        /// <summary>
+        /// Coche descargado (Art/Externos/Coches/Nombre): una sola textura de color con la oclusión ya
+        /// multiplicada. Se quita la sombra plana que traen debajo y se escala a <see cref="ExternalCarLength"/>.
+        /// </summary>
+        static GameObject ExternalCar(string file, Transform parent, float x, float z, float yaw, string name, float y, bool exterior)
+        {
+            string dir = $"Assets/_Ominous/Art/Externos/Coches/{file}";
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>($"{dir}/{file}.fbx");
+            if (asset == null) return null;
+            if (AssetImporter.GetAtPath($"{dir}/{file}.fbx") is ModelImporter importer && !importer.generateSecondaryUV)
+            {
+                importer.generateSecondaryUV = true;
+                importer.SaveAndReimport();
+            }
+            string matPath = $"Assets/_Ominous/Materials/Modelos/{file}{(exterior ? "_Exterior" : "")}.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            if (mat == null || !modelMaterials.ContainsKey(matPath))
+            {
+                System.IO.Directory.CreateDirectory("Assets/_Ominous/Materials/Modelos");
+                mat = new Material(carRed) { name = file };
+                mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{file}_Color.jpg"));
+                mat.SetTextureScale("_BaseMap", Vector2.one);
+                mat.SetColor("_BaseColor", Color.white);
+                if (mat.HasProperty("_Exterior")) mat.SetFloat("_Exterior", exterior ? 1f : 0f);
+                AssetDatabase.DeleteAsset(matPath);
+                AssetDatabase.CreateAsset(mat, matPath);
+                modelMaterials[matPath] = mat;
+            }
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(asset, parent);
+            go.name = name;
+            var bounds = new Bounds();
+            bool first = true;
+            foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
+            {
+                if (r.name.StartsWith("Plane")) { Object.DestroyImmediate(r.gameObject); continue; }
+                r.sharedMaterials = System.Array.ConvertAll(r.sharedMaterials, _ => mat);
+                Static(r.gameObject);
+                if (first) bounds = r.bounds; else bounds.Encapsulate(r.bounds);
+                first = false;
+            }
+            float scale = ExternalCarLength / bounds.size.z;
+            go.transform.localScale = Vector3.one * scale;
+            go.transform.SetPositionAndRotation(new Vector3(x, y, z), Quaternion.Euler(0, yaw, 0));
+            Static(go);
+            var box = go.AddComponent<BoxCollider>();
+            box.center = new Vector3(bounds.center.x, bounds.center.y, bounds.center.z);
+            box.size = new Vector3(bounds.size.x * 0.85f, bounds.size.y, bounds.size.z);
+            return go;
+        }
+
+        /// <summary>
+        /// Personaje descargado en lugar de la figura provisional de una postura. Se escala a su altura y,
+        /// si viene en postura de A, se le bajan los brazos.
+        /// </summary>
+        static void ExternalCharacter(ActorFigure figure, string pose, string pathNoExt, float height, Material template)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>(pathNoExt + ".fbx");
+            if (asset == null) return;
+            var root = figure.poses.Find(p => p.name == pose)?.root;
+            if (root == null) return;
+            root.GetComponent<MeshRenderer>().enabled = false;
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(asset, root.transform);
+            model.name = "Modelo";
+            model.transform.localPosition = Vector3.zero;
+            model.transform.localRotation = Quaternion.identity;
+            var skinned = model.GetComponentInChildren<SkinnedMeshRenderer>();
+            model.transform.localScale = Vector3.one;
+            float raw = skinned.bounds.size.y / figure.transform.lossyScale.y;
+            model.transform.localScale = Vector3.one * (height / raw);
+            foreach (var t in model.GetComponentsInChildren<Transform>())
+            {
+                if (t.name == "upper_arm.L") t.Rotate(Vector3.forward * 58f, Space.World);
+                if (t.name == "upper_arm.R") t.Rotate(Vector3.forward * -58f, Space.World);
+            }
+            string matPath = $"Assets/_Ominous/Materials/Modelos/{asset.name}.mat";
+            var mat = new Material(template) { name = asset.name };
+            mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(pathNoExt + "_Color.png"));
+            mat.SetTextureScale("_BaseMap", Vector2.one);
+            mat.SetColor("_BaseColor", Color.white);
+            AssetDatabase.DeleteAsset(matPath);
+            AssetDatabase.CreateAsset(mat, matPath);
+            foreach (var r in model.GetComponentsInChildren<Renderer>()) r.sharedMaterial = mat;
         }
 
         static GameObject Again(string prefab, Transform parent, float x, float z, float yaw = 0f, float y = 0f)
@@ -598,7 +686,7 @@ namespace Ominous.EditorTools
         static void BuildSalon(Transform f, Transform lights)
         {
             Put("Alfombra", Alfombra(), f, 2.15f, 2.45f, 0, false);
-            Put("Sofa", Sofa(), f, 2.15f, 1.45f);
+            if (Model("Sofa", f, 2.15f, 1.45f, 0f, null, 0f, false, new Vector3(2.0f, 0.94f, 0.86f)) == null) Put("Sofa", Sofa(), f, 2.15f, 1.45f);
             Put("Manta", Manta(), f, 1.6f, 1.45f, 0, false);
             var tele = Put("Tele", Tele(), f, 2.15f, 4.08f);
             Put("MesaBaja", MesaBaja(), f, 2.15f, 2.75f);
@@ -759,7 +847,7 @@ namespace Ominous.EditorTools
         static void BuildGarage(Transform f, Transform d, Transform lights)
         {
             var carBox = new Vector3(1.68f, 1.41f, 4.25f);
-            if (Model("CocheRojo", f, 16.6f, 2.2f, 0f, "CocheChevas", 0f, false, carBox) == null)
+            if (ExternalCar("LandCruiser", f, 16.6f, 2.2f, 0f, "CocheChevas", 0f, false) == null && Model("CocheRojo", f, 16.6f, 2.2f, 0f, "CocheChevas", 0f, false, carBox) == null)
                 Put("CocheChevas", Coche(carRed, glass, tireIn), f, 16.6f, 2.2f, 0f);
             var shelves = new MeshKit();
             foreach (float y in new[] { 0.3f, 0.95f, 1.6f }) shelves.Box(new Vector3(0, y, 0), new Vector3(1.4f, 0.03f, 0.42f), woodLight);
@@ -835,9 +923,9 @@ namespace Ominous.EditorTools
             Inst("Arbol", 13f, 19f, 110f);
             Inst("Arbol", -6f, 9f, 200f);
             var streetCarBox = new Vector3(1.68f, 1.41f, 4.25f);
-            if (Model("CocheAzul", street, 11.2f, -3.45f, 90f, null, -0.04f, true, streetCarBox) == null)
+            if (ExternalCar("GMCSierra", street, 11.2f, -3.45f, 90f, "CocheAzul", -0.04f, true) == null && Model("CocheAzul", street, 11.2f, -3.45f, 90f, null, -0.04f, true, streetCarBox) == null)
                 Instance("CocheAzul", Coche(carBlue, carGlass, tire), street, new Vector3(11.2f, -0.04f, -3.45f), 90f);
-            if (Model("CocheGris", street, -2.5f, -5.15f, 270f, null, -0.04f, true, streetCarBox) == null)
+            if (ExternalCar("LandCruiser", street, -2.5f, -5.15f, 270f, "CocheGris", -0.04f, true) == null && Model("CocheGris", street, -2.5f, -5.15f, 270f, null, -0.04f, true, streetCarBox) == null)
                 Instance("CocheGris", Coche(carGrey, carGlass, tire), street, new Vector3(-2.5f, -0.04f, -5.15f), 270f);
             // Valla del jardín
             var fence = new MeshKit();
@@ -1053,6 +1141,7 @@ namespace Ominous.EditorTools
             roberta.gameObject.AddComponent<StoryObject>().id = "roberta";
             roberta.head.localPosition = new Vector3(0, 1.25f, 0);
             Actor("Chechu", skin, jacket, jeans, hairC, new[] { "depie" }, new Vector3(0.6f, 1.75f, 0.5f), out var chechu);
+            ExternalCharacter(chechu, "depie", "Assets/_Ominous/Art/Externos/Chechu/ChickenMan", 1.75f, skin);
 
             var t = story.transform;
             Use("cuenco", "Dejar las llaves", new Vector3(6.8f, 0.87f, 1.7f), new Vector3(0.26f, 0.14f, 0.26f), t);
