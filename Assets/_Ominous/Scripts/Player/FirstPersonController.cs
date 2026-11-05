@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 namespace Ominous
 {
-    /// <summary>Movimiento en primera persona con teclado y ratón.</summary>
+    /// <summary>Movimiento en primera persona con teclado y ratón o mando.</summary>
     [RequireComponent(typeof(CharacterController))]
     public class FirstPersonController : MonoBehaviour
     {
@@ -85,14 +85,10 @@ namespace Ominous
 
         void Update()
         {
-            var keyboard = Keyboard.current;
-            var mouse = Mouse.current;
-            if (keyboard == null || mouse == null) return;
-
             SetCursorLocked(!InputBlocked);
 
             bool active = !InputBlocked;
-            Vector2 look = active ? mouse.delta.ReadValue() * (mouseSensitivity * OminousOptions.Sensitivity) : Vector2.zero;
+            Vector2 look = active ? GameInput.Look(mouseSensitivity) : Vector2.zero;
             yawTarget += look.x;
             pitchTarget = Mathf.Clamp(pitchTarget - look.y, -85f, 85f);
             // La cámara sigue al ratón con un poco de inercia, como algo que se sostiene en la mano.
@@ -101,17 +97,10 @@ namespace Ominous
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             pitch = Mathf.Lerp(pitch, pitchTarget, follow);
 
-            Vector2 move = Vector2.zero;
-            if (active)
-            {
-                if (keyboard.wKey.isPressed) move.y += 1f;
-                if (keyboard.sKey.isPressed) move.y -= 1f;
-                if (keyboard.dKey.isPressed) move.x += 1f;
-                if (keyboard.aKey.isPressed) move.x -= 1f;
-            }
-            bool crouching = active && keyboard.leftCtrlKey.isPressed;
+            Vector2 move = active ? GameInput.Move : Vector2.zero;
+            bool crouching = active && GameInput.Crouch;
             float speed = crouching ? crouchSpeed : walkSpeed;
-            Vector3 velocity = transform.TransformDirection(new Vector3(move.x, 0f, move.y).normalized) * speed;
+            Vector3 velocity = transform.TransformDirection(Vector3.ClampMagnitude(new Vector3(move.x, 0f, move.y), 1f)) * speed;
 
             verticalVelocity = controller.isGrounded ? -1f : verticalVelocity - 9.81f * Time.deltaTime;
             velocity.y = verticalVelocity;

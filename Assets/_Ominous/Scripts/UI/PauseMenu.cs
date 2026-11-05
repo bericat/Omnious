@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 namespace Ominous
@@ -40,7 +39,7 @@ namespace Ominous
 
         void Update()
         {
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) SetPaused(!IsPaused);
+            if (GameInput.PausePressed) SetPaused(!IsPaused);
         }
 
         public void SetPaused(bool paused)

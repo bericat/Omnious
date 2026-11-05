@@ -273,7 +273,8 @@ namespace Ominous
                 dm.Play("Prologo_Tareas");
                 return;
             }
-            if (Current == Step.Tareas && !frontDoor.IsOpen)
+            // Cerrarla desde fuera no cuenta: se quedaría encerrado en la calle.
+            if (Current == Step.Tareas && !frontDoor.IsOpen && player.transform.position.z > 0.1f)
             {
                 doorClosed = true;
                 frontDoor.locked = true;

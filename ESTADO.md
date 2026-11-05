@@ -1,6 +1,6 @@
 # Estado de Ominous
 
-**Fase actual:** 8, el desenlace.
+**Fase actual:** 9, cierre de la primera versión.
 
 ## Hecho
 - Unity 6.3 LTS (6000.3.28f1) en Steam Deck (Unity Hub en Flatpak), con módulo de build Linux.
@@ -19,7 +19,6 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Pendiente para más adelante: profundidad de campo y desenfoque de movimiento (coste y comodidad, decidir al jugar); fluorescentes, faros y luz de día (fases con esas escenas); luz horneada (fase 4); texturas realistas (fase 10, o CC0 si Toni lo autoriza).
 
 ## Falta
-- Fase 7: prueba de Toni. Con su visto bueno, etiqueta `fase-7-ok`. El acto 3 acaba al subir del sótano y vuelve al menú porque el desenlace no existe.
 - Pendiente de la fase 5: Toni no dijo si el prólogo y el acto 1 dan miedo ni lo ha probado con un tercero; pidió seguir. Revisar el ritmo al tener toda la historia.
 - No hay animaciones ni voces: las figuras se deslizan y Roberta le habla a la tele solo con subtítulos, hasta el doblaje.
 - El sonido se deja para las fases de pulido (decisión de Toni): no perder tiempo en él antes.
@@ -27,6 +26,14 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 - Sin bloquear: crear el repositorio privado en GitHub (lo crea Toni) y subir el proyecto.
+
+## Fase 9: cómo está montada
+- `Scripts/Story/AutoPlayer.cs` (solo en el Editor): juega la partida entera apuntando y usando como el jugador, y solo va a sitios a los que se llega andando. Escribe en `Temp/bot.log`. `AutoPlayer.PickLast = true` elige la última opción de cada diálogo. Las dos pasadas llegan a los créditos sin errores.
+- Bloqueos que encontró y están arreglados: cerrar la puerta de entrada desde fuera en el prólogo te dejaba en la calle, y el colisionador de la casa de Chechu tapaba su porche, así que no se llegaba a su puerta en la visita 4.
+- `Scripts/Core/GameInput.cs`: teclas reasignables (Opciones, Teclas) y mando: stick izquierdo para andar, derecho para mirar, A para usar y pasar el texto, B o pulsar el stick para agacharse, Start para la pausa. Los menús se recorren con la cruceta.
+- Opciones nuevas: fondo de los subtítulos (no, suave o fuerte) y tamaño de texto hasta el doble.
+- Rendimiento medido en una build: 60 fps de media en el prólogo y los actos 2, 3 y el final.
+- Windows: el módulo está instalado, pero el Editor no lo reconoce hasta que se reinicia. Falta la build de Windows.
 
 ## Fase 8: cómo está montada
 - `Scripts/Story/StoryDirector.Final.cs`. La puerta al vacío apaga la calle y su suelo; la caída no empieza hasta que el jugador pasa de x = -16,15, sin límite de tiempo.
@@ -82,4 +89,4 @@ La hoja de ruta menciona MCP for Unity, pero la vía real es Unity CLI con el pa
 - Justo después de una recarga de scripts, un comando puede fallar una vez. Basta con reintentar.
 
 ## Última decisión de Toni
-El aviso de interacción sale justo al apuntar al objeto. Pidió pasar a la fase 8.
+Aprobó la fase 8 y pidió la 9.

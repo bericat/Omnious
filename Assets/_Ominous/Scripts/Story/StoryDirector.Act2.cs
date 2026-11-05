@@ -143,7 +143,7 @@ namespace Ominous
         bool CanUseAct2(string id) => id switch
         {
             "llave" => Current == Step.GrifoArreglar && !hasWrench,
-            "baldosa" => Current >= Step.CerrarV2 && !usedOnce.Contains("baldosa"),
+            "baldosa" => Current >= Step.CerrarV2 && Current <= Step.Volver && !usedOnce.Contains("baldosa"),
             "foto_suelo" => Current == Step.FotoCaida,
             "foto_balda" => Current == Step.FotoEnMano,
             "estanteria" => Current == Step.EstanteriaCedida,

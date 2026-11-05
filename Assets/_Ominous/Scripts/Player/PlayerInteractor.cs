@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Ominous
 {
@@ -37,10 +36,9 @@ namespace Ominous
             bool free = !FirstPersonController.InputBlocked && !(DialogueManager.Instance != null && DialogueManager.Instance.IsRunning);
             if (free && eye != null) Current = FindTarget();
 
-            GameUI.Instance?.SetPrompt(Current != null ? $"[E] {Current.Prompt}" : null);
+            GameUI.Instance?.SetPrompt(Current != null ? $"[{GameInput.UseLabel}] {Current.Prompt}" : null);
 
-            var keyboard = Keyboard.current;
-            if (Current != null && keyboard != null && keyboard.eKey.wasPressedThisFrame) Current.Interact();
+            if (Current != null && GameInput.UsePressed) Current.Interact();
         }
     }
 }

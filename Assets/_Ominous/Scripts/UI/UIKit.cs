@@ -28,7 +28,10 @@ namespace Ominous
             scaler.referenceResolution = new Vector2(1280, 800);
             scaler.matchWidthOrHeight = 0.5f;
             if (UnityEngine.Object.FindAnyObjectByType<EventSystem>() == null)
-                new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+                {
+                var system = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule), typeof(GamepadMenuFocus));
+                system.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
+            }
             return canvas;
         }
 

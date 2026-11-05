@@ -735,7 +735,11 @@ namespace Ominous.EditorTools
             foreach (float x in new[] { 4.45f, 7.55f }) porch.Box(new Vector3(x, 1.2f, -1.32f), new Vector3(0.1f, 2.4f, 0.1f), frameExt);
             Instance("Porche", porch, street, Vector3.zero, 0, false);
 
-            Instance("CasaChechu", CasaFachada(siding, true), street, new Vector3(7f, 0, -9.6f));
+            var chechuHouse = Instance("CasaChechu", CasaFachada(siding, true), street, new Vector3(7f, 0, -9.6f));
+            // Solo el cuerpo de la casa bloquea: hay que poder llegar andando hasta su puerta.
+            var chechuBody = chechuHouse.GetComponent<BoxCollider>();
+            chechuBody.center = new Vector3(0f, 2f, -3.65f);
+            chechuBody.size = new Vector3(8.6f, 4f, 7.3f);
             Instance("CasaVecinos", CasaFachada(sidingFar, false), street, new Vector3(-5f, 0, -9.6f));
             void Inst(string name, float x, float z, float yaw)
             {

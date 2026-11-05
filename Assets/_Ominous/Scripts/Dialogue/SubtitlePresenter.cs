@@ -15,6 +15,8 @@ namespace Ominous
         public string NextSpeaker { get; set; }
         public bool AdvanceRequested { get; set; }
         public int RequestedOption { get; set; } = -1;
+        /// <summary>Opciones en pantalla ahora mismo.</summary>
+        public int OptionCount { get; private set; }
         /// <summary>Para pruebas: qué se está mostrando ahora mismo.</summary>
         public string CurrentText { get; private set; }
 
@@ -25,6 +27,7 @@ namespace Ominous
             NextSpeaker = null;
             CurrentText = null;
             GameUI.Instance?.HideSubtitle();
+            OptionCount = 0;
             GameUI.Instance?.HideOptions();
             FirstPersonController.SetBlocked(this, false);
             return YarnTask.CompletedTask;
@@ -56,22 +59,18 @@ namespace Ominous
             GameUI.Instance?.HideSubtitle();
         }
 
-        static bool PressedAdvance()
-        {
-            var k = Keyboard.current;
-            var m = Mouse.current;
-            return (k != null && (k.eKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame)) ||
-                   (m != null && m.leftButton.wasPressedThisFrame);
-        }
+        static bool PressedAdvance() => GameInput.AdvancePressed;
 
         public override async YarnTask<DialogueOption> RunOptionsAsync(DialogueOption[] options, LineCancellationToken token)
         {
             FirstPersonController.SetBlocked(this, true);
             RequestedOption = -1;
+            OptionCount = options.Length;
             CurrentText = options.Length > 0 ? options[0].Line.TextWithoutCharacterName.Text : null;
             GameUI.Instance?.ShowOptions(options, index => RequestedOption = index);
             while (RequestedOption < 0 && !token.NextContentToken.IsCancellationRequested)
                 await YarnTask.Yield();
+            OptionCount = 0;
             GameUI.Instance?.HideOptions();
             return RequestedOption >= 0 ? options[RequestedOption] : null;
         }

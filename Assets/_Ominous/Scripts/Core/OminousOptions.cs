@@ -15,6 +15,9 @@ namespace Ominous
         public static float CameraEffectIntensity { get => PlayerPrefs.GetFloat("camara", 1f); set => Set("camara", value); }
 
         /// <summary>Menos balanceo y menos efectos de lente, para quien se marea.</summary>
+        /// <summary>Fondo detrás de los subtítulos: 0 sin fondo, 1 suave, 2 fuerte.</summary>
+        public static int SubtitleBackground { get => PlayerPrefs.GetInt("fondo", 1); set => Set("fondo", value); }
+
         public static bool ReduceEffects { get => PlayerPrefs.GetInt("reducir", 0) == 1; set => Set("reducir", value ? 1 : 0); }
 
         static void Set(string key, int value) { PlayerPrefs.SetInt(key, value); PlayerPrefs.Save(); Changed?.Invoke(); }

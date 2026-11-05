@@ -13,7 +13,9 @@ namespace Ominous
         public Canvas Canvas { get; private set; }
 
         TextMeshProUGUI prompt, objective, subtitle, speakerName, ambientLine;
-        UnityEngine.UI.Image fade;
+        UnityEngine.UI.Image fade, subtitleBack;
+        float subtitleHeight, subtitleWidth;
+        RectTransform subtitleBody;
         RectTransform subtitleBox, optionsBox;
         GameObject crosshair;
         readonly List<GameObject> optionButtons = new();
@@ -33,10 +35,14 @@ namespace Ominous
             objective = UIKit.Label(UIKit.Rect(root, "Objetivo", new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(16, 12), new Vector2(420, 24)), "", ObjectiveSize, UIKit.Dim, TextAlignmentOptions.Left);
 
             subtitleBox = UIKit.Rect(root, "Subtitulos", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 40), new Vector2(760, 66));
-            UIKit.Panel(subtitleBox, new Color(0, 0, 0, 0.3f)).raycastTarget = false;
+            subtitleBack = UIKit.Panel(subtitleBox, new Color(0, 0, 0, 0.3f));
+            subtitleBack.raycastTarget = false;
+            subtitleHeight = subtitleBox.sizeDelta.y;
             speakerName = UIKit.Label(UIKit.Rect(subtitleBox, "Nombre", new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, -3), new Vector2(-30, 18)), "", NameSize, UIKit.Dim);
             var body = UIKit.Rect(subtitleBox, "Texto", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             body.offsetMin = new Vector2(16, 4); body.offsetMax = new Vector2(-16, -20);
+            subtitleBody = body;
+            subtitleWidth = subtitleBox.sizeDelta.x;
             subtitle = UIKit.Label(body, "", SubtitleSize, UIKit.Ink);
             subtitleBox.gameObject.SetActive(false);
 
@@ -73,6 +79,9 @@ namespace Ominous
             prompt.fontSize = PromptSize * scale;
             objective.fontSize = ObjectiveSize * scale;
             ambientLine.fontSize = 14f * scale;
+            subtitleBox.sizeDelta = new Vector2(subtitleWidth * Mathf.Max(1f, scale * 0.75f), subtitleHeight * Mathf.Max(1f, scale));
+            subtitleBody.offsetMax = new Vector2(-16f, -20f * Mathf.Max(1f, scale));
+            subtitleBack.color = new Color(0f, 0f, 0f, OminousOptions.SubtitleBackground switch { 0 => 0f, 2 => 0.75f, _ => 0.3f });
         }
 
         void RefreshObjective()
