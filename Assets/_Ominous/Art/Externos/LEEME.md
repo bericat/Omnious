@@ -17,3 +17,4 @@
 | Lámpara de mesa (PSX Table Lamp) | `LamparaMesa` | Tomitos_ | https://sketchfab.com/3d-models/none-bc1a97e0cd0e4b78ab39fee7a6df36e5 | CC BY 4.0 (atribución) |
 | Armario (PSX Style Wardrobe) | `ArmarioPSX` | vanillao03 | https://sketchfab.com/3d-models/none-76fdc513979041b19b5cf5395110ed6d | CC BY 4.0 (atribución) |
 | Corcho con notas (PSX-Style Cork Board, Notes, Polaroids & Pins) | `Corcho` | vanillao03 | https://sketchfab.com/3d-models/none-92c8eed11d404a01b0ca2237919c79c6 | CC BY 4.0. Notas, periódico y fotos rehechos para nuestra historia (`Corcho_*.png`) |
+| Carretera (Low poly PSX Road) | `Carretera` | SaukrDev | https://sketchfab.com/3d-models/none-2d49d5714d524214814dfac7cec834af | CC BY 4.0 (atribución) |

@@ -159,7 +159,7 @@ namespace Ominous
                 "Texturas: ambientCG (CC0)",
                 "Puertas: vanillao03 (Sketchfab), CC BY 4.0\nCuadro: BrainsickGames (Sketchfab), CC BY 4.0",
                 "Objetos PSX: Pizza Doggy",
-                "Árboles: FlunkedPunk · Lámpara: Tomitos_\nArmario y corcho: vanillao03 (Sketchfab), CC BY 4.0",
+                "Árboles: FlunkedPunk · Lámpara: Tomitos_ · Carretera: SaukrDev\nArmario y corcho: vanillao03 (Sketchfab), CC BY 4.0",
                 "Sonido generado por script para este juego",
             };
             var page = UIKit.Label(UIKit.Rect(Canvas.transform, "Creditos", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1000, 200)), "", 20f, UIKit.Ink);

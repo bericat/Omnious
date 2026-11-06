@@ -1374,9 +1374,17 @@ namespace Ominous.EditorTools
         {
             var g = new MeshKit();
             g.Box(new Vector3(9, -0.15f, 10), new Vector3(120, 0.2f, 120), grass);
-            g.Box(new Vector3(9, -0.09f, -4.3f), new Vector3(120, 0.1f, 2.6f), asphalt);
-            g.Box(new Vector3(9, -0.06f, -2.75f), new Vector3(120, 0.1f, 0.5f), concrete);
-            g.Box(new Vector3(9, -0.06f, -5.85f), new Vector3(120, 0.1f, 0.5f), concrete);
+            // Carretera: el tramo PSX de Toni (SaukrDev, CC BY) repetido a lo largo de la calle; si no está, la provisional.
+            bool packRoad = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Ominous/Art/Externos/Carretera/Carretera.fbx") != null;
+            if (packRoad)
+                for (float rx = -40f; rx < 60f; rx += 3.6f)
+                    PackPlace("Assets/_Ominous/Art/Externos/Carretera/Carretera.fbx", null, null, street, new Vector3(rx, -0.07f, -4.3f), 90f, 1.2f, "Carretera_Color.png", "Carretera");
+            else
+            {
+                g.Box(new Vector3(9, -0.09f, -4.3f), new Vector3(120, 0.1f, 2.6f), asphalt);
+                g.Box(new Vector3(9, -0.06f, -2.75f), new Vector3(120, 0.1f, 0.5f), concrete);
+                g.Box(new Vector3(9, -0.06f, -5.85f), new Vector3(120, 0.1f, 0.5f), concrete);
+            }
             g.Box(new Vector3(6f, -0.05f, -1.2f), new Vector3(1.2f, 0.1f, 2.4f), concrete); // Camino de entrada
             g.Box(new Vector3(16.5f, -0.05f, -1.25f), new Vector3(3.2f, 0.1f, 2.5f), concrete); // Entrada de coches
             g.Box(new Vector3(7f, -0.05f, -7.3f), new Vector3(1.2f, 0.1f, 2.8f), concrete);
@@ -1423,9 +1431,9 @@ namespace Ominous.EditorTools
             }
             BuildStreetFog(street);
             var streetCarBox = new Vector3(1.68f, 1.41f, 4.25f);
-            if (ExternalCar("GMCSierra", street, 11.2f, -3.45f, 90f, "CocheAzul", -0.04f, true) == null && Model("CocheAzul", street, 11.2f, -3.45f, 90f, null, -0.04f, true, streetCarBox) == null)
+            if (ExternalCar("GMCSierra", street, 11.2f, -3.45f, 90f, "CocheAzul", 0.02f, true) == null && Model("CocheAzul", street, 11.2f, -3.45f, 90f, null, -0.04f, true, streetCarBox) == null)
                 Instance("CocheAzul", Coche(carBlue, carGlass, tire), street, new Vector3(11.2f, -0.04f, -3.45f), 90f);
-            if (ExternalCar("LandCruiser", street, -2.5f, -5.15f, 270f, "CocheGris", -0.04f, true) == null && Model("CocheGris", street, -2.5f, -5.15f, 270f, null, -0.04f, true, streetCarBox) == null)
+            if (ExternalCar("LandCruiser", street, -2.5f, -5.15f, 270f, "CocheGris", 0.02f, true) == null && Model("CocheGris", street, -2.5f, -5.15f, 270f, null, -0.04f, true, streetCarBox) == null)
                 Instance("CocheGris", Coche(carGrey, carGlass, tire), street, new Vector3(-2.5f, -0.04f, -5.15f), 270f);
             // Valla del jardín
             var fence = new MeshKit();
