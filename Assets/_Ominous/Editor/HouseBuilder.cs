@@ -86,7 +86,9 @@ namespace Ominous.EditorTools
                 r.sharedMaterials = System.Array.ConvertAll(r.sharedMaterials, m => ModelMaterial(m, exterior));
                 Static(r.gameObject);
                 var mesh = r.GetComponent<MeshFilter>().sharedMesh;
-                var b = new Bounds(mesh.bounds.center + r.transform.localPosition, mesh.bounds.size);
+                // Si la malla está en la raíz, su posición es la del mueble en la casa, no un desplazamiento.
+                var offset = r.transform == go.transform ? Vector3.zero : r.transform.localPosition;
+                var b = new Bounds(mesh.bounds.center + offset, mesh.bounds.size);
                 if (first) bounds = b; else bounds.Encapsulate(b);
                 first = false;
             }
@@ -136,6 +138,7 @@ namespace Ominous.EditorTools
                 mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(color.r, color.g, color.b, 1f));
                 if (mat.HasProperty("_Exterior")) mat.SetFloat("_Exterior", exterior ? 1f : 0f);
                 // La bombilla de la lámpara brilla sola.
+                if (n.Contains("Tubo") && mat.HasProperty("_EmissionColor")) mat.SetColor("_EmissionColor", new Color(1f, 0.88f, 0.66f) * 2.4f);
                 if (n.Contains("Bombilla") && mat.HasProperty("_EmissionColor")) mat.SetColor("_EmissionColor", new Color(1f, 0.72f, 0.42f) * 2.2f);
             }
             AssetDatabase.DeleteAsset(path);
@@ -548,7 +551,7 @@ namespace Ominous.EditorTools
             var floors = new MeshKit();
             const float y = -0.05f, t = 0.1f;
             void Floor(float x0, float x1, float z0, float z1, Material m) => floors.Box(new Vector3((x0 + x1) / 2, y, (z0 + z1) / 2), new Vector3(x1 - x0, t, z1 - z0), m);
-            Floor(0, 5, 0, 4.4f, floorWood);        // Salón
+            Floor(0, 5, 0, 4.4f, Surface("Moqueta", rug) ?? floorWood);        // Salón
             Floor(5, 7, 0, 4.4f, floorWood);        // Recibidor
             Floor(7, 8.2f, 0, 4.4f, concreteIn);    // Cuartito oculto
             Floor(8.2f, 14, 0, 4.4f, linoleum);     // Cocina
@@ -604,6 +607,38 @@ namespace Ominous.EditorTools
             Lining(new Vector3(6.86f, 0, 6.07f), 1.14f, true, tileWall, 1.6f);
             Lining(new Vector3(8.9f, 0, 6.07f), 1.04f, true, tileWall, 1.6f);
             Lining(new Vector3(8.3f, 0, 0.07f), 1.2f, true, tileWall, 0.95f);   // Salpicadero de cocina
+
+            // Papel pintado de damasco en el salón, del suelo al techo, rodeando ventanas y puerta.
+            var paper = Surface("PapelDamasco", wall);
+            if (paper != null)
+            {
+                paper.SetFloat("_Sheen", 0f);
+                const float off = Thick / 2 + 0.004f;
+                void Paper(Vector3 a, float len, bool alongX, params Opening[] holes)
+                {
+                    float at = 0f;
+                    var sorted = new System.Collections.Generic.List<Opening>(holes);
+                    sorted.Sort((p1, p2) => p1.from.CompareTo(p2.from));
+                    void Piece(float from, float to, float bottom, float top)
+                    {
+                        if (to - from < 0.005f || top - bottom < 0.005f) return;
+                        Vector3 c = a + (alongX ? Vector3.right : Vector3.forward) * ((from + to) / 2) + Vector3.up * ((bottom + top) / 2);
+                        w.Box(c, alongX ? new Vector3(to - from, top - bottom, 0.008f) : new Vector3(0.008f, top - bottom, to - from), paper);
+                    }
+                    foreach (var h in sorted)
+                    {
+                        Piece(at, h.from, 0, Height);
+                        Piece(h.from, h.to, 0, h.sill);
+                        Piece(h.from, h.to, h.top, Height);
+                        at = h.to;
+                    }
+                    Piece(at, len, 0, Height);
+                }
+                Paper(new Vector3(0, 0, off), 5f - off, true, saloonWin1, saloonWin2);          // Sur
+                Paper(new Vector3(off, 0, 0), 4.4f - off, false, new Opening(1.8f, 3.2f, 0.9f, 2.1f)); // Oeste
+                Paper(new Vector3(5f - off, 0, 0), 4.4f - off, false, new Opening(2.1f, 3f, 0, DoorTop)); // Este
+                Paper(new Vector3(0, 0, 4.4f - off), 5f - off, true);                            // Norte
+            }
             go = Instance("Casa_Paredes", w, house, Vector3.zero, 0, false);
             go.AddComponent<MeshCollider>(); Static(go);
 
@@ -746,6 +781,37 @@ namespace Ominous.EditorTools
             ls.lights = new[] { lamp };
             ls.isOn = true;
             ls.emissive = lampMesh.GetComponent<MeshRenderer>();
+            var glows = new System.Collections.Generic.List<Renderer>();
+            foreach (var r in lampMesh.GetComponentsInChildren<MeshRenderer>()) if (r.name == "Bombilla") glows.Add(r);
+
+            // Plafón fluorescente en el centro del techo: la luz del salón sale de él.
+            var plafon = Model("Plafon", f, 2.5f, 2.2f, 0f, "PlafonSalon", Height, collider: false);
+            if (plafon != null)
+            {
+                foreach (var r in plafon.GetComponentsInChildren<MeshRenderer>()) if (r.name == "Tubos") glows.Add(r);
+                var tube = SpotLight("Luz_SalonTecho", lights, new Vector3(2.5f, Height - 0.14f, 2.2f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.86f, 0.62f), 2.6f, 7f, 168f, ~0);
+                tube.shadows = LightShadows.Soft;
+                tube.shadowStrength = 0.85f;
+                var tubeFill = Point("Relleno_SalonTecho", lights, new Vector3(2.5f, Height - 0.35f, 2.2f), new Color(1f, 0.86f, 0.62f), 0.3f, 3.5f);
+                ls.lights = new[] { lamp, tube, tubeFill };
+            }
+            ls.emissives = glows.ToArray();
+        }
+
+        /// <summary>Material de superficie de Art/Superficies (1 x 1 m, sin costuras), o null si no está.</summary>
+        static Material Surface(string name, Material template)
+        {
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Superficies/{name}.jpg");
+            if (tex == null) return null;
+            string path = $"Assets/_Ominous/Materials/Modelos/Superficie_{name}.mat";
+            System.IO.Directory.CreateDirectory("Assets/_Ominous/Materials/Modelos");
+            var mat = new Material(template) { name = name };
+            mat.SetTexture("_BaseMap", tex);
+            mat.SetTextureScale("_BaseMap", Vector2.one);
+            mat.SetColor("_BaseColor", Color.white);
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(mat, path);
+            return mat;
         }
 
         static void BuildHall(Transform f, Transform d, Transform lights)

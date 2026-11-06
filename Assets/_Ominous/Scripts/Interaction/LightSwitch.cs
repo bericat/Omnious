@@ -7,6 +7,8 @@ namespace Ominous
         public Light[] lights;
         public bool isOn;
         public Renderer emissive;
+        /// <summary>Más piezas que brillan con esta luz (bombillas, tubos).</summary>
+        public Renderer[] emissives = new Renderer[0];
         static readonly int Emission = Shader.PropertyToID("_EmissionColor");
 
         void Start() => ApplyState();
@@ -25,10 +27,16 @@ namespace Ominous
         {
             foreach (var l in lights)
                 if (l != null) l.enabled = isOn;
-            if (emissive == null) return;
             var block = new MaterialPropertyBlock();
             block.SetColor(Emission, isOn ? new Color(0.9f, 0.78f, 0.58f) : Color.black);
-            emissive.SetPropertyBlock(block);
+            if (emissive != null) emissive.SetPropertyBlock(block);
+            foreach (var r in emissives)
+            {
+                if (r == null) continue;
+                var own = new MaterialPropertyBlock();
+                own.SetColor(Emission, isOn ? r.sharedMaterial.GetColor(Emission) : Color.black);
+                r.SetPropertyBlock(own);
+            }
         }
     }
 }
