@@ -39,6 +39,7 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Inicio sin bloqueos (petición de Toni): al entrar ya puedes moverte y hablar con Roberta. Las llaves y la puerta salen como «Pendiente» y solo son obligatorias antes de acostarse; Chechu no llama hasta que estén hechas (`RefreshPending`).
 - Arreglado: el colisionador de los modelos con la malla en la raíz quedaba desplazado (el del sofá tapaba la entrada del salón).
 - Cocina (encimera con armarios y azulejos, nevera, mesa y cuatro sillas) y baño (váter, lavabo y bañera) con modelos de la nube; cajas de latas junto a la nevera y en el garaje. La silla del cuartito usa el mismo modelo.
+- Dormitorio con modelos de la nube: cama, mesillas, cómoda y armario. Las hojas y el fondo falso del armario son hijos del FBX con su `SimpleHinge`, y el cuerpo usa MeshCollider para que se pueda entrar al hueco (comprobado con el jugador automático).
 - Tele de tubo con su mueble, mesa baja y estanterías del salón y del pasillo, hechas en la nube. La pantalla de la tele es un objeto aparte que conserva el parpadeo, y la estantería del pasillo sigue apartándose en el acto 2 (comprobado con el jugador automático).
 - Ojo: los coches son CC BY-NC, así que no se pueden usar si el juego se vende. Sus cristales están pintados en la textura, de modo que no se ve a Roberta dentro del coche en el acto 3.
 - Primer modelo: el mueble del recibidor con su cuenco. Captura en `Docs/Capturas/fase10_mueble_antes_despues.png`.

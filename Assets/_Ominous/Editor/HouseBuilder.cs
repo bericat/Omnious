@@ -886,13 +886,25 @@ namespace Ominous.EditorTools
 
         static void BuildBedroom(Transform f, Transform d, Transform lights)
         {
-            Put("Cama", Cama(), f, 1.1f, 8.1f, 270f);
-            Put("MesillaLampara", Mesilla(true), f, 0.32f, 9.2f, 90f);
-            Put("Mesilla", Mesilla(false), f, 0.32f, 7.0f, 90f);
-            var closet = Put("Armario", Armario(), f, 5.62f, 8.7f, 270f, false);
-            GameObjectUtility.SetStaticEditorFlags(closet, 0);
-            closet.AddComponent<MeshCollider>();
-            Put("ComodaDormitorio", ComodaSimple(), f, 3.2f, 9.72f, 180f);
+            if (Model("Cama", f, 1.1f, 8.1f, 270f) == null) Put("Cama", Cama(), f, 1.1f, 8.1f, 270f);
+            if (Model("MesillaLampara", f, 0.32f, 9.2f, 90f) == null) Put("MesillaLampara", Mesilla(true), f, 0.32f, 9.2f, 90f);
+            if (Model("Mesilla", f, 0.32f, 7.0f, 90f) == null) Put("Mesilla", Mesilla(false), f, 0.32f, 7.0f, 90f);
+            // Armario con fondo falso: el cuerpo es hueco (colisión con su malla) y las hojas y el fondo se mueven.
+            var closet = Model("Armario", f, 5.62f, 8.7f, 270f, collider: false);
+            if (closet != null)
+            {
+                foreach (var t in closet.GetComponentsInChildren<Transform>()) GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
+                var body = closet.transform.Find("ArmarioCuerpo");
+                GameObjectUtility.SetStaticEditorFlags(body.gameObject, StaticEditorFlags.ContributeGI | StaticEditorFlags.BatchingStatic);
+                body.gameObject.AddComponent<MeshCollider>();
+            }
+            else
+            {
+                closet = Put("Armario", Armario(), f, 5.62f, 8.7f, 270f, false);
+                GameObjectUtility.SetStaticEditorFlags(closet, 0);
+                closet.AddComponent<MeshCollider>();
+            }
+            if (Model("Comoda", f, 3.2f, 9.72f, 180f, "ComodaDormitorio") == null) Put("ComodaDormitorio", ComodaSimple(), f, 3.2f, 9.72f, 180f);
             var rugKit = new MeshKit().Box(new Vector3(0, 0.006f, 0), new Vector3(1.6f, 0.012f, 1.1f), sheet);
             Put("AlfombraDormitorio", rugKit, f, 2.9f, 7.5f, 0, false);
             RoomLight(lights, "Dormitorio", 3f, 8f, new Vector3(3.55f, 1.2f, 6.07f), 90f, new Color(1f, 0.74f, 0.46f), 2.8f);
@@ -1529,20 +1541,22 @@ var arrival = new GameObject("LlegadaSotano");
 
             // Armario del dormitorio con su fondo falso: hojas y fondo en piezas móviles
             var closet = GameObject.Find("Armario").transform;
+            GameObject ClosetPart(string name, MeshKit kit, Vector3 local) =>
+                closet.Find(name) is Transform made ? made.gameObject : Part(name, kit, closet, local);
             var leafKit = new MeshKit();
             leafKit.Box(new Vector3(0.34f, 1.03f, 0), new Vector3(0.68f, 2.04f, 0.018f), woodDark);
             leafKit.Box(new Vector3(0.62f, 1.03f, 0.016f), new Vector3(0.02f, 0.14f, 0.02f), metal);
-            var left = Part("ArmarioHojaIzq", leafKit, closet, new Vector3(-0.68f, 0.02f, 0.295f));
+            var left = ClosetPart("ArmarioHojaIzq", leafKit, new Vector3(-0.68f, 0.02f, 0.295f));
             dir.closetLeft = left.AddComponent<SimpleHinge>();
             dir.closetLeft.openYaw = -105f;
             var rightKit = new MeshKit();
             rightKit.Box(new Vector3(-0.34f, 1.03f, 0), new Vector3(0.68f, 2.04f, 0.018f), woodDark);
             rightKit.Box(new Vector3(-0.62f, 1.03f, 0.016f), new Vector3(0.02f, 0.14f, 0.02f), metal);
-            var right = Part("ArmarioHojaDer", rightKit, closet, new Vector3(0.68f, 0.02f, 0.295f));
+            var right = ClosetPart("ArmarioHojaDer", rightKit, new Vector3(0.68f, 0.02f, 0.295f));
             dir.closetRight = right.AddComponent<SimpleHinge>();
             dir.closetRight.openYaw = 105f;
             var backKit = new MeshKit().Box(new Vector3(0.68f, 1.04f, 0), new Vector3(1.36f, 2.08f, 0.02f), woodLight);
-            var back = Part("ArmarioFondo", backKit, closet, new Vector3(-0.68f, 0f, -0.28f));
+            var back = ClosetPart("ArmarioFondo", backKit, new Vector3(-0.68f, 0f, -0.28f));
             dir.closetBack = back.AddComponent<SimpleHinge>();
             dir.closetBack.openYaw = -82f;
             dir.closetBack.seconds = 1.6f;
