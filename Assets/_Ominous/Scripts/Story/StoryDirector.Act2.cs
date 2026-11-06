@@ -128,7 +128,7 @@ namespace Ominous
         {
             roberta.Show(true);
             roberta.SetPose("depie");
-            if (where == "cocina") roberta.Place(new Vector3(9.6f, 0f, 1.25f), 45f);
+            if (where == "cocina") roberta.Place(new Vector3(11.2f, 0f, 1.3f), 300f);
             else if (where == "colada") roberta.Place(new Vector3(13.2f, 0f, 8.9f), 225f);
             else if (where == "ventana_enfrente") roberta.Place(new Vector3(4.4f, 0.45f, -9.5f), 0f);
             else if (where == "garaje_coche")

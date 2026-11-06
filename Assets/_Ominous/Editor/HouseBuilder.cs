@@ -474,9 +474,13 @@ namespace Ominous.EditorTools
         /// <summary>Plafón con bombilla y su interruptor junto a la puerta.</summary>
         static void RoomLight(Transform parent, string room, float x, float z, Vector3 switchPos, float switchYaw, Color color, float intensity, bool startsOn = false, float range = 7f, float ceiling = 2.6f)
         {
-            var fixture = Again("Plafon", parent, x, z, 0f, ceiling);
+            // El garaje lleva el plafón fluorescente; el resto, el plafón doméstico redondo.
+            var tubes = room == "Garaje" ? Model("Plafon", parent, x, z, 0f, "Plafon_" + room, ceiling, collider: false) : null;
+            var fixture = tubes ?? Again("Plafon", parent, x, z, 0f, ceiling);
             fixture.name = "Plafon_" + room;
-            var glow = fixture.GetComponent<MeshRenderer>();
+            MeshRenderer glow = fixture.GetComponent<MeshRenderer>();
+            if (tubes != null)
+                foreach (var r in tubes.GetComponentsInChildren<MeshRenderer>()) if (r.name == "Tubos") glow = r;
             GameObjectUtility.SetStaticEditorFlags(fixture, StaticEditorFlags.BatchingStatic);
             var light = SpotLight("Luz_" + room, parent, new Vector3(x, ceiling - 0.14f, z), Quaternion.Euler(90, 0, 0), color, intensity, range, 168f, ~0);
             light.shadows = LightShadows.Soft;
@@ -778,7 +782,7 @@ namespace Ominous.EditorTools
             var lamp = Point("LuzLampara", lights, new Vector3(0.42f, 1.48f, 0.52f), new Color(1f, 0.72f, 0.42f), 1.8f, 5.5f);
             lamp.shadows = LightShadows.Soft;
             lamp.shadowStrength = 0.8f;
-            var sw = Again("Interruptor", f, 4.93f, 3.3f, 0f, 1.2f);
+            var sw = Again("Interruptor", f, 4.93f, 3.55f, 0f, 1.2f);
             sw.name = "Interruptor_Salon";
             GameObjectUtility.SetStaticEditorFlags(sw, 0);
             sw.GetComponent<BoxCollider>().size = new Vector3(0.1f, 0.25f, 0.2f);
@@ -789,12 +793,22 @@ namespace Ominous.EditorTools
             var glows = new System.Collections.Generic.List<Renderer>();
             foreach (var r in lampMesh.GetComponentsInChildren<MeshRenderer>()) if (r.name == "Bombilla") glows.Add(r);
 
-            // Plafón fluorescente en el centro del techo: la luz del salón sale de él.
-            var plafon = Model("Plafon", f, 2.5f, 2.2f, 0f, "PlafonSalon", Height, collider: false);
+            // Lámpara de techo en el centro del salón: la luz del salón sale de ella.
+            var plafon = Model("LamparaTecho", f, 2.5f, 2.2f, 0f, "LamparaTechoSalon", Height, collider: false);
             if (plafon != null)
             {
-                foreach (var r in plafon.GetComponentsInChildren<MeshRenderer>()) if (r.name == "Tubos") glows.Add(r);
-                var tube = SpotLight("Luz_SalonTecho", lights, new Vector3(2.5f, Height - 0.14f, 2.2f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.86f, 0.62f), 2.6f, 7f, 168f, ~0);
+                foreach (var r in plafon.GetComponentsInChildren<MeshRenderer>())
+                    if (r.name == "Bombilla" || r.name == "Pantalla") glows.Add(r);
+            }
+            else
+            {
+                plafon = Again("Plafon", f, 2.5f, 2.2f, 0f, Height);
+                plafon.name = "Plafon_Salon";
+                GameObjectUtility.SetStaticEditorFlags(plafon, StaticEditorFlags.BatchingStatic);
+                ls.emissive = plafon.GetComponent<MeshRenderer>();
+            }
+            {
+                var tube = SpotLight("Luz_SalonTecho", lights, new Vector3(2.5f, Height - 0.14f, 2.2f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.8f, 0.55f), 2.4f, 7f, 168f, ~0);
                 tube.shadows = LightShadows.Soft;
                 tube.shadowStrength = 0.85f;
                 var tubeFill = Point("Relleno_SalonTecho", lights, new Vector3(2.5f, Height - 0.35f, 2.2f), new Color(1f, 0.86f, 0.62f), 0.3f, 3.5f);
@@ -859,7 +873,7 @@ namespace Ominous.EditorTools
             Door(d, "PuertaFondoPasillo", 0f, 4.75f, false, 0f, true);
 
             RoomLight(lights, "Pasillo1", 3.5f, 5.2f, new Vector3(5.45f, 1.2f, 5.93f), 90f, new Color(1f, 0.74f, 0.46f), 2.2f);
-            RoomLight(lights, "Pasillo2", 10f, 5.2f, new Vector3(9.8f, 1.2f, 4.47f), 90f, new Color(1f, 0.74f, 0.46f), 2.2f);
+            RoomLight(lights, "Pasillo2", 10f, 5.2f, new Vector3(9.5f, 1.2f, 4.47f), 90f, new Color(1f, 0.74f, 0.46f), 2.2f);
             RoomLight(lights, "Recibidor", 6f, 2.2f, new Vector3(6.93f, 1.2f, 0.55f), 0f, new Color(1f, 0.76f, 0.48f), 2.4f);
 
             Door(d, "PuertaSalonRecibidor", 5f, 2.12f, false, -95f);
@@ -870,11 +884,12 @@ namespace Ominous.EditorTools
         {
             if (Model("Encimera", f, 10.5f, 0.38f, 0f) == null) Put("Encimera", Encimera(), f, 10.5f, 0.38f);
             if (Model("Nevera", f, 13.45f, 0.46f, 0f) == null) Put("Nevera", Nevera(), f, 13.45f, 0.46f);
-            if (Model("MesaCocina", f, 11.3f, 3f, 0f) == null) Put("MesaCocina", MesaCocina(), f, 11.3f, 3f);
+            // La mesa va contra la pared oeste, fuera del paso entre el pasillo, la encimera y el garaje.
+            if (Model("MesaCocina", f, 9.0f, 2.35f, 90f) == null) Put("MesaCocina", MesaCocina(), f, 9.0f, 2.35f, 90f);
             // El frente de la silla mira a +z: las del norte giran 180° para mirar a la mesa.
             Put("SillaCocinaProvisional", Silla(), f, 0f, -50f);   // deja el prefab por si falta el modelo
             Object.DestroyImmediate(GameObject.Find("SillaCocinaProvisional"));
-            foreach (var (x, z, yaw) in new[] { (10.9f, 3.55f, 180f), (11.7f, 3.55f, 180f), (10.9f, 2.45f, 0f), (11.7f, 2.45f, 0f) })
+            foreach (var (x, z, yaw) in new[] { (9.75f, 1.95f, 270f), (9.75f, 2.75f, 270f), (9.0f, 3.4f, 180f), (9.0f, 1.3f, 0f) })
                 if (Model("SillaCocina", f, x, z, yaw) == null) Again("SillaCocinaProvisional", f, x, z, yaw);
             // Caja de fruta con latas junto a la nevera
             Model("CajaLatas", f, 13.55f, 1.35f, 15f);
@@ -883,8 +898,8 @@ namespace Ominous.EditorTools
             Put("Vaso", cup, f, 9.1f, 0.5f, 0, false, 0.92f);
             var plate = new MeshKit();
             plate.Cylinder(Vector3.zero, 0.1f, 0.12f, 0.02f, 10, ceramic);
-            Put("Plato", plate, f, 11.1f, 3f, 0, false, 0.76f);
-            RoomLight(lights, "Cocina", 11.1f, 2.2f, new Vector3(10.0f + 1.02f, 1.2f, 4.33f), 90f, new Color(0.94f, 0.97f, 0.9f), 3.2f, false, 7f);
+            Put("Plato", plate, f, 9.05f, 2.3f, 0, false, 0.76f);
+            RoomLight(lights, "Cocina", 11.1f, 2.2f, new Vector3(11.3f, 1.2f, 4.33f), 90f, new Color(0.94f, 0.97f, 0.9f), 3.2f, false, 7f);
             Door(d, "PuertaCocinaPasillo", 10f, 4.4f, true, 95f);
             Door(d, "PuertaCocinaGaraje", 14f, 2.12f, false, -95f);
         }
@@ -912,7 +927,7 @@ namespace Ominous.EditorTools
             if (Model("Comoda", f, 3.2f, 9.72f, 180f, "ComodaDormitorio") == null) Put("ComodaDormitorio", ComodaSimple(), f, 3.2f, 9.72f, 180f);
             var rugKit = new MeshKit().Box(new Vector3(0, 0.006f, 0), new Vector3(1.6f, 0.012f, 1.1f), sheet);
             Put("AlfombraDormitorio", rugKit, f, 2.9f, 7.5f, 0, false);
-            RoomLight(lights, "Dormitorio", 3f, 8f, new Vector3(3.55f, 1.2f, 6.07f), 90f, new Color(1f, 0.74f, 0.46f), 2.8f);
+            RoomLight(lights, "Dormitorio", 3f, 8f, new Vector3(3.8f, 1.2f, 6.07f), 90f, new Color(1f, 0.74f, 0.46f), 2.8f);
             Door(d, "PuertaDormitorio", 2.5f, 6f, true, -95f);
         }
 
@@ -931,7 +946,7 @@ namespace Ominous.EditorTools
             Put("Toalla", towel, f, 9.93f, 8.35f, 0, false);
             var tile = new MeshKit().Box(new Vector3(0, 0.004f, 0), new Vector3(0.3f, 0.012f, 0.3f), grime);
             Put("BaldosaSuelta", tile, f, 7.6f, 7.6f, 3f, false);
-            RoomLight(lights, "Bano", 8.4f, 8f, new Vector3(7.93f + 1.02f, 1.2f, 6.07f), 90f, new Color(0.94f, 0.97f, 0.9f), 2.6f, false, 6f);
+            RoomLight(lights, "Bano", 8.4f, 8f, new Vector3(9.2f, 1.2f, 6.07f), 90f, new Color(0.94f, 0.97f, 0.9f), 2.6f, false, 6f);
             Door(d, "PuertaBano", 8f, 6f, true, -95f);
         }
 
@@ -957,7 +972,7 @@ namespace Ominous.EditorTools
                 shoes.Box(new Vector3(x, 0.07f, -0.03f), new Vector3(0.07f, 0.06f, 0.1f), plastic);
             }
             Put("ZapatosRoberta", shoes, f, 13.55f, 6.6f, 80f, false);
-            RoomLight(lights, "Colada", 12f, 8f, new Vector3(12.47f, 1.2f, 6.07f), 90f, new Color(0.94f, 0.97f, 0.9f), 2.8f, false, 6f);
+            RoomLight(lights, "Colada", 12f, 8f, new Vector3(12.75f, 1.2f, 6.07f), 90f, new Color(0.94f, 0.97f, 0.9f), 2.8f, false, 6f);
             Door(d, "PuertaColada", 11.5f, 6f, true, -95f);
         }
 
@@ -975,7 +990,7 @@ namespace Ominous.EditorTools
             if (Model("EstanteriaGaraje", f, 18.72f, 2.4f, 270f) == null) Put("EstanteriaGaraje", shelves, f, 18.72f, 2.4f, 270f);
             Model("CajaLatas", f, 18.55f, 3.75f, 80f);
             RoomGarageWall(f);
-            RoomLight(lights, "Garaje", 16.5f, 2.2f, new Vector3(14.07f, 1.2f, 3.3f), 0f, new Color(0.94f, 0.97f, 0.9f), 3.4f, false, 7f);
+            RoomLight(lights, "Garaje", 16.5f, 2.2f, new Vector3(14.07f, 1.2f, 3.55f), 0f, new Color(0.94f, 0.97f, 0.9f), 3.4f, false, 7f);
         }
 
         static void RoomGarageWall(Transform f)
@@ -1262,6 +1277,14 @@ namespace Ominous.EditorTools
             ExternalCharacter(chechu, "depie", "Assets/_Ominous/Art/Externos/Chechu/ChickenMan", 1.75f, skin);
 
             var t = story.transform;
+            // Llaves en el cuenco: solo se ven cuando Chevas las deja.
+            var keys = new MeshKit();
+            keys.Cylinder(new Vector3(0, 0.005f, 0), 0.02f, 0.02f, 0.005f, 10, chrome);
+            keys.Box(new Vector3(0.04f, 0.005f, 0.006f), new Vector3(0.06f, 0.004f, 0.016f), chrome);
+            keys.Box(new Vector3(0.03f, 0.008f, -0.026f), new Vector3(0.055f, 0.004f, 0.015f), chrome);
+            keys.Box(new Vector3(-0.034f, 0.01f, 0.016f), new Vector3(0.04f, 0.016f, 0.024f), carRed);
+            var keysGo = Instance("LlavesCuenco", keys, t, new Vector3(6.8f, 0.85f, 1.7f), 30f, false);
+            keysGo.SetActive(false);
             Use("cuenco", "Dejar las llaves", new Vector3(6.8f, 0.87f, 1.7f), new Vector3(0.26f, 0.14f, 0.26f), t);
             Use("vaso", "Beber agua", new Vector3(9.1f, 1.0f, 0.5f), new Vector3(0.3f, 0.3f, 0.3f), t);
             Use("grifo", "Mirar el grifo", new Vector3(9.5f, 0.95f, 7.2f), new Vector3(0.45f, 0.3f, 0.5f), t);
@@ -1295,6 +1318,7 @@ namespace Ominous.EditorTools
             }
 
             var dir = story.AddComponent<StoryDirector>();
+            dir.keysInBowl = keysGo;
             BuildAct2(dir, t);
             BuildAct3(dir, t);
             dir.frontDoor = GameObject.Find("PuertaEntrada").GetComponent<Door>();

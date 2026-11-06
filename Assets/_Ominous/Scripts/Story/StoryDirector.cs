@@ -26,6 +26,7 @@ namespace Ominous
 
         FirstPersonController player;
         bool keysLeft, doorClosed;
+        [Tooltip("Las llaves dentro del cuenco: aparecen al dejarlas")] public GameObject keysInBowl;
         int wanderUses;
         float wanderTime, knockTimer;
         readonly System.Collections.Generic.HashSet<string> usedOnce = new();
@@ -179,6 +180,7 @@ namespace Ominous
             {
                 case "cuenco":
                     keysLeft = true;
+                    if (keysInBowl != null) keysInBowl.SetActive(true);
                     Sfx.Play("llaves", player.transform.position);
                     dm.Play("Prologo_Llaves");
                     RefreshPending();
@@ -438,6 +440,7 @@ namespace Ominous
         {
             Current = step;
             keysLeft = doorClosed = true;
+            if (keysInBowl != null) keysInBowl.SetActive(true);
             outsideBounds.SetActive(false);
             frontDoor.locked = !(step == Step.EsperaPuerta || step == Step.EsperaV2 || step == Step.EsperaV3 || step == Step.SalirCasa);
             PutRobertaInBed();
