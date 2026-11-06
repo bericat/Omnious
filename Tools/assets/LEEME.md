@@ -18,6 +18,12 @@ venv/bin/python Tools/assets/vista_previa.py Assets/_Ominous/Art/Models/MuebleRe
 ```
 `vista_previa.py` encuadra la cámara según el tamaño del objeto.
 
+Cada script dice en su cabecera qué genera, sus medidas y dónde está el origen. Algunos:
+`bano.py` (Vater, Lavabo, Banera), `lampara_techo.py` (cuelga del techo: origen arriba), `aparador.py`,
+`puertas.py` (PuertaHoja con el origen en la bisagra y PuertaMarco en el centro del hueco), `llaves.py`,
+`tele_programa.py` (atlas de 16 fotogramas de la tele; necesita Pillow) y `superficies.py`
+(texturas de 1 m x 1 m para paredes, suelos y techo en `Assets/_Ominous/Art/Superficies/`).
+
 ## Convenciones
 - FBX en `Assets/_Ominous/Art/Models/`, texturas en `Assets/_Ominous/Art/Models/Texturas/` (con LFS).
 - Escala real (1 unidad = 1 m), Y arriba, escala 1 y rotación 0 al importar en Unity.
