@@ -121,11 +121,11 @@ def manta():
         t = j / ny
         # recorrido: respaldo (y 0.10 -> asiento -> borde delantero -> cae)
         if t < 0.6:
-            y, z = 0.12 - t / 0.6 * 0.50, 0.475
+            y, z = 0.12 - t / 0.6 * 0.50, 0.548
         else:
             a = (t - 0.6) / 0.4
             ang = a * math.pi / 2
-            y, z = -0.38 - math.sin(ang) * 0.06, 0.475 - (1 - math.cos(ang)) * 0.06 - a * 0.30
+            y, z = -0.38 - math.sin(ang) * 0.07, 0.548 - (1 - math.cos(ang)) * 0.07 - a * 0.34
         fila = []
         for i in range(nx + 1):
             x = (i / nx - 0.5) * ancho
