@@ -103,6 +103,31 @@ namespace Ominous.EditorTools
         // Materiales de modelos ya hechos en esta construcción: varios modelos comparten nombres.
         static readonly System.Collections.Generic.Dictionary<string, Material> modelMaterials = new();
 
+        /// <summary>Sustituye un prefab provisional por el modelo de Art/Models con el mismo nombre.</summary>
+        static void ModelPrefab(string name, Bounds? collider)
+        {
+            string path = $"Assets/_Ominous/Art/Models/{name}.fbx";
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (asset == null) return;
+            if (AssetImporter.GetAtPath(path) is ModelImporter importer && !importer.generateSecondaryUV)
+            {
+                importer.generateSecondaryUV = true;
+                importer.SaveAndReimport();
+            }
+            var inst = (GameObject)Object.Instantiate(asset);
+            inst.name = name;
+            foreach (var r in inst.GetComponentsInChildren<MeshRenderer>())
+                r.sharedMaterials = System.Array.ConvertAll(r.sharedMaterials, m => ModelMaterial(m, false));
+            if (collider is Bounds b)
+            {
+                var box = inst.AddComponent<BoxCollider>();
+                box.center = b.center;
+                box.size = b.size;
+            }
+            PrefabUtility.SaveAsPrefabAsset(inst, $"Assets/_Ominous/Prefabs/{name}.prefab");
+            Object.DestroyImmediate(inst);
+        }
+
         static Material ModelMaterial(Material source, bool exterior)
         {
             string name = source.name + (exterior ? "_Exterior" : "");
@@ -113,6 +138,19 @@ namespace Ominous.EditorTools
                 ?? AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{source.name}.jpg");
             Color color = source.HasProperty("_BaseColor") ? source.GetColor("_BaseColor") : source.HasProperty("_Color") ? source.GetColor("_Color") : Color.white;
             Material mat;
+            if (source.name.Contains("LamparaTecho_Cristal"))
+            {
+                // Pantalla de la lámpara del salón: opaca y encendida.
+                var shade = new Material(plastic) { name = name };
+                var shadeTex = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{source.name}.jpg");
+                shade.SetTexture("_BaseMap", shadeTex);
+                shade.SetColor("_BaseColor", shadeTex != null ? Color.white : new Color(0.95f, 0.88f, 0.72f));
+                shade.SetColor("_EmissionColor", new Color(1f, 0.78f, 0.5f) * 1.6f);
+                AssetDatabase.DeleteAsset($"Assets/_Ominous/Materials/Modelos/{name}.mat");
+                AssetDatabase.CreateAsset(shade, $"Assets/_Ominous/Materials/Modelos/{name}.mat");
+                modelMaterials[name] = shade;
+                return shade;
+            }
             if (source.name.Contains("Luna"))
             {
                 modelMaterials[name] = mirror;
@@ -120,9 +158,18 @@ namespace Ominous.EditorTools
             }
             if (source.name.Contains("Pantalla"))
             {
-                // La pantalla de la tele usa el material de siempre, que es el que parpadea.
-                modelMaterials[name] = screen;
-                return screen;
+                // La pantalla de la tele: el material que parpadea, con el programa de Roberta si existe.
+                var program = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Ominous/Art/Models/Texturas/Tele_Programa.jpg");
+                if (program == null) { modelMaterials[name] = screen; return screen; }
+                var tv = new Material(screen) { name = "Tele_Programa" };
+                tv.SetTexture("_BaseMap", program);
+                tv.SetTextureScale("_BaseMap", new Vector2(0.25f, 0.25f));
+                tv.SetTextureOffset("_BaseMap", new Vector2(0f, 0.75f));
+                tv.SetColor("_BaseColor", new Color(0.06f, 0.06f, 0.06f));
+                AssetDatabase.DeleteAsset("Assets/_Ominous/Materials/Modelos/Tele_Programa.mat");
+                AssetDatabase.CreateAsset(tv, "Assets/_Ominous/Materials/Modelos/Tele_Programa.mat");
+                modelMaterials[name] = tv;
+                return tv;
             }
             if (source.name.Contains("Cristal"))
             {
@@ -515,6 +562,7 @@ namespace Ominous.EditorTools
             curtainSpots.Clear();
             Materials();
             HouseMaterials();
+            ceiling = Surface("Gotele", ceiling) ?? ceiling;
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var house = new GameObject("Casa").transform;
             var furniture = new GameObject("Muebles").transform; furniture.SetParent(house);
@@ -563,8 +611,8 @@ namespace Ominous.EditorTools
             Floor(0, 5, 0, 4.4f, Surface("Moqueta", rug) ?? floorWood);        // Salón
             Floor(5, 7, 0, 4.4f, floorWood);        // Recibidor
             Floor(7, 8.2f, 0, 4.4f, concreteIn);    // Cuartito oculto
-            Floor(8.2f, 14, 0, 4.4f, linoleum);     // Cocina
-            Floor(14, 19, 0, 4.4f, concreteIn);     // Garaje
+            Floor(8.2f, 14, 0, 4.4f, Surface("SueloCocina", linoleum) ?? linoleum);     // Cocina
+            Floor(14, 19, 0, 4.4f, Surface("Hormigon", concreteIn) ?? concreteIn);     // Garaje
             Floor(0, 14, 4.4f, 6, floorWood);       // Pasillo
             Floor(0, 6, 6, 10, floorWood);          // Dormitorio
             Floor(6, 6.8f, 6, 10, concreteIn);      // Hueco oculto
@@ -615,39 +663,72 @@ namespace Ominous.EditorTools
             Lining(new Vector3(6.86f, 0, 9.93f), 3.08f, true, tileWall, 1.45f); // Norte del baño
             Lining(new Vector3(6.86f, 0, 6.07f), 1.14f, true, tileWall, 1.6f);
             Lining(new Vector3(8.9f, 0, 6.07f), 1.04f, true, tileWall, 1.6f);
-            Lining(new Vector3(8.3f, 0, 0.07f), 1.2f, true, tileWall, 0.95f);   // Salpicadero de cocina
+            if (AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Ominous/Art/Superficies/AzulejoCocina.jpg") == null)
+                Lining(new Vector3(8.3f, 0, 0.07f), 1.2f, true, tileWall, 0.95f);   // Salpicadero de cocina
 
-            // Papel pintado de damasco en el salón, del suelo al techo, rodeando ventanas y puerta.
-            var paper = Surface("PapelDamasco", wall);
-            if (paper != null)
+            // Paredes vestidas por habitación: papel, azulejo u hormigón, rodeando ventanas y puertas.
+            const float off = Thick / 2 + 0.004f;
+            // Cubre la cara de una pared en el plano dado, de "from" a "to" (coordenadas absolutas a lo largo de la pared).
+            void Cover(float plane, bool alongX, float from, float to, Material m, float top, params Opening[] holes)
             {
-                paper.SetFloat("_Sheen", 0f);
-                const float off = Thick / 2 + 0.004f;
-                void Paper(Vector3 a, float len, bool alongX, params Opening[] holes)
+                if (m == null) return;
+                Vector3 a = alongX ? new Vector3(0, 0, plane) : new Vector3(plane, 0, 0);
+                void Piece(float f0, float f1, float bottom, float h)
                 {
-                    float at = 0f;
-                    var sorted = new System.Collections.Generic.List<Opening>(holes);
-                    sorted.Sort((p1, p2) => p1.from.CompareTo(p2.from));
-                    void Piece(float from, float to, float bottom, float top)
-                    {
-                        if (to - from < 0.005f || top - bottom < 0.005f) return;
-                        Vector3 c = a + (alongX ? Vector3.right : Vector3.forward) * ((from + to) / 2) + Vector3.up * ((bottom + top) / 2);
-                        w.Box(c, alongX ? new Vector3(to - from, top - bottom, 0.008f) : new Vector3(0.008f, top - bottom, to - from), paper);
-                    }
-                    foreach (var h in sorted)
-                    {
-                        Piece(at, h.from, 0, Height);
-                        Piece(h.from, h.to, 0, h.sill);
-                        Piece(h.from, h.to, h.top, Height);
-                        at = h.to;
-                    }
-                    Piece(at, len, 0, Height);
+                    f0 = Mathf.Max(f0, from); f1 = Mathf.Min(f1, to); h = Mathf.Min(h, top);
+                    if (f1 - f0 < 0.005f || h - bottom < 0.005f) return;
+                    Vector3 c = a + (alongX ? Vector3.right : Vector3.forward) * ((f0 + f1) / 2) + Vector3.up * ((bottom + h) / 2);
+                    w.Box(c, alongX ? new Vector3(f1 - f0, h - bottom, 0.008f) : new Vector3(0.008f, h - bottom, f1 - f0), m);
                 }
-                Paper(new Vector3(0, 0, off), 5f - off, true, saloonWin1, saloonWin2);          // Sur
-                Paper(new Vector3(off, 0, 0), 4.4f - off, false, new Opening(1.8f, 3.2f, 0.9f, 2.1f)); // Oeste
-                Paper(new Vector3(5f - off, 0, 0), 4.4f - off, false, new Opening(2.1f, 3f, 0, DoorTop)); // Este
-                Paper(new Vector3(0, 0, 4.4f - off), 5f - off, true);                            // Norte
+                var sorted = new System.Collections.Generic.List<Opening>(holes);
+                sorted.Sort((p1, p2) => p1.from.CompareTo(p2.from));
+                float at = from;
+                foreach (var hole in sorted)
+                {
+                    Piece(at, hole.from, 0, Height);
+                    Piece(hole.from, hole.to, 0, hole.sill);
+                    Piece(hole.from, hole.to, hole.top, Height);
+                    at = hole.to;
+                }
+                Piece(at, to, 0, Height);
             }
+            Material Matte(Material m) { if (m != null) m.SetFloat("_Sheen", 0f); return m; }
+            var damask = Matte(Surface("PapelDamasco", wall));
+            var hallPaper = Matte(Surface("PapelPasillo", wall));
+            var bedPaper = Matte(Surface("PapelDormitorio", wall));
+            var kitchenTile = Surface("AzulejoCocina", tileWall);
+            var concreteWall = Matte(Surface("Hormigon", concreteIn));
+            var doorHole = DoorTop;
+            // Salón
+            Cover(off, true, 0, 5, damask, Height, saloonWin1, saloonWin2);
+            Cover(off, false, 0, 4.4f, damask, Height, new Opening(1.8f, 3.2f, 0.9f, 2.1f));
+            Cover(5f - off, false, 0, 4.4f, damask, Height, new Opening(2.1f, 3f, 0, doorHole));
+            Cover(4.4f - off, true, 0, 5, damask, Height);
+            // Recibidor
+            Cover(off, true, 5, 7, hallPaper, Height, frontDoor);
+            Cover(5f + off, false, 0, 4.4f, hallPaper, Height, new Opening(2.1f, 3f, 0, doorHole));
+            Cover(7f - off, false, 0, 4.4f, hallPaper, Height);
+            Cover(4.4f - off, true, 5, 7, hallPaper, Height, new Opening(5.6f, 6.5f, 0, doorHole));
+            // Pasillo
+            Cover(4.4f + off, true, 0, 14, hallPaper, Height, new Opening(5.6f, 6.5f, 0, doorHole), new Opening(7.2f, 8f, 0, 1.85f), new Opening(10f, 10.9f, 0, doorHole));
+            Cover(6f - off, true, 0, 14, hallPaper, Height, new Opening(2.5f, 3.4f, 0, doorHole), new Opening(8f, 8.9f, 0, doorHole), new Opening(11.5f, 12.4f, 0, doorHole));
+            Cover(off, false, 4.4f, 6, hallPaper, Height, new Opening(4.75f, 5.65f, 0, doorHole));
+            Cover(14f - off, false, 4.4f, 6, hallPaper, Height);
+            // Dormitorio
+            Cover(6f + off, true, 0, 6, bedPaper, Height, new Opening(2.5f, 3.4f, 0, doorHole));
+            Cover(10f - off, true, 0, 6, bedPaper, Height, new Opening(1.5f, 2.9f, 0.9f, 2.1f), new Opening(3.5f, 4.9f, 0.9f, 2.1f));
+            Cover(off, false, 6, 10, bedPaper, Height);
+            Cover(6f - off, false, 6, 10, bedPaper, Height, new Opening(7.35f, 7.5f, 1.52f, 1.66f), new Opening(8.3f, 9.1f, 0, 1.9f));
+            // Cocina: azulejo hasta 1,5 m
+            Cover(off, true, 8.2f, 14, kitchenTile, 1.5f, kitchenWin);
+            Cover(8.2f + off, false, 0, 4.4f, kitchenTile, 1.5f);
+            Cover(14f - off, false, 0, 4.4f, kitchenTile, 1.5f, new Opening(2.1f, 3f, 0, doorHole));
+            Cover(4.4f - off, true, 8.2f, 14, kitchenTile, 1.5f, new Opening(10f, 10.9f, 0, doorHole));
+            // Garaje
+            Cover(off, true, 14, 19, concreteWall, Height, garageDoor);
+            Cover(14f + off, false, 0, 4.4f, concreteWall, Height, new Opening(2.1f, 3f, 0, doorHole));
+            Cover(19f - off, false, 0, 4.4f, concreteWall, Height);
+            Cover(4.4f - off, true, 14, 19, concreteWall, Height);
             go = Instance("Casa_Paredes", w, house, Vector3.zero, 0, false);
             go.AddComponent<MeshCollider>(); Static(go);
 
@@ -731,6 +812,9 @@ namespace Ominous.EditorTools
             leaf.Box(new Vector3(0.05f, 0.95f, 0.77f), new Vector3(0.05f, 0.03f, 0.1f), metal);
             Instance("PuertaHoja", leaf, parent, Vector3.zero);
             Instance("PuertaMarco", PuertaMarco(), parent, Vector3.zero, 0, false);
+            // Puertas definitivas, con los mismos pivotes que las provisionales.
+            ModelPrefab("PuertaHoja", new Bounds(new Vector3(0, 1.0f, 0.43f), new Vector3(0.04f, 2.0f, 0.86f)));
+            ModelPrefab("PuertaMarco", null);
             var sw = new MeshKit();
             sw.Box(Vector3.zero, new Vector3(0.02f, 0.12f, 0.08f), frame);
             sw.Box(new Vector3(-0.015f, 0, 0), new Vector3(0.015f, 0.04f, 0.02f), metal);
@@ -763,6 +847,7 @@ namespace Ominous.EditorTools
                 teleScreen = tele.GetComponent<MeshRenderer>();
             }
             if (Model("MesaBaja", f, 2.15f, 2.75f, 0f) == null) Put("MesaBaja", MesaBaja(), f, 2.15f, 2.75f);
+            Model("Aparador", f, 3.22f, 4.17f, 180f);
             if (Model("Estanteria", f, 4.2f, 4.17f, 180f, "EstanteriaSalon") == null) Put("EstanteriaSalon", Estanteria(), f, 4.2f, 4.17f);
             var lampMesh = Model("Lampara", f, 0.4f, 0.5f, 0f) ?? Put("Lampara", Lampara(), f, 0.4f, 0.5f);
             foreach (var t in lampMesh.GetComponentsInChildren<Transform>()) GameObjectUtility.SetStaticEditorFlags(t.gameObject, StaticEditorFlags.BatchingStatic);
@@ -778,6 +863,7 @@ namespace Ominous.EditorTools
             flicker.tvLight = tv;
             flicker.screen = teleScreen;
             flicker.screenMaterialIndex = Mathf.Max(0, System.Array.IndexOf(flicker.screen.sharedMaterials, screen));
+            flicker.programFrames = flicker.screen.sharedMaterial != null && flicker.screen.sharedMaterial.name == "Tele_Programa" ? 16 : 0;
 
             var lamp = Point("LuzLampara", lights, new Vector3(0.42f, 1.48f, 0.52f), new Color(1f, 0.72f, 0.42f), 1.8f, 5.5f);
             lamp.shadows = LightShadows.Soft;
@@ -808,7 +894,8 @@ namespace Ominous.EditorTools
                 ls.emissive = plafon.GetComponent<MeshRenderer>();
             }
             {
-                var tube = SpotLight("Luz_SalonTecho", lights, new Vector3(2.5f, Height - 0.14f, 2.2f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.8f, 0.55f), 2.4f, 7f, 168f, ~0);
+                float lampY = GameObject.Find("LamparaTechoSalon") != null ? Height - 0.6f : Height - 0.14f;
+                var tube = SpotLight("Luz_SalonTecho", lights, new Vector3(2.5f, lampY, 2.2f), Quaternion.Euler(90, 0, 0), new Color(1f, 0.8f, 0.55f), 2.4f, 7f, 168f, ~0);
                 tube.shadows = LightShadows.Soft;
                 tube.shadowStrength = 0.85f;
                 var tubeFill = Point("Relleno_SalonTecho", lights, new Vector3(2.5f, Height - 0.35f, 2.2f), new Color(1f, 0.86f, 0.62f), 0.3f, 3.5f);
@@ -1283,7 +1370,8 @@ namespace Ominous.EditorTools
             keys.Box(new Vector3(0.04f, 0.005f, 0.006f), new Vector3(0.06f, 0.004f, 0.016f), chrome);
             keys.Box(new Vector3(0.03f, 0.008f, -0.026f), new Vector3(0.055f, 0.004f, 0.015f), chrome);
             keys.Box(new Vector3(-0.034f, 0.01f, 0.016f), new Vector3(0.04f, 0.016f, 0.024f), carRed);
-            var keysGo = Instance("LlavesCuenco", keys, t, new Vector3(6.8f, 0.85f, 1.7f), 30f, false);
+            var keysGo = Model("Llaves", t, 6.8f, 1.7f, 30f, "LlavesCuenco", 0.845f, collider: false)
+                ?? Instance("LlavesCuenco", keys, t, new Vector3(6.8f, 0.85f, 1.7f), 30f, false);
             keysGo.SetActive(false);
             Use("cuenco", "Dejar las llaves", new Vector3(6.8f, 0.87f, 1.7f), new Vector3(0.26f, 0.14f, 0.26f), t);
             Use("vaso", "Beber agua", new Vector3(9.1f, 1.0f, 0.5f), new Vector3(0.3f, 0.3f, 0.3f), t);

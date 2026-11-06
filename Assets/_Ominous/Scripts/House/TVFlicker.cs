@@ -11,6 +11,9 @@ namespace Ominous
         public Color colorA = new Color(0.72f, 0.8f, 0.95f);
         public Color colorB = new Color(0.9f, 0.87f, 0.8f);
         public float baseIntensity = 3.0f;
+        [Tooltip("Fotogramas del programa (atlas de 4 x 4); 0 = sin programa")] public int programFrames;
+        public float programFps = 4f;
+        static readonly int BaseMapST = Shader.PropertyToID("_BaseMap_ST");
 
         static readonly int Emission = Shader.PropertyToID("_EmissionColor");
         MaterialPropertyBlock block;
@@ -53,7 +56,15 @@ namespace Ominous
             {
                 block ??= new MaterialPropertyBlock();
                 screen.GetPropertyBlock(block, screenMaterialIndex);
-                block.SetColor(Emission, c.linear * (level * noise * 1.1f));
+                if (programFrames > 0)
+                {
+                    // El programa de la tele: teletienda en un atlas de 4 x 4, de izquierda a derecha y de arriba abajo.
+                    int i = (int)(Time.time * programFps) % programFrames;
+                    int col = i % 4, row = i / 4;
+                    block.SetVector(BaseMapST, new Vector4(0.25f, 0.25f, col * 0.25f, 1f - (row + 1) * 0.25f));
+                    block.SetColor(Emission, Color.Lerp(Color.white, c, 0.35f).linear * (level * noise * 1.4f));
+                }
+                else block.SetColor(Emission, c.linear * (level * noise * 1.1f));
                 screen.SetPropertyBlock(block, screenMaterialIndex);
             }
         }
