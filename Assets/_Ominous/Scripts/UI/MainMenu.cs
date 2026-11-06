@@ -33,6 +33,8 @@ namespace Ominous
             column = col.gameObject;
             options = OptionsPanel.Build(root, () => { options.SetActive(false); column.SetActive(true); });
             options.SetActive(false);
+            // Primer arranque: ajustar el brillo para que la oscuridad se vea como se diseñó.
+            if (!BrightnessCalibration.Done) BrightnessCalibration.Show(root, column);
         }
 
         void Update()

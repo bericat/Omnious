@@ -9,7 +9,7 @@ namespace Ominous
     {
         public static GameObject Build(Transform parent, Action onBack)
         {
-            var root = UIKit.Rect(parent, "Opciones", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560, 640));
+            var root = UIKit.Rect(parent, "Opciones", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560, 690));
             UIKit.Panel(root, new Color(0.03f, 0.03f, 0.03f, 0.92f));
             var column = UIKit.Stretch(root, "Columna");
             column.offsetMin = new Vector2(20, 16); column.offsetMax = new Vector2(-20, -16);
@@ -47,6 +47,11 @@ namespace Ominous
             UIKit.Slider(column, "Sensibilidad de la cámara", 0.3f, 2.5f, OminousOptions.Sensitivity, v => OminousOptions.Sensitivity = v);
             UIKit.Slider(column, "Intensidad del efecto de cámara", 0f, 1f, OminousOptions.CameraEffectIntensity, v => OminousOptions.CameraEffectIntensity = v);
             GameObject keys = null;
+            UIKit.Button(column, "Calibrar el brillo", () =>
+            {
+                PlayerPrefs.DeleteKey("calibrado");
+                BrightnessCalibration.Show(root.parent, root.gameObject);
+            });
             UIKit.Button(column, "Teclas", () => { column.gameObject.SetActive(false); keys.SetActive(true); });
             UIKit.Button(column, "Volver", () => onBack());
             keys = KeysPanel.Build(root, () => { keys.SetActive(false); column.gameObject.SetActive(true); });

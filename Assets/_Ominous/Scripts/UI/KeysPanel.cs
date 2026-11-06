@@ -21,6 +21,7 @@ namespace Ominous
             GameAction.Izquierda => "Izquierda",
             GameAction.Derecha => "Derecha",
             GameAction.Usar => "Usar",
+            GameAction.Linterna => "Linterna",
             _ => "Agacharse",
         };
 

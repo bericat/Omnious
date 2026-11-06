@@ -90,6 +90,9 @@ namespace Ominous
             settings.saturation = Slider("Saturación", settings.saturation, 0f, 1.2f);
             settings.brightness = Slider("Brillo", settings.brightness, 0.5f, 2f);
             settings.exteriorFogEnd = Slider("Niebla de la calle", settings.exteriorFogEnd, 5f, 60f);
+            // Prueba de oscuridad (OSCURIDAD.md): apagar la casa y probar la linterna sin jugar hasta ahí.
+            if (GUILayout.Button(HouseLights.Power ? "Apagón de prueba" : "Devolver la luz")) HouseLights.SetPower(!HouseLights.Power);
+            if (!Flashlight.Owned && GUILayout.Button("Darme la linterna (F)")) Flashlight.Give();
             GUILayout.EndArea();
         }
     }

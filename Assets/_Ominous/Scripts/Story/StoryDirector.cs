@@ -438,6 +438,7 @@ namespace Ominous
 
         void ApplyRestored(Step step)
         {
+            if (GameDirector.Instance.Night.powerOff) HouseLights.SetPower(false);
             Current = step;
             keysLeft = doorClosed = true;
             if (keysInBowl != null) keysInBowl.SetActive(true);

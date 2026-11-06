@@ -1412,7 +1412,10 @@ namespace Ominous.EditorTools
             var box = new MeshKit();
             box.Box(Vector3.zero, new Vector3(0.4f, 0.55f, 0.08f), metal);
             box.Box(new Vector3(0.14f, 0, -0.045f), new Vector3(0.02f, 0.08f, 0.012f), chrome);
-            if (Model("CuadroElectrico", f, 14.8f, 4.28f, 0f, null, 1.05f) == null) Put("CuadroElectrico", box, f, 14.8f, 4.28f, 0f, true, 1.05f);
+            // El diferencial está en la colada (OSCURIDAD.md): pared norte, junto a la puerta.
+            var breaker = Model("CuadroElectrico", f, 10.6f, 9.93f, 0f, null, 1.35f) ?? Put("CuadroElectrico", box, f, 10.6f, 9.93f, 0f, true, 1.35f);
+            GameObjectUtility.SetStaticEditorFlags(breaker, 0);
+            breaker.AddComponent<BreakerBox>();
             var cans = new MeshKit();
             foreach (var (x, z, h) in new[] { (0f, 0f, 0.22f), (0.26f, 0.04f, 0.22f), (0.12f, 0.22f, 0.18f), (0.14f, 0f, 0.0f) })
                 if (h > 0f) cans.Cylinder(new Vector3(x, 0, z), 0.1f, 0.1f, h, 8, metal);
@@ -1604,6 +1607,7 @@ namespace Ominous.EditorTools
             fp.cameraPivot = camGo.transform;
             var interactor = player.AddComponent<PlayerInteractor>();
             interactor.eye = camGo.transform;
+            camGo.AddComponent<Flashlight>();
 
             var look = new GameObject("Imagen");
             var controller = look.AddComponent<VideoLookController>();

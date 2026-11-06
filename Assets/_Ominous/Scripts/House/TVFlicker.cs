@@ -19,8 +19,20 @@ namespace Ominous
         MaterialPropertyBlock block;
         float nextShot, shotMix, target = 1f, level = 1f;
 
+        bool powered = true, wasOn;
+
+        /// <summary>Sin luz en la casa la tele se apaga; al volver, solo se enciende si lo estaba.</summary>
+        public void SetPowered(bool on)
+        {
+            if (powered == on) return;
+            powered = on;
+            if (!on) { wasOn = enabled; TurnOff(); }
+            else if (wasOn) TurnOn();
+        }
+
         public void TurnOn()
         {
+            if (!powered) { wasOn = true; return; }
             enabled = true;
             if (tvLight != null) tvLight.enabled = true;
         }

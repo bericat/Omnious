@@ -52,6 +52,7 @@ Shader "Ominous/Video Lit"
 
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             half4 _Video_Ambient;
+            float4 _Video_Darkness;    // x: luz horneada del interior, y: ambiente del interior (1 con luz, menos en apagón)
             half4 _Video_FogColor;
             half4 _Video_ExteriorFogColor;
             float4 _Video_Fog;         // x-y: niebla interior, inicio y fin
@@ -101,11 +102,13 @@ Shader "Ominous/Video Lit"
                 float3 n = normalize(i.normalWS);
                 float3 v = normalize(GetCameraPositionWS() - i.positionWS);
                 // Ambiente desigual: entra algo más de luz desde arriba que desde abajo.
+                // En apagón el interior se queda casi negro; el exterior no cambia.
+                float2 dark = _Exterior > 0.5 ? float2(1, 1) : float2(_Video_Darkness.x, _Video_Darkness.y);
                 #if defined(LIGHTMAP_ON)
                 // Luz horneada: entra por las ventanas y deja los rincones oscuros.
-                half3 light = SampleLightmap(i.uvLightmap, n) + _Video_Ambient.rgb * (0.72 + 0.28 * n.y);
+                half3 light = SampleLightmap(i.uvLightmap, n) * dark.x + _Video_Ambient.rgb * dark.y * (0.72 + 0.28 * n.y);
                 #else
-                half3 light = _Video_Ambient.rgb * _AmbientBoost * (0.72 + 0.28 * n.y);
+                half3 light = _Video_Ambient.rgb * _AmbientBoost * dark.y * (0.72 + 0.28 * n.y);
                 #endif
                 half3 spec = 0;
 

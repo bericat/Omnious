@@ -13,6 +13,7 @@ namespace Ominous
         public string hour = "01:50";
         public string objective = "";
         public bool robertaInBed;
+        public bool powerOff;
         public string houseVariant = "normal";
         public List<int> openRooms = new();
         public List<string> flags = new();

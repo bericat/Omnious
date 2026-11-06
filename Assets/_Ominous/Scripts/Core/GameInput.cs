@@ -5,7 +5,7 @@ using UnityEngine.InputSystem.Controls;
 
 namespace Ominous
 {
-    public enum GameAction { Adelante, Atras, Izquierda, Derecha, Usar, Agachar }
+    public enum GameAction { Adelante, Atras, Izquierda, Derecha, Usar, Agachar, Linterna }
 
     /// <summary>Todo lo que el jugador pulsa, con teclas reasignables y mando.</summary>
     public static class GameInput
@@ -53,6 +53,7 @@ namespace Ominous
             GameAction.Izquierda => Key.A,
             GameAction.Derecha => Key.D,
             GameAction.Usar => Key.E,
+            GameAction.Linterna => Key.F,
             _ => Key.LeftCtrl,
         };
 
@@ -147,6 +148,15 @@ namespace Ominous
         public static bool AdvancePressed =>
             UsePressed || (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame) ||
             (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame);
+
+        public static bool FlashlightPressed =>
+            (Keyboard.current != null && Keyboard.current[Binding(GameAction.Linterna)].wasPressedThisFrame) ||
+            PressedPad(Gamepad.current?.buttonNorth);
+
+        /// <summary>Tapar la linterna: clic derecho o gatillo izquierdo, mantenidos.</summary>
+        public static bool CoverHeld =>
+            (Mouse.current != null && Mouse.current.rightButton.isPressed) ||
+            (Gamepad.current != null && Gamepad.current.leftTrigger.ReadValue() > 0.4f);
 
         public static bool PausePressed =>
             (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) ||

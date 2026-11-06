@@ -60,13 +60,15 @@ namespace Ominous
 
             Shader.SetGlobalVector(Optics, new Vector4(settings.distortion * i * motion, settings.aberration * i, settings.softness * i, settings.vignette * i));
             Shader.SetGlobalVector(Signal, new Vector4(settings.noise * i, exposure, time, imperfection * i));
-            Shader.SetGlobalVector(Grade, new Vector4(settings.liftedBlacks * i, Mathf.Lerp(1f, settings.dirtyWhites, i), Mathf.Lerp(1f, settings.saturation, i), settings.contrast));
+            Shader.SetGlobalVector(Grade, new Vector4(settings.liftedBlacks * i * Mathf.Lerp(0.15f, 1f, Application.isPlaying ? HouseLights.Tick(0f) : 1f), Mathf.Lerp(1f, settings.dirtyWhites, i), Mathf.Lerp(1f, settings.saturation, i), settings.contrast));
             Shader.SetGlobalColor(ShadowTint, Color.Lerp(Color.white, settings.shadowTint, i));
             Shader.SetGlobalColor(LightTint, Color.Lerp(Color.white, settings.lightTint, i));
             Shader.SetGlobalVector(Psx, new Vector4(settings.colorLevels > 0 ? settings.colorLevels : 0, settings.dither * i, 0, 0));
             Shader.SetGlobalVector(Detail, new Vector4(settings.painterly * i, settings.sharpen * i, 0, 0));
+            float lit = Application.isPlaying ? HouseLights.Tick(Time.deltaTime) : 1f;
+            if (!Application.isPlaying) Shader.SetGlobalVector("_Video_Darkness", Vector4.one);
             Shader.SetGlobalColor(Ambient, settings.ambient.linear);
-            Shader.SetGlobalColor(FogColor, settings.fogColor.linear);
+            Shader.SetGlobalColor(FogColor, Color.Lerp(Color.black, settings.fogColor, lit).linear);
             Shader.SetGlobalVector(Fog, new Vector4(settings.fogStart, settings.fogEnd, 0, 0));
             Shader.SetGlobalColor(ExteriorFogColor, settings.exteriorFogColor.linear);
             Shader.SetGlobalVector(ExteriorFog, new Vector4(settings.exteriorFogStart, settings.exteriorFogEnd, 0, 0));
