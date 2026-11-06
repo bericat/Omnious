@@ -365,6 +365,42 @@ namespace Ominous.EditorTools
             pr.maxParticleSize = 3f;
         }
 
+        /// <summary>Objetos de vida de la casa y del exterior (Tools/assets/COLOCACION_PSX.md).</summary>
+        static void PlaceLife(Transform f, Transform street)
+        {
+            Model("Microondas", f, 12.38f, 0.36f, 0f, null, 0.92f);
+            Model("Escurreplatos", f, 10.78f, 0.38f, 0f, null, 0.926f, collider: false);
+            Model("BotellasCocina", f, 11.2f, 0.22f, 0f, null, 0.92f, collider: false);
+            Model("Cafetera", f, 11.62f, 0.29f, 20f, null, 0.95f, collider: false);
+            Model("Sarten", f, 11.88f, 0.51f, 90f, null, 0.95f, collider: false);
+            Model("CuboBasura", f, 12.9f, 0.4f, 0f);
+            Model("Frutero", f, 8.9f, 2.75f, 0f, null, 0.76f, collider: false);
+            Model("Calendario", f, 8.26f, 2.35f, 90f, null, 1.75f, collider: false);
+            Model("Planta", f, 0.5f, 3.85f, 135f, collider: false);
+            Model("Revistas", f, 2.75f, 1.55f, 10f, null, 0.47f, collider: false);
+            Model("Telefono", f, 6.8f, 1.25f, 270f, null, 0.835f, collider: false);
+            Model("Paraguero", f, 5.22f, 0.98f, 0f);
+            Model("Zapatos", f, 5.25f, 1.55f, 90f, collider: false);
+            Model("FotoBoda", f, 3.6f, 4.46f, 0f, null, 1.55f, collider: false);
+            Model("FotoBodaMesa", f, 2.95f, 9.75f, 180f, null, 0.76f, collider: false);
+            Model("Despertador", f, 0.45f, 7.15f, 90f, null, 0.40f, collider: false);
+            Model("Zapatillas", f, 1.0f, 6.95f, 180f, collider: false);
+            Model("SillaRopa", f, 5.4f, 6.5f, 315f);
+            Model("Toallero", f, 9.925f, 8.35f, 270f, null, 1.15f, collider: false);
+            Model("PapelHigienico", f, 9.925f, 9.1f, 270f, null, 0.70f, collider: false);
+            Model("VasoCepillos", f, 9.77f, 7.42f, 270f, null, 0.80f, collider: false);
+            Model("BotesBano", f, 6.97f, 9.45f, 90f, null, 0.52f, collider: false);
+            Model("Alfombrilla", f, 8.0f, 8.9f, 90f, collider: false);
+            Model("Bicicleta", f, 16.3f, 2.4f, 15f);
+            Model("Neumaticos", f, 18.5f, 0.5f, 0f);
+            Model("Bidon", f, 18.7f, 1.2f, 90f);
+            Model("Herramientas", f, 14.06f, 3.7f, 90f, null, 1.45f, collider: false);
+            foreach (float x in new[] { -3f, -1f, 1f, 3f, 7f, 9f, 11f, 12.9f }) Model("Valla", street, x, -2.3f, 0f);
+            Model("Buzon", street, 5.1f, -2.45f, 180f);
+            Model("CubosBasura", street, 13.4f, -0.55f, 0f);
+            Model("MacetaSeca", street, 7.15f, -0.4f, 0f, null, 0.03f);
+        }
+
         static Material ModelMaterial(Material source, bool exterior)
         {
             string name = source.name + (exterior ? "_Exterior" : "");
@@ -797,6 +833,10 @@ namespace Ominous.EditorTools
             OminousSetup.Configure();
             modelMaterials.Clear();
             curtainSpots.Clear();
+            // Aspecto PSX: texturas de modelos y superficies sin suavizar.
+            foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/_Ominous/Art/Models/Texturas", "Assets/_Ominous/Art/Superficies" }))
+                if (AssetImporter.GetAtPath(AssetDatabase.GUIDToAssetPath(guid)) is TextureImporter ti && ti.filterMode != FilterMode.Point)
+                { ti.filterMode = FilterMode.Point; ti.SaveAndReimport(); }
             Materials();
             HouseMaterials();
             ceiling = Surface("Gotele", ceiling) ?? ceiling;
@@ -813,6 +853,7 @@ namespace Ominous.EditorTools
             BuildHall(furniture, doors, lights);
             BuildKitchen(furniture, doors, lights);
             BuildBedroom(furniture, doors, lights);
+            PlaceLife(furniture, street);
             BuildBathroom(furniture, doors, lights);
             BuildLaundry(furniture, doors, lights);
             BuildGarage(furniture, doors, lights);
@@ -1172,7 +1213,7 @@ namespace Ominous.EditorTools
             System.IO.Directory.CreateDirectory("Assets/_Ominous/Materials/Modelos");
             var mat = new Material(template) { name = name };
             mat.SetTexture("_BaseMap", tex);
-            mat.SetTextureScale("_BaseMap", Vector2.one);
+            mat.SetTextureScale("_BaseMap", Vector2.one * 0.25f);   // cada imagen cubre 4 x 4 m
             mat.SetColor("_BaseColor", Color.white);
             mat.SetFloat("_Detile", 1f);   // papel, suelos y techos: sin repetición visible
             AssetDatabase.DeleteAsset(path);
@@ -1658,7 +1699,7 @@ namespace Ominous.EditorTools
             keys.Box(new Vector3(0.04f, 0.005f, 0.006f), new Vector3(0.06f, 0.004f, 0.016f), chrome);
             keys.Box(new Vector3(0.03f, 0.008f, -0.026f), new Vector3(0.055f, 0.004f, 0.015f), chrome);
             keys.Box(new Vector3(-0.034f, 0.01f, 0.016f), new Vector3(0.04f, 0.016f, 0.024f), carRed);
-            var keysGo = Model("Llaves", t, 6.8f, 1.7f, 30f, "LlavesCuenco", 0.845f, collider: false)
+            var keysGo = Model("Llaves", t, 6.8f, 1.7f, 30f, "LlavesCuenco", 0.854f, collider: false)
                 ?? Instance("LlavesCuenco", keys, t, new Vector3(6.8f, 0.85f, 1.7f), 30f, false);
             keysGo.SetActive(false);
             Use("cuenco", "Dejar las llaves", new Vector3(6.8f, 0.87f, 1.7f), new Vector3(0.26f, 0.14f, 0.26f), t);
