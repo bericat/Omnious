@@ -12,7 +12,7 @@ namespace Ominous
         public static GameUI Instance { get; private set; }
         public Canvas Canvas { get; private set; }
 
-        TextMeshProUGUI prompt, objective, subtitle, speakerName, ambientLine;
+        TextMeshProUGUI pending, prompt, objective, subtitle, speakerName, ambientLine;
         UnityEngine.UI.Image fade, subtitleBack;
         float subtitleHeight, subtitleWidth;
         RectTransform subtitleBody;
@@ -33,6 +33,9 @@ namespace Ominous
 
             // Todos los textos van abajo, pequeños y sin llamar la atención.
             objective = UIKit.Label(UIKit.Rect(root, "Objetivo", new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(16, 12), new Vector2(420, 24)), "", ObjectiveSize, UIKit.Dim, TextAlignmentOptions.Left);
+
+            pending = UIKit.Label(UIKit.Rect(root, "Pendiente", new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(16, 34), new Vector2(520, 24)), "", ObjectiveSize, UIKit.Dim, TextAlignmentOptions.Left);
+            pending.fontStyle = FontStyles.Italic;
 
             subtitleBox = UIKit.Rect(root, "Subtitulos", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 40), new Vector2(760, 66));
             subtitleBack = UIKit.Panel(subtitleBox, new Color(0, 0, 0, 0.3f));
@@ -78,6 +81,7 @@ namespace Ominous
             speakerName.fontSize = NameSize * scale;
             prompt.fontSize = PromptSize * scale;
             objective.fontSize = ObjectiveSize * scale;
+            pending.fontSize = ObjectiveSize * scale;
             ambientLine.fontSize = 14f * scale;
             subtitleBox.sizeDelta = new Vector2(subtitleWidth * Mathf.Max(1f, scale * 0.75f), subtitleHeight * Mathf.Max(1f, scale));
             subtitleBody.offsetMax = new Vector2(-16f, -20f * Mathf.Max(1f, scale));
@@ -89,6 +93,9 @@ namespace Ominous
             string text = GameDirector.Instance != null ? GameDirector.Instance.Night.objective : "";
             objective.text = string.IsNullOrEmpty(text) ? "" : text;
         }
+
+        /// <summary>Tareas pendientes que no bloquean, encima del objetivo.</summary>
+        public void SetPending(string text) => pending.text = text ?? "";
 
         public void SetPrompt(string text)
         {

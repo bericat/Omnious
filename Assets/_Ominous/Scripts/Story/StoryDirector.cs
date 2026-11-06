@@ -154,7 +154,7 @@ namespace Ominous
         public bool CanUse(string id) => id switch
         {
             "roberta" => Current == Step.HablarRoberta || (Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("cama")),
-            "cuenco" => !keysLeft && Current >= Step.Tareas && Current <= Step.ApagarLuces,
+            "cuenco" => !keysLeft && Current >= Step.Tareas && Current < Step.Llamada,
             "tele" => Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("tele"),
             "nevera" => Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("nevera"),
             "ventana" => (Current >= Step.Deambular && Current <= Step.Llamada && !usedOnce.Contains("ventana")) || Current == Step.MirarVentana || ((Current == Step.Acto3 || Current == Step.SotanoPuerta) && !(streetSeen && robertaWindow)),
@@ -181,7 +181,7 @@ namespace Ominous
                     keysLeft = true;
                     Sfx.Play("llaves", player.transform.position);
                     dm.Play("Prologo_Llaves");
-                    CheckTasks();
+                    RefreshPending();
                     break;
                 case "vaso":
                     usedOnce.Add("vaso");
@@ -201,6 +201,8 @@ namespace Ominous
                     }
                     break;
                 case "cama":
+                    // Antes de acostarse hay que dejar las llaves y cerrar la puerta.
+                    if (!keysLeft || !doorClosed) { dm.Play("Acto1_CamaPendiente"); break; }
                     usedOnce.Add("acostarse");
                     StartCoroutine(TryToSleep());
                     break;
@@ -254,13 +256,14 @@ namespace Ominous
             DialogueManager.Instance.Play(node);
         }
 
-        void CheckTasks()
+        /// <summary>Las llaves y la puerta quedan pendientes, sin bloquear nada, hasta antes de la primera visita.</summary>
+        void RefreshPending()
         {
-            if (Current == Step.Tareas && keysLeft && doorClosed)
-            {
-                Set(Step.HablarRoberta);
-                GameDirector.Instance.SetObjective("Habla con Roberta");
-            }
+            bool early = Current >= Step.Tareas && Current < Step.Llamada;
+            var tasks = new System.Collections.Generic.List<string>();
+            if (early && !keysLeft) tasks.Add("Deja las llaves en el cuenco");
+            if (early && !doorClosed) tasks.Add("Cierra la puerta de casa");
+            GameUI.Instance?.SetPending(tasks.Count > 0 ? "Pendiente: " + string.Join(" · ", tasks) : null);
         }
 
         void OnFrontDoor()
@@ -268,19 +271,21 @@ namespace Ominous
             var dm = DialogueManager.Instance;
             if (Current == Step.Llegada && frontDoor.IsOpen)
             {
-                Set(Step.Tareas);
+                // Al entrar ya se puede hacer de todo; llaves y puerta quedan como pendientes.
+                Set(Step.HablarRoberta);
                 Sfx.Play("llaves", frontDoor.transform.position);
-                dm.Play("Prologo_Tareas");
+                GameDirector.Instance.SetObjective("Habla con Roberta");
+                RefreshPending();
                 return;
             }
             // Cerrarla desde fuera no cuenta: se quedaría encerrado en la calle.
-            if (Current == Step.Tareas && !frontDoor.IsOpen && player.transform.position.z > 0.1f)
+            if (!doorClosed && Current >= Step.Tareas && Current < Step.Llamada && !frontDoor.IsOpen && player.transform.position.z > 0.1f)
             {
                 doorClosed = true;
                 frontDoor.locked = true;
                 outsideBounds.SetActive(false);
                 dm.Play("Prologo_Puerta");
-                CheckTasks();
+                RefreshPending();
                 return;
             }
             if (Current == Step.EsperaPuerta && frontDoor.IsOpen)
@@ -352,7 +357,8 @@ namespace Ominous
             if (Current == Step.Deambular && !DialogueManager.Instance.IsBusy)
             {
                 wanderTime += Time.deltaTime;
-                if (wanderUses >= 2 && wanderTime > 25f || wanderTime > 90f) Knock();
+                // Chechu no llama hasta que las llaves estén en el cuenco y la puerta cerrada.
+                if ((wanderUses >= 2 && wanderTime > 25f || wanderTime > 90f) && keysLeft && doorClosed) Knock();
             }
             UpdateAct2();
             UpdateAct3();
@@ -371,6 +377,7 @@ namespace Ominous
         void Knock()
         {
             Set(Step.Llamada);
+            RefreshPending();
             DialogueManager.Instance.Play("Acto1_Llamada", ReadyForVisit);
             PlaceChechu();
         }
