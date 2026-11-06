@@ -1320,7 +1320,7 @@ namespace Ominous.EditorTools
             stopped.Box(new Vector3(0, 0, -0.018f), new Vector3(0.27f, 0.27f, 0.004f), paper);
             stopped.Box(new Vector3(0.04f, 0.005f, -0.023f), new Vector3(0.08f, 0.012f, 0.003f), plastic);   // Horas: las tres y media larga
             stopped.Box(new Vector3(-0.015f, -0.05f, -0.024f), new Vector3(0.012f, 0.1f, 0.003f), plastic);  // Minutos: y treinta y tres
-            dir.clockStopped = Instance("RelojParado", stopped, t, new Vector3(6.3f, 1.9f, 5.92f), 0f, false);
+            dir.clockStopped = Model("RelojParado", t, 6.3f, 5.92f, 0f, "RelojParado", 1.9f, collider: false) ?? Instance("RelojParado", stopped, t, new Vector3(6.3f, 1.9f, 5.92f), 0f, false);
 
             // Una puerta de más en el pasillo
             var fake = new MeshKit();
