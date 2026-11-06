@@ -463,6 +463,7 @@ namespace Ominous.EditorTools
                 mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(color.r, color.g, color.b, 1f));
                 if (mat.HasProperty("_Exterior")) mat.SetFloat("_Exterior", exterior ? 1f : 0f);
                 // La bombilla de la lámpara brilla sola.
+                if (n.Contains("Farola_Luz") && mat.HasProperty("_EmissionColor")) mat.SetColor("_EmissionColor", new Color(1f, 0.72f, 0.42f) * 3f);
                 if (n.Contains("Tubo") && mat.HasProperty("_EmissionColor")) mat.SetColor("_EmissionColor", new Color(1f, 0.88f, 0.66f) * 2.4f);
                 if (n.Contains("Bombilla") && mat.HasProperty("_EmissionColor")) mat.SetColor("_EmissionColor", new Color(1f, 0.72f, 0.42f) * 2.2f);
             }
@@ -1044,23 +1045,34 @@ namespace Ominous.EditorTools
             foreach (var (x, z, sx, sz) in new[] { (1.6f, 0f, 1.4f, 0.2f), (3.7f, 0f, 1.4f, 0.2f), (0f, 2.5f, 0.2f, 1.4f), (10.2f, 0f, 1.4f, 0.2f), (2.2f, 10f, 1.4f, 0.2f), (4.2f, 10f, 1.4f, 0.2f), (8.4f, 10f, 0.8f, 0.2f), (12f, 10f, 1f, 0.2f), (14f, 8.1f, 0.2f, 1.4f) })
                 Blocker(house, new Vector3(x, 1.3f, z), new Vector3(sx, 2.6f, sz));
 
-            // Fachada: tablas por fuera, con los mismos huecos, y tejado
+            // Fachada: enfoscado PSX por fuera (si existe), con los mismos huecos, zócalo de piedra y tejado de teja
+            var houseSiding = Surface("FachadaEnfoscado", siding) ?? siding;
+            var stoneBase = Surface("ZocaloPiedra", siding);
+            var tiles = Surface("Teja", roof);
             var outer = new MeshKit();
-            Wall(outer, new Vector3(0, 0, -0.07f), 19f, true, siding, 0.02f, southOpenings);
-            Wall(outer, new Vector3(0, 0, 10.07f), 14f, true, siding, 0.02f, northOpenings);
-            Wall(outer, new Vector3(-0.07f, 0, 0), 10f, false, siding, 0.02f, westOpenings);
-            Wall(outer, new Vector3(14.07f, 0, 4.4f), 5.6f, false, siding, 0.02f, eastNorthOpenings);
-            Wall(outer, new Vector3(19.07f, 0, 0), 4.4f, false, siding, 0.02f, new Opening[0]);
-            Wall(outer, new Vector3(14, 0, 4.47f), 5f, true, siding, 0.02f, new Opening[0]);
+            Wall(outer, new Vector3(0, 0, -0.07f), 19f, true, houseSiding, 0.02f, southOpenings);
+            Wall(outer, new Vector3(0, 0, 10.07f), 14f, true, houseSiding, 0.02f, northOpenings);
+            Wall(outer, new Vector3(-0.07f, 0, 0), 10f, false, houseSiding, 0.02f, westOpenings);
+            Wall(outer, new Vector3(14.07f, 0, 4.4f), 5.6f, false, houseSiding, 0.02f, eastNorthOpenings);
+            Wall(outer, new Vector3(19.07f, 0, 0), 4.4f, false, houseSiding, 0.02f, new Opening[0]);
+            Wall(outer, new Vector3(14, 0, 4.47f), 5f, true, houseSiding, 0.02f, new Opening[0]);
             for (int i = 0; i < 5; i++)
             {
                 float inset = i * 0.8f, h = Height + 0.15f + i * 0.28f;
-                outer.Box(new Vector3(7, h, 5), new Vector3(15f - inset * 2, 0.28f, 11f - inset * 2), roof);
+                outer.Box(new Vector3(7, h, 5), new Vector3(15f - inset * 2, 0.28f, 11f - inset * 2), tiles ?? roof);
             }
-            outer.Box(new Vector3(16.5f, Height + 0.2f, 2.2f), new Vector3(5.8f, 0.3f, 5.2f), roof);
+            outer.Box(new Vector3(16.5f, Height + 0.2f, 2.2f), new Vector3(5.8f, 0.3f, 5.2f), tiles ?? roof);
             // Puerta de garaje vista desde fuera y desde dentro
             outer.Box(new Vector3(16.5f, 1.1f, 0), new Vector3(3f, 2.2f, 0.05f), sidingFar);
-            for (int i = 1; i < 4; i++) outer.Box(new Vector3(16.5f, i * 0.55f, -0.03f), new Vector3(3f, 0.02f, 0.01f), roof);
+            for (int i = 1; i < 4; i++) outer.Box(new Vector3(16.5f, i * 0.55f, -0.03f), new Vector3(3f, 0.02f, 0.01f), tiles ?? roof);
+            if (stoneBase != null)
+            {
+                void Base(float x0, float x1, float z0, float z1) => outer.Box(new Vector3((x0 + x1) / 2, 0.25f, (z0 + z1) / 2), new Vector3(Mathf.Max(x1 - x0, 0.03f), 0.5f, Mathf.Max(z1 - z0, 0.03f)), stoneBase);
+                Base(-0.1f, 5.55f, -0.1f, -0.07f); Base(6.45f, 15f, -0.1f, -0.07f); Base(18f, 19.1f, -0.1f, -0.07f);   // sur, sin la puerta ni el portón
+                Base(-0.1f, 14.1f, 10.07f, 10.1f);                                                                   // norte
+                Base(-0.1f, -0.07f, -0.1f, 10.1f);                                                                   // oeste
+                Base(14.07f, 14.1f, 4.4f, 10.1f); Base(19.07f, 19.1f, -0.1f, 4.5f); Base(14f, 19.1f, 4.47f, 4.5f);   // este
+            }
             go = Instance("Casa_Fachada", outer, house, Vector3.zero, 0, false);
             GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.BatchingStatic);
             go.layer = ExteriorLayer;
@@ -1440,7 +1452,7 @@ namespace Ominous.EditorTools
             foreach (float x in new[] { 4.45f, 7.55f }) porch.Box(new Vector3(x, 1.2f, -1.32f), new Vector3(0.1f, 2.4f, 0.1f), frameExt);
             Instance("Porche", porch, street, Vector3.zero, 0, false);
 
-            var chechuHouse = Instance("CasaChechu", CasaFachada(siding, true), street, new Vector3(7f, 0, -9.6f));
+            var chechuHouse = Instance("CasaChechu", CasaFachada(Surface("FachadaMadera", siding) ?? siding, true), street, new Vector3(7f, 0, -9.6f));
             // Solo el cuerpo de la casa bloquea: hay que poder llegar andando hasta su puerta.
             var chechuBody = chechuHouse.GetComponent<BoxCollider>();
             chechuBody.center = new Vector3(0f, 2f, -3.65f);
@@ -1455,9 +1467,31 @@ namespace Ominous.EditorTools
             Inst("CasaVecinos", -22f, 3f, 90f);   // Junto a la ventana oeste
             Inst("CasaVecinos", 4f, 30f, 180f);   // Detrás del jardín
             Inst("CasaVecinos", 18f, 30f, 180f);
-            Instance("Farola", Farola(), street, new Vector3(2f, 0, -2.6f));
-            Inst("Farola", 13f, -6.1f, 180f);
-            Inst("Farola", 26f, -2.6f, 0f);
+            // Farolas PSX: el brazo va hacia +Z local; la de x = 13 se sigue llamando "Farola" (falta en el acto 3).
+            bool psxLamps = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Ominous/Art/Models/Farola.fbx") != null;
+            if (psxLamps)
+            {
+                Model("Farola", street, 2f, -2.6f, 180f, collider: false);
+                Model("Farola", street, 13f, -6.1f, 0f, collider: false);
+                Model("Farola", street, 26f, -2.6f, 180f, collider: false);
+            }
+            else
+            {
+                Instance("Farola", Farola(), street, new Vector3(2f, 0, -2.6f));
+                Inst("Farola", 13f, -6.1f, 180f);
+                Inst("Farola", 26f, -2.6f, 0f);
+            }
+            // Bajantes y contraventanas
+            Model("Bajante", street, 14.85f, -0.06f, 180f, null, -0.4f, collider: false);
+            Model("Bajante", street, -0.06f, 0.12f, 270f, null, -0.4f, collider: false);
+            void Shutters(float x, float z, float yaw, float y, Vector3 scale)
+            {
+                var sh = Model("Contraventanas", street, x, z, yaw, null, y, collider: false);
+                if (sh != null) sh.transform.localScale = scale;
+            }
+            Shutters(10.2f, -0.06f, 180f, 1.55f, new Vector3(1.4f, 0.83f, 1f));
+            Shutters(-0.06f, 2.5f, 270f, 1.5f, new Vector3(1.4f, 1f, 1f));
+            Shutters(12.0f, 10.06f, 0f, 1.6f, new Vector3(1f, 0.83f, 1f));
             // Árboles secos del pack de Toni (FlunkedPunk, CC BY); si no está, los provisionales.
             var deadTrees = new[] { "Tree 1", "Tree2", "Tree3" };
             var treeSpots = new[] { (-1.6f, -1.2f, 0f), (1.5f, -7.5f, 0f), (21f, -1.6f, 30f), (6f, 15.5f, 60f), (13f, 19f, 110f), (-6f, 9f, 200f), (24f, 8f, 140f), (-9f, -8f, 80f) };
@@ -1485,9 +1519,11 @@ namespace Ominous.EditorTools
             foreach (var t in street.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = ExteriorLayer;
 
             // Farolas: tiempo real con sombra, para que entren por las ventanas sin atravesar paredes
-            foreach (var (x, z) in new[] { (2.2f, -1.8f), (13f, -5.2f), (26f, -1.8f) })
+            bool newLamps = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Ominous/Art/Models/Farola.fbx") != null;
+            var lampSpots = newLamps ? new[] { (2f, -3.22f), (13f, -5.48f), (26f, -3.22f) } : new[] { (2.2f, -1.8f), (13f, -5.2f), (26f, -1.8f) };
+            foreach (var (x, z) in lampSpots)
             {
-                var l = SpotLight("LuzFarola", lights, new Vector3(x, 4.4f, z), Quaternion.Euler(90, 0, 0), new Color(1f, 0.72f, 0.42f), 30f, 11f, 125f, ~0);
+                var l = SpotLight("LuzFarola", lights, new Vector3(x, newLamps ? 3.15f : 4.4f, z), Quaternion.Euler(90, 0, 0), new Color(1f, 0.72f, 0.42f), 30f, 11f, 125f, ~0);
                 l.shadows = LightShadows.Soft;
             }
         }
