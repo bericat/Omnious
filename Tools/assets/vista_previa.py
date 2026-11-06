@@ -29,6 +29,10 @@ s.view_settings.view_transform = "Standard"
 mundo = bpy.data.worlds.new("Mundo"); s.world = mundo
 mundo.use_nodes = True
 mundo.node_tree.nodes["Background"].inputs[1].default_value = 0.35
+# Tercer argumento "salon": luz cálida y tenue, pared y suelo oscuros, como en las referencias
+SALON = len(sys.argv) > 3 and sys.argv[3] == "salon"
+if SALON:
+    mundo.node_tree.nodes["Background"].inputs[1].default_value = 0.04
 
 mallas = [o for o in s.objects if o.type == "MESH"]
 esquinas = [o.matrix_world @ Vector(e) for o in mallas for e in o.bound_box]
@@ -41,16 +45,18 @@ lado_suelo = max(6.0, diag * 4)
 bpy.ops.mesh.primitive_plane_add(size=lado_suelo)
 suelo = bpy.context.object
 m = bpy.data.materials.new("Suelo"); m.use_nodes = True
-m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.35, 0.33, 0.3, 1)
+m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.08, 0.07, 0.05, 1) if SALON else (0.35, 0.33, 0.3, 1)
 suelo.data.materials.append(m)
 bpy.ops.mesh.primitive_plane_add(size=lado_suelo, location=(0, hi_.y + 0.4, lado_suelo / 2), rotation=(math.radians(90), 0, 0))
 pared = bpy.context.object
 mp = bpy.data.materials.new("Pared"); mp.use_nodes = True
-mp.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.7, 0.68, 0.62, 1)
+mp.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.10, 0.09, 0.07, 1) if SALON else (0.7, 0.68, 0.62, 1)
 pared.data.materials.append(mp)
 
 # Plafón por encima y algo por delante, proporcional al tamaño del objeto
 luz = bpy.data.lights.new("Plafon", "AREA"); luz.energy = 120 * max(1.0, diag / 1.2) ** 2; luz.size = 0.6 * max(1.0, diag / 1.2)
+if SALON:
+    luz.energy *= 0.6; luz.color = (1.0, 0.82, 0.55)
 lo = bpy.data.objects.new("Plafon", luz); lo.location = (0.4 * diag / 1.2, lo_.y - 0.8 * diag / 1.2, max(2.5, hi_.z + 1.2)); s.collection.objects.link(lo)
 cam = bpy.data.objects.new("Cam", bpy.data.cameras.new("Cam")); s.collection.objects.link(cam); s.camera = cam
 cam.data.lens = 28

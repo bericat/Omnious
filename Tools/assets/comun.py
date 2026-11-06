@@ -227,7 +227,7 @@ def exportar_fbx(nombre, objetos):
     return ruta
 
 
-def caja_mat(bm, centro, tam, mat, biselado=0.0, segmentos=2, rot=None):
+def caja_mat(bm, centro, tam, mat, biselado=0.0, segmentos=1, rot=None):
     """Caja con bisel opcional, girada (rot, Matrix 3x3) y con el material 'mat'. Devuelve sus vértices."""
     marcar(bm)
     vs = caja(bm, (0, 0, 0), tam)

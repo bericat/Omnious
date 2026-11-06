@@ -1,4 +1,4 @@
-"""Estantería del salón: madera oscura, libros viejos, cajas, un marco de foto y un jarrón.
+"""Estantería del salón: madera vieja agrisada con cornisa y zócalo moldurados, libros viejos, cajas, un marco de foto y un jarrón.
 
 Sustituye a la malla provisional Estanteria (1,0 x 1,9 x 0,3 m). En este FBX el frente mira a +Z
 en Unity; la provisional lo tenía a -Z (contra la pared norte): se coloca girada 180°.
@@ -29,14 +29,19 @@ def estanteria():
     for s in (-1, 1):
         cm(bm, (s * (W / 2 - 0.015), 0, H / 2), (0.03, D, H), MADERA, 0.004)
     cm(bm, (0, D / 2 - 0.006, H / 2), (W - 0.03, 0.012, H - 0.02), MADERA, 0)
-    cm(bm, (0, 0, H - 0.015), (W + 0.02, D + 0.01, 0.03), MADERA, 0.006, 3)
-    cm(bm, (0, -0.005, 0.04), (W - 0.06, D - 0.02, 0.08), MADERA, 0.003)     # zócalo
+    # Cornisa: tapa que vuela y moldura escalonada debajo
+    cm(bm, (0, -0.012, H - 0.012), (W + 0.06, D + 0.035, 0.024), MADERA, 0.004)
+    cm(bm, (0, -0.007, H - 0.034), (W + 0.035, D + 0.02, 0.02), MADERA, 0.006)
+    cm(bm, (0, -0.003, H - 0.054), (W + 0.012, D + 0.008, 0.022), MADERA, 0.004)
+    # Zócalo moldurado
+    cm(bm, (0, -0.008, 0.035), (W + 0.04, D + 0.025, 0.07), MADERA, 0.006)
+    cm(bm, (0, -0.004, 0.08), (W + 0.018, D + 0.012, 0.02), MADERA, 0.006)
     alturas = [0.08 + i * 0.455 for i in range(4)]
     for z in alturas[1:]:
         cm(bm, (0, 0, z), (W - 0.06, D - 0.015, 0.025), BALDA, 0.003)
     rng = random.Random(7)
     for nivel, z in enumerate(alturas):
-        base = z + 0.0125 if nivel else 0.08
+        base = z + 0.0125 if nivel else 0.09
         x = -W / 2 + 0.045
         fin = W / 2 - 0.045
         hueco = rng.random() < 0.5
@@ -74,19 +79,16 @@ def estanteria():
 def main():
     c.escena_vacia()
     hs = hornear.material_sucio
-    madera = c.cc0("Mueble_Wood092")
     mats = [
-        hs("Madera", (0.24, 0.16, 0.10), rugosidad=0.5, imagen=madera, escala=1.2, suciedad=0.9, polvo=0.3,
-           desgaste=0.4, color_desgaste=(0.38, 0.28, 0.18), color_sucio=(0.07, 0.05, 0.03), mugre=0.4),
-        hs("Balda", (0.30, 0.21, 0.14), rugosidad=0.5, imagen=madera, escala=1.2, suciedad=1.0,
-           desgaste=0.4, color_sucio=(0.07, 0.05, 0.03), mugre=0.5),
+        hornear.madera_vieja("Madera", "gris", desgaste=0.5),
+        hornear.madera_vieja("Balda", (0.26, 0.23, 0.19), suciedad=1.2, polvo=0.0, semilla=4.0),
         hs("Carton", (0.42, 0.32, 0.21), rugosidad=0.9, suciedad=0.8, manchas=0.5, escala_manchas=10),
-        hs("Ceramica", (0.55, 0.60, 0.62), rugosidad=0.3, suciedad=0.7, manchas=0.2),
-        hs("Marco", (0.45, 0.36, 0.20), rugosidad=0.4, metal=0.6, suciedad=0.7),
+        hs("Ceramica", (0.42, 0.46, 0.44), rugosidad=0.3, suciedad=0.7, manchas=0.2),
+        hs("Marco", (0.40, 0.32, 0.18), rugosidad=0.4, metal=0.6, suciedad=0.9, manchas=0.4),
         hs("Foto", (0.45, 0.38, 0.30), rugosidad=0.3, suciedad=0.5, manchas=0.6, escala_manchas=20),
     ]
-    for i, col in enumerate([(0.30, 0.08, 0.06), (0.10, 0.15, 0.22), (0.12, 0.20, 0.11),
-                             (0.45, 0.38, 0.26), (0.18, 0.12, 0.08), (0.08, 0.08, 0.08)]):
+    for i, col in enumerate([(0.28, 0.10, 0.07), (0.11, 0.14, 0.18), (0.14, 0.18, 0.11),
+                             (0.40, 0.34, 0.24), (0.20, 0.14, 0.09), (0.08, 0.08, 0.07)]):
         mats.append(hs(f"Libro{i}", col, rugosidad=0.7, suciedad=0.9, manchas=0.4, escala_manchas=15, semilla=i))
     ob = estanteria()
     for m in mats:

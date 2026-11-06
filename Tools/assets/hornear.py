@@ -27,12 +27,16 @@ def _n(nt, tipo, x, y, **props):
 
 def material_sucio(nombre, color, rugosidad=0.6, metal=0.0, suciedad=0.6, polvo=0.5,
                    manchas=0.3, desgaste=0.0, color_desgaste=(0.5, 0.48, 0.45), color_sucio=(0.16, 0.13, 0.09),
-                   imagen=None, escala=1.0, escala_manchas=3.0, semilla=0.0, mugre=0.0,
-                   mugre_cc0="Suciedad_SurfaceImperfections015", mugre_escala=1.0):
+                   imagen=None, escala=1.0, desplazar=(0, 0, 0), escala_manchas=3.0, semilla=0.0, mugre=0.0,
+                   mugre_cc0="Suciedad_SurfaceImperfections015", mugre_escala=1.0,
+                   veta=0.0, chorretones=0.25, saturacion=0.75, brillo=0.8):
     """Material con el color ya envejecido. Todo es procedural salvo 'imagen' (opcional, se multiplica).
 
     suciedad: mugre en rincones y huecos (oclusión).  polvo: polvo de abajo hacia arriba (primer medio metro).
     manchas: manchas sueltas.  desgaste: cantos gastados que dejan ver color_desgaste.
+    veta: si > 0, la imagen solo aporta su dibujo (en gris, con ese contraste) y el tono lo da 'color':
+          así una madera anaranjada sirve para madera gris y gastada.
+    chorretones: rayas verticales de mugre.  saturacion, brillo: tono final apagado (estilo del juego).
     """
     m = bpy.data.materials.new(nombre)
     m.use_nodes = True
@@ -49,13 +53,36 @@ def material_sucio(nombre, color, rugosidad=0.6, metal=0.0, suciedad=0.6, polvo=
         # Proyección por caja en coordenadas del objeto: 'escala' = metros que cubre la imagen
         tci = _n(nt, "ShaderNodeTexCoord", -1800, 100)
         mpi = _n(nt, "ShaderNodeMapping", -1600, 100)
-        mpi.inputs["Scale"].default_value = (1 / escala,) * 3
+        esc = escala if isinstance(escala, (tuple, list)) else (escala,) * 3
+        mpi.inputs["Scale"].default_value = tuple(1 / e for e in esc)
+        mpi.inputs["Location"].default_value = desplazar
         L(tci.outputs["Object"], mpi.inputs["Vector"])
         tex = _n(nt, "ShaderNodeTexImage", -1400, 100, image=imagen, projection="BOX", projection_blend=0.15)
         L(mpi.outputs["Vector"], tex.inputs["Vector"])
         mul = _n(nt, "ShaderNodeMix", -1150, 250, data_type="RGBA", blend_type="MULTIPLY")
         mul.inputs["Factor"].default_value = 1.0
-        L(col, mul.inputs[6]); L(tex.outputs["Color"], mul.inputs[7])
+        L(col, mul.inputs[6])
+        if veta > 0:
+            # Solo el dibujo: gris normalizado a media 1 y con contraste 'veta'
+            import numpy as np
+            px = np.empty(len(imagen.pixels), dtype=np.float32)
+            imagen.pixels.foreach_get(px)
+            px = px.reshape(-1, 4)[:, :3]
+            media = float((px @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)).mean()) or 0.5
+            bw = _n(nt, "ShaderNodeRGBToBW", -1250, 0)
+            L(tex.outputs["Color"], bw.inputs[0])
+            con = _n(nt, "ShaderNodeMapRange", -1150, 0, clamp=False)
+            con.inputs["From Min"].default_value = 0.0
+            con.inputs["From Max"].default_value = media
+            con.inputs["To Min"].default_value = 1.0 - veta
+            con.inputs["To Max"].default_value = 1.0
+            L(bw.outputs[0], con.inputs["Value"])
+            mx = _n(nt, "ShaderNodeMath", -1050, 0, operation="MAXIMUM")
+            mx.inputs[1].default_value = 0.05
+            L(con.outputs["Result"], mx.inputs[0])
+            L(mx.outputs[0], mul.inputs[7])
+        else:
+            L(tex.outputs["Color"], mul.inputs[7])
         col = mul.outputs[2]
 
     # Variación de tono a gran escala (nada es de un color perfecto)
@@ -126,6 +153,29 @@ def material_sucio(nombre, color, rugosidad=0.6, metal=0.0, suciedad=0.6, polvo=
         L(f_man.outputs[0], mm.inputs[0]); L(fm.outputs[0], mm.inputs[1])
         f_man = mm
 
+    if chorretones > 0:
+        # Chorretones: ruido estirado en vertical
+        tcc = _n(nt, "ShaderNodeTexCoord", -1700, -1650)
+        mpc = _n(nt, "ShaderNodeMapping", -1550, -1650)
+        mpc.inputs["Scale"].default_value = (14.0, 14.0, 0.9)
+        L(tcc.outputs["Object"], mpc.inputs["Vector"])
+        nc = _n(nt, "ShaderNodeTexNoise", -1350, -1650)
+        nc.inputs["Scale"].default_value = 3.0
+        nc.inputs["Detail"].default_value = 6
+        if "W" in nc.inputs:
+            nc.noise_dimensions = "4D"; nc.inputs["W"].default_value = semilla + 7.3
+        L(mpc.outputs["Vector"], nc.inputs["Vector"])
+        rc = _n(nt, "ShaderNodeMapRange", -1150, -1650)
+        rc.inputs["From Min"].default_value = 0.52
+        rc.inputs["From Max"].default_value = 0.72
+        L(nc.outputs["Fac"], rc.inputs["Value"])
+        fc = _n(nt, "ShaderNodeMath", -950, -1650, operation="MULTIPLY", use_clamp=True)
+        fc.inputs[1].default_value = chorretones
+        L(rc.outputs["Result"], fc.inputs[0])
+        mc = _n(nt, "ShaderNodeMath", -700, -1400, operation="MAXIMUM")
+        L(f_man.outputs[0], mc.inputs[0]); L(fc.outputs[0], mc.inputs[1])
+        f_man = mc
+
     suma = _n(nt, "ShaderNodeMath", -500, -500, operation="MAXIMUM")
     L(f_ao.outputs[0], suma.inputs[0]); L(f_pol.outputs[0], suma.inputs[1])
     suma2 = _n(nt, "ShaderNodeMath", -350, -500, operation="MAXIMUM", use_clamp=True)
@@ -156,7 +206,12 @@ def material_sucio(nombre, color, rugosidad=0.6, metal=0.0, suciedad=0.6, polvo=
     smix = _n(nt, "ShaderNodeMix", -200, 250, data_type="RGBA")
     smix.inputs[7].default_value = (*color_sucio, 1)
     L(suma2.outputs[0], smix.inputs["Factor"]); L(col, smix.inputs[6])
-    L(smix.outputs[2], bsdf.inputs["Base Color"])
+    # Tono final apagado: menos saturación y algo más oscuro
+    hsv = _n(nt, "ShaderNodeHueSaturation", 0, 250)
+    hsv.inputs["Saturation"].default_value = saturacion
+    hsv.inputs["Value"].default_value = brillo
+    L(smix.outputs[2], hsv.inputs["Color"])
+    L(hsv.outputs["Color"], bsdf.inputs["Base Color"])
     return m
 
 
@@ -204,6 +259,10 @@ def atlas(ob, nombre, tam=2048, sin_hornear=(), margen=0.004, poco_detalle=(), f
         bpy.ops.uv.pack_islands(rotate=True, margin=margen, scale=True)
         bpy.ops.object.mode_set(mode="OBJECT")
 
+    # El pase de color difuso de un metal sale negro: se hornea como no metálico
+    for mat in me.materials:
+        if mat is not None and mat.name not in sin_hornear:
+            mat.node_tree.nodes["Principled BSDF"].inputs["Metallic"].default_value = 0.0
     img = bpy.data.images.new(nombre, tam, tam, alpha=False)
     img.generated_color = (0.2, 0.2, 0.2, 1)
     for mat in me.materials:
@@ -251,3 +310,30 @@ def atlas(ob, nombre, tam=2048, sin_hornear=(), margen=0.004, poco_detalle=(), f
     for p, i in zip(me.polygons, indices):
         p.material_index = i
     return ruta
+
+
+# Tonos de madera de las referencias de Toni: gastada, apagada, entre gris y marrón
+TONOS_MADERA = {
+    "gris": (0.33, 0.25, 0.16),      # madera vieja agrisada (estanterías, mesas)
+    "marron": (0.42, 0.26, 0.12),    # nogal claro descolorido (chapa de la tele)
+    "oscura": (0.17, 0.11, 0.07),    # mueble oscuro y ennegrecido
+}
+
+
+def madera_vieja(nombre, tono="gris", escala=0.9, veta=1.3, semilla=0.0, **kw):
+    """Madera gastada: el dibujo sale de la foto CC0 Wood092 y el tono lo pone TONOS_MADERA."""
+    color = TONOS_MADERA.get(tono, tono)
+    oscuro = tuple(v * 0.35 for v in color)
+    args = dict(rugosidad=0.7, imagen=c.cc0("Mueble_Wood092"), escala=escala, veta=veta, suciedad=1.0,
+                polvo=0.35, manchas=0.45, desgaste=0.5, chorretones=0.35, color_desgaste=tuple(min(1, v * 1.5) for v in color),
+                color_sucio=oscuro, mugre=1.0, semilla=semilla)
+    args.update(kw)
+    return material_sucio(nombre, color, **args)
+
+
+def plastico_viejo(nombre, color=(0.52, 0.48, 0.38), **kw):
+    """Plástico beige amarilleado por los años (ordenadores, teles, interruptores)."""
+    args = dict(rugosidad=0.5, suciedad=0.9, polvo=0.3, manchas=0.35, mugre=0.6, mugre_escala=0.5,
+                color_sucio=(0.20, 0.17, 0.11), desgaste=0.2, color_desgaste=(0.60, 0.56, 0.45))
+    args.update(kw)
+    return material_sucio(nombre, color, **args)
