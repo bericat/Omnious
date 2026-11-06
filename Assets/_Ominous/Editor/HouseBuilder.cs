@@ -862,6 +862,7 @@ namespace Ominous.EditorTools
             BuildKitchen(furniture, doors, lights);
             BuildBedroom(furniture, doors, lights);
             PlaceLife(furniture, street);
+            DressHallAndSalon(furniture, lights);
             BuildBathroom(furniture, doors, lights);
             BuildLaundry(furniture, doors, lights);
             BuildGarage(furniture, doors, lights);
@@ -894,8 +895,9 @@ namespace Ominous.EditorTools
             var floors = new MeshKit();
             const float y = -0.05f, t = 0.1f;
             void Floor(float x0, float x1, float z0, float z1, Material m) => floors.Box(new Vector3((x0 + x1) / 2, y, (z0 + z1) / 2), new Vector3(x1 - x0, t, z1 - z0), m);
-            Floor(0, 5, 0, 4.4f, Surface("Moqueta", rug) ?? floorWood);        // Salón
-            Floor(5, 7, 0, 4.4f, floorWood);        // Recibidor
+            var tarima = Surface("SueloMadera", floorWood) ?? floorWood;   // referencia de Toni: tarima oscura
+            Floor(0, 5, 0, 4.4f, tarima);        // Salón
+            Floor(5, 7, 0, 4.4f, tarima);        // Recibidor
             Floor(7, 8.2f, 0, 4.4f, concreteIn);    // Cuartito oculto
             Floor(8.2f, 14, 0, 4.4f, Surface("SueloCocina", linoleum) ?? linoleum);     // Cocina
             Floor(14, 19, 0, 4.4f, Surface("Hormigon", concreteIn) ?? concreteIn);     // Garaje
@@ -981,20 +983,25 @@ namespace Ominous.EditorTools
             Material Matte(Material m) { if (m != null) m.SetFloat("_Sheen", 0f); return m; }
             var damask = Matte(Surface("PapelDamasco", wall));
             var hallPaper = Matte(Surface("PapelPasillo", wall));
+            var salonPaper = Matte(Surface("PapelSalon", wall)) ?? damask;
+            var stripes = Matte(Surface("PapelRayas", wall));
+            // Rayas más finas, como en la referencia: la imagen cubre 2 m en vez de 4.
+            if (stripes != null) stripes.SetTextureScale("_BaseMap", Vector2.one * 0.5f);
+            var hallStripes = stripes ?? hallPaper;
             var bedPaper = Matte(Surface("PapelDormitorio", wall));
             var kitchenTile = Surface("AzulejoCocina", tileWall);
             var concreteWall = Matte(Surface("Hormigon", concreteIn));
             var doorHole = DoorTop;
             // Salón
-            Cover(off, true, 0, 5, damask, Height, saloonWin1, saloonWin2);
-            Cover(off, false, 0, 4.4f, damask, Height, new Opening(1.8f, 3.2f, 0.9f, 2.1f));
-            Cover(5f - off, false, 0, 4.4f, damask, Height, new Opening(2.1f, 3f, 0, doorHole));
-            Cover(4.4f - off, true, 0, 5, damask, Height);
+            Cover(off, true, 0, 5, salonPaper, Height, saloonWin1, saloonWin2);
+            Cover(off, false, 0, 4.4f, salonPaper, Height, new Opening(1.8f, 3.2f, 0.9f, 2.1f));
+            Cover(5f - off, false, 0, 4.4f, salonPaper, Height, new Opening(2.1f, 3f, 0, doorHole));
+            Cover(4.4f - off, true, 0, 5, salonPaper, Height);
             // Recibidor
-            Cover(off, true, 5, 7, hallPaper, Height, frontDoor);
-            Cover(5f + off, false, 0, 4.4f, hallPaper, Height, new Opening(2.1f, 3f, 0, doorHole));
-            Cover(7f - off, false, 0, 4.4f, hallPaper, Height);
-            Cover(4.4f - off, true, 5, 7, hallPaper, Height, new Opening(5.6f, 6.5f, 0, doorHole));
+            Cover(off, true, 5, 7, hallStripes, Height, frontDoor);
+            Cover(5f + off, false, 0, 4.4f, hallStripes, Height, new Opening(2.1f, 3f, 0, doorHole));
+            Cover(7f - off, false, 0, 4.4f, hallStripes, Height);
+            Cover(4.4f - off, true, 5, 7, hallStripes, Height, new Opening(5.6f, 6.5f, 0, doorHole));
             // Pasillo
             Cover(4.4f + off, true, 0, 14, hallPaper, Height, new Opening(5.6f, 6.5f, 0, doorHole), new Opening(7.2f, 8f, 0, 1.85f), new Opening(10f, 10.9f, 0, doorHole));
             Cover(6f - off, true, 0, 14, hallPaper, Height, new Opening(2.5f, 3.4f, 0, doorHole), new Opening(8f, 8.9f, 0, doorHole), new Opening(11.5f, 12.4f, 0, doorHole));
@@ -1148,7 +1155,7 @@ namespace Ominous.EditorTools
             }
             if (Model("MesaBaja", f, 2.15f, 2.75f, 0f) == null) Put("MesaBaja", MesaBaja(), f, 2.15f, 2.75f);
             Model("Aparador", f, 3.22f, 4.17f, 180f);
-            if (Model("Estanteria", f, 4.2f, 4.17f, 180f, "EstanteriaSalon") == null) Put("EstanteriaSalon", Estanteria(), f, 4.2f, 4.17f);
+            if (Model("EstanteriaLibros", f, 4.2f, 4.17f, 180f, "EstanteriaSalon") == null && Model("Estanteria", f, 4.2f, 4.17f, 180f, "EstanteriaSalon") == null) Put("EstanteriaSalon", Estanteria(), f, 4.2f, 4.17f);
             var lampMesh = Model("Lampara", f, 0.4f, 0.5f, 0f) ?? Put("Lampara", Lampara(), f, 0.4f, 0.5f);
             foreach (var t in lampMesh.GetComponentsInChildren<Transform>()) GameObjectUtility.SetStaticEditorFlags(t.gameObject, StaticEditorFlags.BatchingStatic);
             // Vitrina contra la pared este del salón, entre la ventana y la puerta, mirando a la habitación.
@@ -1164,11 +1171,11 @@ namespace Ominous.EditorTools
                 art.SetColor("_BaseColor", Color.white);
                 AssetDatabase.DeleteAsset("Assets/_Ominous/Materials/Modelos/CuadroToni.mat");
                 AssetDatabase.CreateAsset(art, "Assets/_Ominous/Materials/Modelos/CuadroToni.mat");
-                Picture(f, "CuadroSalon", art, 3.22f, 1.6f, 4.32f, 180f, 0.86f, 0.7f);   // encima del aparador
+                Picture(f, "CuadroSalon", art, 3.22f, 1.6f, 4.32f, 0f, 0.86f, 0.7f);   // yaw 0: el lienzo mira al salón   // encima del aparador
             }
             else Picture(f, "CuadroSalon", paintA, 0.08f, 1.65f, 3.75f, 90f);
             // Objetos del PSX Mega Pack de Toni
-            PackProp("notebook_1", f, new Vector3(1.95f, 0.45f, 2.7f), 20f);
+            PackProp("notebook_1", f, new Vector3(1.95f, 0.4175f, 2.62f), 20f);
             PackProp("floppy_disc_1", f, new Vector3(3.05f, 0.8f, 4.2f), 70f);
             PackProp("electrical_outlet_1", f, new Vector3(1.0f, 0.3f, 4.33f), 180f, true);
 
