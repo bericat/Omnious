@@ -12,7 +12,8 @@ Ejes: x de Unity = -x de Blender, z de Unity = -y de Blender, y de Unity = z de 
 - CuadroElectrico: caja de 0,40 x 0,55 x 0,08 m, origen en el centro, la tapa mira a -Z de Unity.
 - Perchero: perchero de pie con un abrigo colgado hacia +X de Unity.
 - Felpudo: 0,8 x 0,5 m.
-- Reloj: reloj de pared redondo de 0,32 m, origen en el centro, la esfera mira a -Z de Unity.
+- Reloj: reloj de pared redondo de 0,32 m, origen en el centro, la esfera mira a -Z de Unity (10:10).
+- RelojParado: el mismo, parado a las 3:33 (acto 3).
 - Espejo: espejo del baño de 0,7 x 0,55 m en la pared (grosor en X de Unity, luna hacia -X), con la luna
   como objeto aparte "Luna" (material Espejo_Luna, para ponerle el material de espejo en Unity).
 
@@ -230,17 +231,20 @@ def felpudo():
     return bm
 
 
-def reloj():
+def reloj(hora=3.0, minuto=0.0):
+    """Esfera vista desde +Y de Blender (-Z de Unity): las 3 quedan a la derecha del que mira (-x de Blender)."""
     bm = bmesh.new()
     cil(bm, (0, 0, 0), 0.16, 0.04, MADERA, lados=24, rot=FRENTE)
     cil(bm, (0, 0.021, 0), 0.135, 0.004, PAPEL, lados=24, rot=FRENTE)
-    for k in range(12):
-        a = math.radians(k * 30)
-        largo = 0.02 if k % 3 == 0 else 0.01
-        c.caja_mat(bm, (math.sin(a) * 0.115, 0.024, math.cos(a) * 0.115), (0.004, 0.002, largo), NEGRO, 0,
+
+    def radial(ang, r, ancho, largo, y, mat):
+        a = math.radians(ang)
+        c.caja_mat(bm, (-math.sin(a) * r, y, math.cos(a) * r), (ancho, 0.002, largo), mat, 0,
                    rot=Matrix.Rotation(-a, 3, "Y"))
-    c.caja_mat(bm, (0, 0.026, 0.045), (0.008, 0.002, 0.09), NEGRO, 0)                         # minutero
-    c.caja_mat(bm, (-0.03, 0.027, 0.0), (0.06, 0.002, 0.01), NEGRO, 0)                        # horaria
+    for k in range(12):
+        radial(k * 30, 0.115, 0.004, 0.02 if k % 3 == 0 else 0.01, 0.024, NEGRO)
+    radial(minuto * 6, 0.045, 0.008, 0.09, 0.026, NEGRO)                                   # minutero
+    radial((hora % 12 + minuto / 60) * 30, 0.03, 0.01, 0.06, 0.027, NEGRO)                 # horaria
     cil(bm, (0, 0.028, 0), 0.008, 0.004, METAL, lados=8, rot=FRENTE)
     return bm
 
@@ -269,7 +273,8 @@ PIEZAS = {
     "Lavadora": (lambda: lavadora(True), 1024), "Secadora": (lambda: lavadora(False), 1024),
     "Baldas": (baldas, 1024), "Cesto": (cesto, 1024), "EstanteriaGaraje": (estanteria_garaje, 1024),
     "LatasPintura": (latas_pintura, 512), "Escalera": (escalera, 512), "CuadroElectrico": (cuadro_electrico, 512),
-    "Perchero": (perchero, 1024), "Felpudo": (felpudo, 512), "Reloj": (reloj, 512), "Espejo": (espejo, 512),
+    "Perchero": (perchero, 1024), "Felpudo": (felpudo, 512), "Reloj": (lambda: reloj(10, 10), 512),
+    "RelojParado": (lambda: reloj(3, 33), 512), "Espejo": (espejo, 512),
 }
 
 
