@@ -863,14 +863,16 @@ namespace Ominous.EditorTools
 
         static void BuildKitchen(Transform f, Transform d, Transform lights)
         {
-            Put("Encimera", Encimera(), f, 10.5f, 0.38f);
-            Put("Nevera", Nevera(), f, 13.45f, 0.46f);
-            Put("MesaCocina", MesaCocina(), f, 11.3f, 3f);
+            if (Model("Encimera", f, 10.5f, 0.38f, 0f) == null) Put("Encimera", Encimera(), f, 10.5f, 0.38f);
+            if (Model("Nevera", f, 13.45f, 0.46f, 0f) == null) Put("Nevera", Nevera(), f, 13.45f, 0.46f);
+            if (Model("MesaCocina", f, 11.3f, 3f, 0f) == null) Put("MesaCocina", MesaCocina(), f, 11.3f, 3f);
             // El frente de la silla mira a +z: las del norte giran 180° para mirar a la mesa.
-            Put("SillaCocina", Silla(), f, 10.9f, 3.55f, 180f);
-            Again("SillaCocina", f, 11.7f, 3.55f, 180f);
-            Again("SillaCocina", f, 10.9f, 2.45f, 0f);
-            Again("SillaCocina", f, 11.7f, 2.45f, 0f);
+            Put("SillaCocinaProvisional", Silla(), f, 0f, -50f);   // deja el prefab por si falta el modelo
+            Object.DestroyImmediate(GameObject.Find("SillaCocinaProvisional"));
+            foreach (var (x, z, yaw) in new[] { (10.9f, 3.55f, 180f), (11.7f, 3.55f, 180f), (10.9f, 2.45f, 0f), (11.7f, 2.45f, 0f) })
+                if (Model("SillaCocina", f, x, z, yaw) == null) Again("SillaCocinaProvisional", f, x, z, yaw);
+            // Caja de fruta con latas junto a la nevera
+            Model("CajaLatas", f, 13.55f, 1.35f, 15f);
             var cup = new MeshKit();
             cup.Cylinder(Vector3.zero, 0.035f, 0.04f, 0.1f, 8, ceramic);
             Put("Vaso", cup, f, 9.1f, 0.5f, 0, false, 0.92f);
@@ -899,13 +901,13 @@ namespace Ominous.EditorTools
 
         static void BuildBathroom(Transform f, Transform d, Transform lights)
         {
-            Put("Banera", Banera(), f, 7.28f, 8.9f);
-            Put("Lavabo", Lavabo(), f, 9.6f, 7.2f, 270f);
+            if (Model("Banera", f, 7.28f, 8.9f, 0f) == null) Put("Banera", Banera(), f, 7.28f, 8.9f);
+            if (Model("Lavabo", f, 9.6f, 7.2f, 270f) == null) Put("Lavabo", Lavabo(), f, 9.6f, 7.2f, 270f);
             var mirrorKit = new MeshKit();
             mirrorKit.Box(Vector3.zero, new Vector3(0.015f, 0.7f, 0.55f), chrome);
             mirrorKit.Box(new Vector3(-0.009f, 0, 0), new Vector3(0.004f, 0.66f, 0.51f), mirror);
             Put("Espejo", mirrorKit, f, 9.92f, 7.2f, 0, false, 1.5f);
-            Put("Vater", Vater(), f, 9.4f, 9.55f, 180f);
+            if (Model("Vater", f, 9.4f, 9.55f, 180f) == null) Put("Vater", Vater(), f, 9.4f, 9.55f, 180f);
             var towel = new MeshKit();
             towel.Box(new Vector3(0, 1.32f, 0), new Vector3(0.02f, 0.02f, 0.55f), chrome);
             towel.Box(new Vector3(-0.012f, 1.03f, 0), new Vector3(0.018f, 0.58f, 0.42f), pillow);
@@ -954,6 +956,7 @@ namespace Ominous.EditorTools
             shelves.Cylinder(new Vector3(0.35f, 0.965f, 0), 0.09f, 0.09f, 0.2f, 8, metal);
             shelves.Box(new Vector3(-0.35f, 1.1f, 0), new Vector3(0.35f, 0.27f, 0.32f), blanket);
             Put("EstanteriaGaraje", shelves, f, 18.72f, 2.4f, 270f);
+            Model("CajaLatas", f, 18.55f, 3.75f, 80f);
             RoomGarageWall(f);
             RoomLight(lights, "Garaje", 16.5f, 2.2f, new Vector3(14.07f, 1.2f, 3.3f), 0f, new Color(0.94f, 0.97f, 0.9f), 3.4f, false, 7f);
         }
@@ -1510,7 +1513,7 @@ var arrival = new GameObject("LlegadaSotano");
             // Habitación oculta 1
             var room1 = new GameObject("Habitacion1").transform;
             room1.SetParent(t);
-            Again("SillaCocina", room1, 7.6f, 2.4f, 270f);
+            if (Model("SillaCocina", room1, 7.6f, 2.4f, 270f) == null) Again("SillaCocinaProvisional", room1, 7.6f, 2.4f, 270f);
             var blanket1 = new MeshKit().Box(new Vector3(0, 0.03f, 0), new Vector3(0.7f, 0.06f, 1.5f), blanket);
             Instance("MantaCuartito", blanket1, room1, new Vector3(7.65f, 0, 1.0f), 0f, false);
             var cansRoom = new MeshKit();
