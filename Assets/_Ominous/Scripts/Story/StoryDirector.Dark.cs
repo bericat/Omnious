@@ -34,7 +34,11 @@ namespace Ominous
 
         void StartDark()
         {
-            if (BreakerBox.Instance != null) BreakerBox.Instance.onRaised = OnPowerBack;
+            if (BreakerBox.Instance != null)
+            {
+                BreakerBox.Instance.onRaised = OnPowerBack;
+                BreakerBox.Instance.onFailed = () => DialogueManager.Instance.Play("Oscuridad_SinLuz");
+            }
             var go = new GameObject("LuzMovilChechu");
             phoneLight = go.AddComponent<Light>();
             phoneLight.type = LightType.Point;

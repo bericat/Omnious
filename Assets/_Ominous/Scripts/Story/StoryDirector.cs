@@ -367,6 +367,7 @@ namespace Ominous
             UpdateAct3();
             UpdateFinal();
             UpdateDark();
+            UpdateHunt();
             if ((Current == Step.EsperaPuerta || Current == Step.EsperaV2 || Current == Step.EsperaV3) && !DialogueManager.Instance.IsBusy && !peeping)
             {
                 knockTimer += Time.deltaTime;

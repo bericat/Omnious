@@ -12,6 +12,7 @@ namespace Ominous
 
         [Tooltip("Acto 3: al subirlo, la luz vuelve un instante y se va")] public bool failsToHold;
         public System.Action onRaised;
+        public System.Action onFailed;
 
         public override string Prompt => HouseLights.Power ? "Bajar el diferencial" : "Subir el diferencial";
 
@@ -44,6 +45,7 @@ namespace Ominous
             yield return new WaitForSeconds(0.9f);
             Sfx.Play("diferencial_baja", transform.position);
             HouseLights.SetPower(false);
+            onFailed?.Invoke();
         }
     }
 }

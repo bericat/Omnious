@@ -8,6 +8,8 @@ namespace Ominous
     public class FirstPersonController : MonoBehaviour
     {
         public Transform cameraPivot;
+        /// <summary>Agachado ahora mismo (lo usa la visibilidad de Chechu).</summary>
+        public bool Crouching { get; private set; }
         public float walkSpeed = 1.45f;
         public float crouchSpeed = 0.8f;
         public float mouseSensitivity = 0.08f;
@@ -99,6 +101,7 @@ namespace Ominous
 
             Vector2 move = active ? GameInput.Move : Vector2.zero;
             bool crouching = active && GameInput.Crouch;
+            Crouching = crouching;
             float speed = crouching ? crouchSpeed : walkSpeed;
             Vector3 velocity = transform.TransformDirection(Vector3.ClampMagnitude(new Vector3(move.x, 0f, move.y), 1f)) * speed;
 

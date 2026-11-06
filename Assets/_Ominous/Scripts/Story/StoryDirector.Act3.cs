@@ -68,6 +68,8 @@ namespace Ominous
         {
             Set(Step.Acto3);
             GameDirector.Instance.Night.houseVariant = "acto3";
+            // Acto 3 a oscuras: el diferencial ya no aguanta.
+            HouseLights.SetPower(false);
             extraDoor.SetActive(true);
             chechuSilhouette.SetActive(false);
             streetLampMissing.SetActive(false);
@@ -244,6 +246,7 @@ namespace Ominous
         {
             BeginAct3State();
             if (step < Step.Acto3) return;
+            if (step < Step.BucleLlegada) HouseLights.SetPower(false);
             HideRoberta();
             streetBounds.SetActive(false);
             chechuPorchLight.enabled = false;

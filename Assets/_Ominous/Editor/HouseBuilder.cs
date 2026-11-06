@@ -328,7 +328,8 @@ namespace Ominous.EditorTools
 
             var go = new GameObject("NieblaCalle");
             go.transform.SetParent(street);
-            go.transform.position = new Vector3(8f, 0.9f, -4f);
+            // Solo en la calle: el centro de cada nube queda lejos de la fachada para que ninguna se meta en casa.
+            go.transform.position = new Vector3(8f, 0.9f, -10.5f);
             var ps = go.AddComponent<ParticleSystem>();
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             var main = ps.main;
@@ -336,23 +337,29 @@ namespace Ominous.EditorTools
             main.prewarm = true;
             main.duration = 30f;
             main.startLifetime = new ParticleSystem.MinMaxCurve(24f, 36f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(0.05f, 0.2f);
-            main.startSize = new ParticleSystem.MinMaxCurve(5f, 11f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.03f, 0.12f);
+            main.startSize = new ParticleSystem.MinMaxCurve(4f, 7f);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
-            main.maxParticles = 140;
+            main.maxParticles = 110;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.scalingMode = ParticleSystemScalingMode.Shape;
             var emission = ps.emission;
             emission.rateOverTime = 4.5f;
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
-            shape.scale = new Vector3(50f, 1.2f, 34f);
+            shape.scale = new Vector3(50f, 1.2f, 13f);
             var col = ps.colorOverLifetime;
             col.enabled = true;
             var grad = new Gradient();
             grad.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
                 new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.25f), new GradientAlphaKey(1f, 0.75f), new GradientAlphaKey(0f, 1f) });
             col.color = grad;
+            var vel = ps.velocityOverLifetime;
+            vel.enabled = true;
+            vel.space = ParticleSystemSimulationSpace.World;
+            vel.x = new ParticleSystem.MinMaxCurve(-0.05f, 0.05f);
+            vel.y = new ParticleSystem.MinMaxCurve(0f, 0f);
+            vel.z = new ParticleSystem.MinMaxCurve(-0.08f, -0.02f);
             var rot = ps.rotationOverLifetime;
             rot.enabled = true;
             rot.z = new ParticleSystem.MinMaxCurve(-0.05f, 0.05f);
@@ -1888,12 +1895,17 @@ namespace Ominous.EditorTools
             dir.dripSound = GameObject.Find("Grifo").GetComponent<AudioSource>();
 
             // Puerta del sótano en la colada
-            var cellarDoor = Instance("PuertaSotano", fake, t, new Vector3(13.92f, 0f, 6.65f), 90f, false);
+            // Rejilla del sótano en el suelo de la colada (OSCURIDAD.md): solo se encuentra a oscuras, por el aire frío.
+            var grate = new MeshKit();
+            grate.Box(new Vector3(0, 0.004f, 0), new Vector3(0.62f, 0.008f, 0.62f), metal);
+            for (int g = -3; g <= 3; g++) grate.Box(new Vector3(g * 0.085f, 0.012f, 0), new Vector3(0.025f, 0.008f, 0.6f), plastic);
+            var cellarDoor = Instance("RejillaSotano", grate, t, new Vector3(12.7f, 0f, 7.2f), 0f, false);
             dir.basementDoor = cellarDoor;
             var cellarUse = cellarDoor.AddComponent<BoxCollider>();
-            cellarUse.center = new Vector3(0, 1f, 0); cellarUse.size = new Vector3(0.9f, 2f, 0.15f);
+            cellarUse.isTrigger = true;
+            cellarUse.center = new Vector3(0, 0.08f, 0); cellarUse.size = new Vector3(0.7f, 0.18f, 0.7f);
             var cellarStory = cellarDoor.AddComponent<StoryObject>();
-            cellarStory.id = "puerta_sotano"; cellarStory.prompt = "Abrir";
+            cellarStory.id = "puerta_sotano"; cellarStory.prompt = "Levantar la rejilla";
             
             // Sótano: copia del dormitorio, muy lejos del resto
             Vector3 o = new(40f, -40f, 0f);

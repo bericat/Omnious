@@ -111,6 +111,10 @@ namespace Ominous
         {
             Set(Step.BucleLlegada);
             FirstPersonController.SetBlocked(this, false);
+            // En el bucle la casa vuelve a tener todas las luces.
+            HouseLights.SetPower(true);
+            foreach (var l in FindObjectsByType<Light>(FindObjectsInactive.Include, FindObjectsSortMode.None)) if (l.name == "LuzFarola") l.enabled = true;
+            foreach (var r in FindObjectsByType<MeshRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None)) if (r.name == "Luz") r.enabled = true;
             streetRoot.SetActive(true);
             VideoLookController.BlackVoid = false;
             longHall.SetActive(false);
