@@ -7,7 +7,7 @@ namespace Ominous
     public class VideoLookSettings : ScriptableObject
     {
         [Header("Resolución y óptica")]
-        [Range(360, 800)] public int internalHeight = 600;
+        [Range(240, 800)] public int internalHeight = 400;
         [Range(0f, 0.4f)] public float distortion = 0.1f;
         [Range(0f, 0.02f)] public float aberration = 0.006f;
         [Range(0f, 2f)] public float softness = 0.15f;
@@ -15,8 +15,15 @@ namespace Ominous
 
         [Header("Detalle")]
         [Tooltip("Aspecto algo pintado de las texturas, como en Fears to Fathom")]
-        [Range(0f, 1f)] public float painterly = 0.6f;
-        [Range(0f, 2.5f)] public float sharpen = 1.8f;
+        [Range(0f, 1f)] public float painterly = 0.25f;
+        [Range(0f, 2.5f)] public float sharpen = 0.9f;
+
+        [Header("PSX-PS2")]
+        [Tooltip("Niveles de color por canal (32 = 15 bits como PlayStation); 0 = sin reducir")]
+        [Range(0, 64)] public int colorLevels = 32;
+        [Range(0f, 1f)] public float dither = 0.6f;
+        [Tooltip("Píxeles grandes y nítidos al escalar, en vez de suavizados")]
+        public bool pointUpscale = true;
 
         [Header("Señal")]
         [Range(0f, 0.1f)] public float noise = 0.055f;

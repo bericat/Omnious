@@ -8,13 +8,13 @@ namespace Ominous
     public class FirstPersonController : MonoBehaviour
     {
         public Transform cameraPivot;
-        public float walkSpeed = 2.2f;
-        public float crouchSpeed = 1.1f;
+        public float walkSpeed = 1.45f;
+        public float crouchSpeed = 0.8f;
         public float mouseSensitivity = 0.08f;
         public float standHeight = 1.7f;
         public float crouchHeight = 1.05f;
         [Tooltip("Rapidez con la que la cámara sigue al ratón; más bajo, más pesada")]
-        public float lookSmoothing = 22f;
+        public float lookSmoothing = 14f;
         static readonly System.Collections.Generic.HashSet<object> blockers = new();
         /// <summary>Hay algo que impide moverse: un diálogo, la pausa o un panel.</summary>
         public static bool InputBlocked => blockers.Count > 0;
@@ -112,10 +112,11 @@ namespace Ominous
 
             bool walking = move.sqrMagnitude > 0f;
             bobWeight = Mathf.MoveTowards(bobWeight, walking ? 1f : 0f, Time.deltaTime * 4f);
-            bobTime += walking ? Time.deltaTime * speed * 3.1f : 0f;
-            float bobY = Mathf.Sin(bobTime * 2f) * 0.014f * bobWeight;
-            float bobX = Mathf.Sin(bobTime) * 0.009f * bobWeight;
-            roll = Mathf.Lerp(roll, -move.x * 0.5f + Mathf.Sin(bobTime) * 0.18f * bobWeight, 1f - Mathf.Exp(-6f * Time.deltaTime));
+            // Paso lento y pesado, con balanceo marcado (estilo P.T.).
+            bobTime += walking ? Time.deltaTime * speed * 3.6f : 0f;
+            float bobY = Mathf.Sin(bobTime * 2f) * 0.032f * bobWeight;
+            float bobX = Mathf.Sin(bobTime) * 0.024f * bobWeight;
+            roll = Mathf.Lerp(roll, -move.x * 0.8f + Mathf.Sin(bobTime) * 0.65f * bobWeight, 1f - Mathf.Exp(-6f * Time.deltaTime));
             // Pulso de mano: deriva muy lenta e irregular, también con el jugador quieto.
             float t = Time.time;
             float motion = OminousOptions.ReduceEffects ? 0.2f : 1f;

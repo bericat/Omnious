@@ -12,13 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34222345822c39d1ba6bc9f5d92e8579, type: 3}
   m_Name: VideoLook
   m_EditorClassIdentifier: Assembly-CSharp::Ominous.VideoLookSettings
-  internalHeight: 600
+  internalHeight: 400
   distortion: 0.1
   aberration: 0.006
   softness: 0.15
   vignette: 0.28
-  painterly: 0.6
-  sharpen: 1.8
+  painterly: 0.25
+  sharpen: 0.9
+  colorLevels: 32
+  dither: 0.6
+  pointUpscale: 1
   noise: 0.055
   exposureDrift: 0.02
   imperfectionEvery: {x: 25, y: 70}

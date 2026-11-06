@@ -80,6 +80,8 @@ namespace Ominous
             settings.internalHeight = Mathf.RoundToInt(Slider("Resolución interna", settings.internalHeight, 360, 800));
             settings.softness = Slider("Suavizado", settings.softness, 0f, 2f);
             settings.painterly = Slider("Aspecto pintado", settings.painterly, 0f, 1f);
+            settings.colorLevels = Mathf.RoundToInt(Slider("Niveles de color PSX", settings.colorLevels, 0, 64));
+            settings.dither = Slider("Tramado PSX", settings.dither, 0f, 1f);
             settings.sharpen = Slider("Afilado", settings.sharpen, 0f, 2.5f);
             settings.noise = Slider("Ruido", settings.noise, 0f, 0.1f);
             settings.aberration = Slider("Separación RGB", settings.aberration, 0f, 0.02f);

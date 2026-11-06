@@ -9,3 +9,7 @@
 - Las licencias CC BY-NC exigen citar al autor (va en los créditos) y **no permiten vender el juego** con estos modelos. Si el juego se va a vender, hay que cambiarlos.
 - El Chicken man reproduce el aspecto de un actor real y de un personaje de serie: solo sirve como sustituto provisional, no para publicar.
 - Coches: `*_Color.jpg` es el color con la oclusión multiplicada, y es el que usa el juego. Junto a él están los mapas originales (`ColorOriginal`, `Normal`, `Roughness`, `Metallic`, `AO` y `Emission`) pasados a JPG de 2K. El juego los escala a 4,4 m de largo para que quepan en el garaje.
+| Puertas de madera (Worn Door_004 y su marco) | `Puertas` | vanillao03 | https://sketchfab.com/3d-models/none-16dd7631d2e145ffacfc374961d71cf1 | CC BY 4.0 (atribución) |
+| Cuadro (psx painting, «La noche estrellada») | `Cuadro` | BrainsickGames | https://sketchfab.com/3d-models/none-eb869f2272334150977ca9d9b89fc986 | CC BY 4.0 (atribución) |
+| PSX Mega Pack [Sample] | `PSXMegaPack` | Pizza Doggy | Lo aportó Toni | Licencia de Pizza Doggy: uso en juegos comerciales y no comerciales, sin redistribuir los assets sueltos |
+| PSX Textures II [Demo] | (referencia de estilo) | Pizza Doggy | Lo aportó Toni | Igual que la anterior |

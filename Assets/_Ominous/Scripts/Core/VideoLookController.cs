@@ -18,6 +18,7 @@ namespace Ominous
         static readonly int ShadowTint = Shader.PropertyToID("_Video_ShadowTint");
         static readonly int LightTint = Shader.PropertyToID("_Video_LightTint");
         static readonly int Detail = Shader.PropertyToID("_Video_Detail");
+        static readonly int Psx = Shader.PropertyToID("_Video_Psx");
         static readonly int Ambient = Shader.PropertyToID("_Video_Ambient");
         static readonly int FogColor = Shader.PropertyToID("_Video_FogColor");
         static readonly int Fog = Shader.PropertyToID("_Video_Fog");
@@ -62,6 +63,7 @@ namespace Ominous
             Shader.SetGlobalVector(Grade, new Vector4(settings.liftedBlacks * i, Mathf.Lerp(1f, settings.dirtyWhites, i), Mathf.Lerp(1f, settings.saturation, i), settings.contrast));
             Shader.SetGlobalColor(ShadowTint, Color.Lerp(Color.white, settings.shadowTint, i));
             Shader.SetGlobalColor(LightTint, Color.Lerp(Color.white, settings.lightTint, i));
+            Shader.SetGlobalVector(Psx, new Vector4(settings.colorLevels > 0 ? settings.colorLevels : 0, settings.dither * i, 0, 0));
             Shader.SetGlobalVector(Detail, new Vector4(settings.painterly * i, settings.sharpen * i, 0, 0));
             Shader.SetGlobalColor(Ambient, settings.ambient.linear);
             Shader.SetGlobalColor(FogColor, settings.fogColor.linear);
@@ -78,7 +80,8 @@ namespace Ominous
                 float height = Mathf.Lerp(Screen.height, settings.internalHeight, i);
                 float scale = Mathf.Clamp(height / Screen.height, 0.1f, 2f);
                 if (!Mathf.Approximately(pipeline.renderScale, scale)) pipeline.renderScale = scale;
-                if (pipeline.upscalingFilter != UpscalingFilterSelection.Linear) pipeline.upscalingFilter = UpscalingFilterSelection.Linear;
+                var filter = settings.pointUpscale ? UpscalingFilterSelection.Point : UpscalingFilterSelection.Linear;
+                if (pipeline.upscalingFilter != filter) pipeline.upscalingFilter = filter;
             }
         }
     }

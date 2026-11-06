@@ -128,6 +128,83 @@ namespace Ominous.EditorTools
             Object.DestroyImmediate(inst);
         }
 
+        /// <summary>
+        /// Prefab de puerta hecho con una pieza del pack de puertas de Toni. La pieza se gira para que su ancho vaya a lo
+        /// largo de +Z y se escala al tamaño pedido. Hoja: bisagra en el origen. Marco: centrado en el hueco.
+        /// </summary>
+        static void PackDoorPrefab(string prefabName, string part, Vector3 size, bool leaf)
+        {
+            const string path = "Assets/_Ominous/Art/Externos/Puertas/PuertasMadera.fbx";
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (asset == null) return;
+            if (AssetImporter.GetAtPath(path) is ModelImporter importer && !importer.generateSecondaryUV)
+            {
+                importer.generateSecondaryUV = true;
+                importer.SaveAndReimport();
+            }
+            string matPath = "Assets/_Ominous/Materials/Modelos/PuertasMadera.mat";
+            if (!modelMaterials.TryGetValue(matPath, out var mat) || mat == null)
+            {
+                mat = new Material(woodDark) { name = "PuertasMadera" };
+                mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Ominous/Art/Externos/Puertas/PuertasMadera_Color.png"));
+                mat.SetTextureScale("_BaseMap", Vector2.one);
+                mat.SetColor("_BaseColor", Color.white);
+                AssetDatabase.DeleteAsset(matPath);
+                AssetDatabase.CreateAsset(mat, matPath);
+                modelMaterials[matPath] = mat;
+            }
+            var all = (GameObject)Object.Instantiate(asset);
+            Transform piece = null;
+            foreach (var t in all.GetComponentsInChildren<Transform>()) if (t.name == part) piece = t;
+            if (piece == null) { Object.DestroyImmediate(all); return; }
+            var root = new GameObject(prefabName);
+            var holder = new GameObject("Pieza").transform;
+            holder.SetParent(root.transform, false);
+            piece.SetParent(holder, true);
+            Object.DestroyImmediate(all);
+            foreach (var r in piece.GetComponentsInChildren<MeshRenderer>()) r.sharedMaterials = System.Array.ConvertAll(r.sharedMaterials, _ => mat);
+            Bounds Measure()
+            {
+                var rs = piece.GetComponentsInChildren<MeshRenderer>();
+                var b = rs[0].bounds;
+                foreach (var r in rs) b.Encapsulate(r.bounds);
+                return b;
+            }
+            // El ancho de la pieza va en X: se gira para llevarlo a +Z y se escala.
+            holder.localRotation = Quaternion.Euler(0, -90f, 0);
+            var b0 = Measure();
+            holder.localScale = new Vector3(size.z / b0.size.z, size.y / b0.size.y, size.x / Mathf.Max(0.001f, b0.size.x));
+            var b1 = Measure();
+            var target = leaf ? new Vector3(0f, size.y / 2, size.z / 2) : new Vector3(0f, size.y / 2, 0f);
+            holder.position += target - b1.center;
+            if (leaf)
+            {
+                var box = root.AddComponent<BoxCollider>();
+                box.center = new Vector3(0, size.y / 2, size.z / 2);
+                box.size = size;
+            }
+            PrefabUtility.SaveAsPrefabAsset(root, $"Assets/_Ominous/Prefabs/{prefabName}.prefab");
+            Object.DestroyImmediate(root);
+        }
+
+        /// <summary>Objeto del PSX Mega Pack (glb, licencia de Pizza Doggy) apoyado en "at", con el centro de su base ahí.</summary>
+        static GameObject PackProp(string name, Transform parent, Vector3 at, float yaw, bool onWall = false)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Ominous/Art/Externos/PSXMegaPack/{name}.glb");
+            if (asset == null) return null;
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(asset, parent);
+            go.name = name;
+            go.transform.rotation = Quaternion.Euler(0, yaw, 0);
+            var rs = go.GetComponentsInChildren<Renderer>();
+            if (rs.Length == 0) return go;
+            var b = rs[0].bounds;
+            foreach (var r in rs) b.Encapsulate(r.bounds);
+            // En la pared, el centro va a la altura indicada; en el resto, la base.
+            go.transform.position += at - new Vector3(b.center.x, onWall ? b.center.y : b.min.y, b.center.z);
+            foreach (var t in go.GetComponentsInChildren<Transform>()) Static(t.gameObject);
+            return go;
+        }
+
         static Material ModelMaterial(Material source, bool exterior)
         {
             string name = source.name + (exterior ? "_Exterior" : "");
@@ -815,6 +892,9 @@ namespace Ominous.EditorTools
             // Puertas definitivas, con los mismos pivotes que las provisionales.
             ModelPrefab("PuertaHoja", new Bounds(new Vector3(0, 1.0f, 0.43f), new Vector3(0.04f, 2.0f, 0.86f)));
             ModelPrefab("PuertaMarco", null);
+            // Toni prefiere la puerta de madera marrón de su pack (vanillao03, CC BY): sustituye a las anteriores.
+            PackDoorPrefab("PuertaHoja", "Worn Door_004", new Vector3(0.04f, 2.0f, 0.86f), true);
+            PackDoorPrefab("PuertaMarco", "Worn Doorframe_004", new Vector3(0.21f, 2.08f, 0.92f), false);
             var sw = new MeshKit();
             sw.Box(Vector3.zero, new Vector3(0.02f, 0.12f, 0.08f), frame);
             sw.Box(new Vector3(-0.015f, 0, 0), new Vector3(0.015f, 0.04f, 0.02f), metal);
@@ -853,7 +933,24 @@ namespace Ominous.EditorTools
             foreach (var t in lampMesh.GetComponentsInChildren<Transform>()) GameObjectUtility.SetStaticEditorFlags(t.gameObject, StaticEditorFlags.BatchingStatic);
             // Vitrina contra la pared este del salón, entre la ventana y la puerta, mirando a la habitación.
             Model("Vitrina", f, 4.78f, 0.75f, 270f);
-            Picture(f, "CuadroSalon", paintA, 0.08f, 1.65f, 3.75f, 90f);
+            // El cuadro de Toni (psx painting, BrainsickGames, CC BY) en lugar del provisional.
+            var starry = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Ominous/Art/Externos/Cuadro/gltf_embedded_1.png");
+            if (starry != null)
+            {
+                var art = new Material(paintA) { name = "CuadroToni" };
+                art.SetTexture("_BaseMap", starry);
+                art.SetTextureScale("_BaseMap", new Vector2(1f / 0.78f, 1f / 0.62f));
+                art.SetTextureOffset("_BaseMap", Vector2.zero);
+                art.SetColor("_BaseColor", Color.white);
+                AssetDatabase.DeleteAsset("Assets/_Ominous/Materials/Modelos/CuadroToni.mat");
+                AssetDatabase.CreateAsset(art, "Assets/_Ominous/Materials/Modelos/CuadroToni.mat");
+                Picture(f, "CuadroSalon", art, 3.22f, 1.6f, 4.32f, 180f, 0.86f, 0.7f);   // encima del aparador
+            }
+            else Picture(f, "CuadroSalon", paintA, 0.08f, 1.65f, 3.75f, 90f);
+            // Objetos del PSX Mega Pack de Toni
+            PackProp("notebook_1", f, new Vector3(1.95f, 0.45f, 2.7f), 20f);
+            PackProp("floppy_disc_1", f, new Vector3(3.05f, 0.8f, 4.2f), 70f);
+            PackProp("electrical_outlet_1", f, new Vector3(1.0f, 0.3f, 4.33f), 180f, true);
 
             var tvFillLight = Point("LuzTeleResplandor", lights, new Vector3(2.15f, 1f, 3.65f), new Color(0.72f, 0.8f, 0.95f), 0.5f, 3f);
             var tv = SpotLight("LuzTele", lights, new Vector3(2.15f, 0.8f, 3.8f), Quaternion.Euler(4, 180, 0), new Color(0.72f, 0.8f, 0.95f), 3f, 8f, 150f, ~0);
@@ -1076,6 +1173,8 @@ namespace Ominous.EditorTools
             shelves.Box(new Vector3(-0.35f, 1.1f, 0), new Vector3(0.35f, 0.27f, 0.32f), blanket);
             if (Model("EstanteriaGaraje", f, 18.72f, 2.4f, 270f) == null) Put("EstanteriaGaraje", shelves, f, 18.72f, 2.4f, 270f);
             Model("CajaLatas", f, 18.55f, 3.75f, 80f);
+            PackProp("cardboard_box_1", f, new Vector3(18.3f, 0f, 1.0f), 15f);
+            PackProp("flashlight_1", f, new Vector3(18.6f, 0.97f, 2.4f), 80f);
             RoomGarageWall(f);
             RoomLight(lights, "Garaje", 16.5f, 2.2f, new Vector3(14.07f, 1.2f, 3.55f), 0f, new Color(0.94f, 0.97f, 0.9f), 3.4f, false, 7f);
         }

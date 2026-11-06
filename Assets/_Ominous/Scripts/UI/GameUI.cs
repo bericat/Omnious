@@ -157,6 +157,8 @@ namespace Ominous
                 "Fuente: Noto Sans Mono\n© The Noto Project Authors. Licencia SIL OFL 1.1",
                 "Coches: Toyota Land Cruiser y GMC Sierra Work Truck\nde kryik1023 (Sketchfab). Licencia CC BY-NC 4.0",
                 "Texturas: ambientCG (CC0)",
+                "Puertas: vanillao03 (Sketchfab), CC BY 4.0\nCuadro: BrainsickGames (Sketchfab), CC BY 4.0",
+                "Objetos PSX: Pizza Doggy",
                 "Sonido generado por script para este juego",
             };
             var page = UIKit.Label(UIKit.Rect(Canvas.transform, "Creditos", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1000, 200)), "", 20f, UIKit.Ink);

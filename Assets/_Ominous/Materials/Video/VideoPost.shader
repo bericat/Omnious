@@ -19,7 +19,8 @@ Shader "Hidden/Ominous/Video Post"
             float4 _Video_Grade;   // x: negros levantados, y: blancos, z: saturación, w: contraste
             float4 _Video_ShadowTint;
             float4 _Video_LightTint;
-            float4 _Video_Detail;  // x: aspecto pintado, y: afilado
+            float4 _Video_Detail;
+            float4 _Video_Psx;     // x: niveles de color por canal, y: tramado  // x: aspecto pintado, y: afilado
 
             half3 Tap(float2 uv) { return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, uv).rgb; }
 
@@ -111,6 +112,16 @@ Shader "Hidden/Ominous/Video Post"
                 c.b += (n + nc.y * 0.5) * amount;
 
                 c = saturate(c);
+                // Color de PlayStation: pocos niveles por canal con tramado ordenado 4 x 4.
+                if (_Video_Psx.x > 1.5)
+                {
+                    const float bayer[16] = { 0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5 };
+                    uint2 p = (uint2)floor(i.positionCS.xy) % 4;
+                    float d = (bayer[p.y * 4 + p.x] / 16.0 - 0.5) * _Video_Psx.y;
+                    float levels = _Video_Psx.x - 1.0;
+                    c = floor(c * levels + 0.5 + d) / levels;
+                    c = saturate(c);
+                }
                 #if !defined(UNITY_COLORSPACE_GAMMA)
                 c = SRGBToLinear(c);
                 #endif
