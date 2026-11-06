@@ -16,6 +16,7 @@ namespace Ominous
 
         void Start()
         {
+            AudioListener.volume = 1f;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             var root = UIKit.Canvas("Menu", 10).transform;

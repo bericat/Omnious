@@ -27,6 +27,15 @@ Imagen de cámara doméstica de principios de los 2000, en la línea de Fears to
 - Las habitaciones ocultas (cuartito, hueco) existen pero sin acceso: se abren en la fase 6. La puerta de entrada y la del fondo del pasillo siguen cerradas.
 - Sin confirmar por Toni: los 60 fps mientras anda.
 
+## Oscuridad (hoja de ruta aparte, `OSCURIDAD.md`): bloques A, B, C y D hechos
+- A: corriente de la casa (`HouseLights.SetPower`), diferencial en el garaje detrás de las latas (`BreakerBox`), linterna (F o botón Y; clic derecho o gatillo izquierdo la tapa), pantalla de calibración del brillo (primer arranque y Opciones).
+- B (`StoryDirector.Dark.cs`, `05_Oscuridad.yarn`): linterna en el cajón de la cocina, luz del móvil de Chechu, destello en la ventana de enfrente, apagón grande al entrar al salón, raya de luz bajo la estantería, puntos en la pared, luz del porche de Chechu al volver la corriente.
+- C (`StoryDirector.Hunt.cs`): acto 3 a oscuras; Chechu patrulla con luz y te busca (30 s de gracia, 100 s sí y 120 s no); agacharse y esconderse (bajo la mesa de la cocina, en el armario del dormitorio); si te encuentra, despiertas junto a la cama. Rejilla del sótano en el suelo. Farolas que se apagan. Niebla solo en la calle.
+- D (`StoryDirector.Final.cs`): silencio total y negro tras la puerta al vacío; la casa del bucle con todas las luces y la tele; la luz del porche se enciende sola antes de que abran.
+- Medido en build: acto 3 con la linterna encendida, media 60 fps y peor fotograma 18,8 ms.
+- Sonidos de la oscuridad apuntados en `SONIDOS.md`, sin poner (el sonido va al final).
+- Sin probar con mando y teclado reales: agacharse, esconderse y tapar la linterna.
+
 ## Fase 10: cómo está montada
 - Los generadores están en `Tools/assets/` (Python + Blender sin interfaz, en la nube). Los FBX van a `Assets/_Ominous/Art/Models/` y sus texturas, a `Models/Texturas/`, con LFS.
 - `HouseBuilder.Model(nombre, ...)` coloca el modelo si existe y si no, deja el provisional. Rehace los materiales con el sombreado del juego (`Materials/Modelos/`), usando la textura que se llama igual, y le genera UV de luz y una caja de colisión.

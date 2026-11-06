@@ -37,12 +37,7 @@ namespace Ominous
                 chechu.SetPose("depie");
                 chechu.Place(new Vector3(6f, 0f, 0.8f), 180f);
                 // La luz del porche le da en la cara: hay que reconocerlo.
-                var porch = new GameObject("LuzPorche").AddComponent<Light>();
-                porch.type = LightType.Point;
-                porch.range = 4f;
-                porch.intensity = 1.6f;
-                porch.color = new Color(1f, 0.86f, 0.66f);
-                porch.transform.position = new Vector3(6f, 2.1f, -0.5f);
+                PorchLight();
                 player.LookAt(chechu.head.position);
             });
             r.AddCommandHandler("corte_negro", () => GameUI.Instance.SetBlack());
@@ -73,6 +68,8 @@ namespace Ominous
             if (id != "llamar") return OnUseDark(id);
             Set(Step.BucleFinal);
             FirstPersonController.SetBlocked(this, true);
+            // La luz del porche se enciende sola, poco antes de que abran.
+            StartCoroutine(PorchSoon());
             GameDirector.Instance.SetObjective("");
             DialogueManager.Instance.Play("Bucle_Puerta", EndGame);
             return true;
@@ -103,6 +100,8 @@ namespace Ominous
             // Al otro lado no hay nada: ni calle, ni suelo.
             streetRoot.SetActive(false);
             VideoLookController.BlackVoid = true;
+            // Al otro lado tampoco se oye nada: ni la casa, ni la calle.
+            StartCoroutine(FadeListener(0f, 1.5f));
             GameDirector.Instance.SetObjective("");
             DialogueManager.Instance.Play("Final_Puerta");
         }
@@ -111,6 +110,7 @@ namespace Ominous
         {
             Set(Step.BucleLlegada);
             FirstPersonController.SetBlocked(this, false);
+            AudioListener.volume = 1f;
             // En el bucle la casa vuelve a tener todas las luces.
             HouseLights.SetPower(true);
             foreach (var l in FindObjectsByType<Light>(FindObjectsInactive.Include, FindObjectsSortMode.None)) if (l.name == "LuzFarola") l.enabled = true;
@@ -132,7 +132,7 @@ namespace Ominous
             roberta.Place(RobertaSofa, 0f);
             roberta.SetPose("sentada");
             foreach (var s in FindObjectsByType<LightSwitch>(FindObjectsSortMode.None))
-                if (s.isOn != (s == hallSwitch || s == lampSwitch)) s.Interact();
+                if (!s.isOn) s.Interact();   // la casa del bucle, cálida, con todas las luces y la tele
             threshold.SetActive(false);
             outsideBounds.SetActive(true);
             if (voidDoor.IsOpen) voidDoor.Interact();
@@ -145,6 +145,36 @@ namespace Ominous
             frontDoor.onLockedTry = KeysFail;
             player.Teleport(new Vector3(6f, 0.02f, -2.2f), 0f);
             StartCoroutine(GameUI.Instance.Fade(0f, 2.5f));
+        }
+
+        Light porchLight;
+
+        void PorchLight()
+        {
+            if (porchLight != null) { porchLight.enabled = true; return; }
+            porchLight = new GameObject("LuzPorche").AddComponent<Light>();
+            porchLight.type = LightType.Point;
+            porchLight.range = 4f;
+            porchLight.intensity = 1.6f;
+            porchLight.color = new Color(1f, 0.86f, 0.66f);
+            porchLight.transform.position = new Vector3(6f, 2.1f, -0.5f);
+        }
+
+        IEnumerator PorchSoon()
+        {
+            yield return new WaitForSeconds(2.5f);
+            PorchLight();
+        }
+
+        IEnumerator FadeListener(float to, float seconds)
+        {
+            float from = AudioListener.volume;
+            for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / seconds)
+            {
+                AudioListener.volume = Mathf.Lerp(from, to, t);
+                yield return null;
+            }
+            AudioListener.volume = to;
         }
 
         void KeysFail()

@@ -28,10 +28,12 @@ namespace Ominous
             Instance = this;
             if (beam == null) beam = Build();
             beam.enabled = false;
-            if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-linterna") >= 0) Give();
+            if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-linterna") >= 0) { Give(); Invoke(nameof(TurnOnForTest), 1f); }
         }
 
         void OnDestroy() { if (Instance == this) Instance = null; }
+
+        void TurnOnForTest() => Set(true);
 
         public static void Give()
         {

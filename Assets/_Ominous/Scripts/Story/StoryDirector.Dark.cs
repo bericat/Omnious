@@ -34,6 +34,7 @@ namespace Ominous
 
         void StartDark()
         {
+            AudioListener.volume = 1f;
             if (BreakerBox.Instance != null)
             {
                 BreakerBox.Instance.onRaised = OnPowerBack;
