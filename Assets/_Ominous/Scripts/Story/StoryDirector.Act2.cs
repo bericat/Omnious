@@ -133,8 +133,8 @@ namespace Ominous
             else if (where == "ventana_enfrente") roberta.Place(new Vector3(4.4f, 0.45f, -9.5f), 0f);
             else if (where == "garaje_coche")
             {
-                roberta.SetPose("sentada");
-                roberta.Place(carSeat, 0f);
+                // El coche ya no está en el garaje: Roberta espera de pie donde se aparcaba, mirando a la pared.
+                roberta.Place(new Vector3(16.6f, 0f, 2.6f), 0f);
             }
         }
 

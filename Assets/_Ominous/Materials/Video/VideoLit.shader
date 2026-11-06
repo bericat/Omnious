@@ -9,6 +9,7 @@ Shader "Ominous/Video Lit"
         _Exterior ("Niebla de exterior", Float) = 0
         _RoomAO ("Oscurecer junto a suelo y techo", Float) = 0
         _Sheen ("Brillo discreto", Range(0, 1)) = 0
+        _Detile ("Romper repetición (superficies)", Range(0, 1)) = 0
     }
     SubShader
     {
@@ -23,7 +24,16 @@ Shader "Ominous/Video Lit"
             float _Exterior;
             float _RoomAO;
             float _Sheen;
+            float _Detile;
         CBUFFER_END
+        // Ruido de valor en el espacio del mundo: varía las superficies grandes sin costuras.
+        float DetileHash(float3 p) { p = frac(p * 0.3183099 + 0.1); p *= 17.0; return frac(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+        float DetileNoise(float3 x)
+        {
+            float3 i = floor(x); float3 f = frac(x); f = f * f * (3.0 - 2.0 * f);
+            return lerp(lerp(lerp(DetileHash(i), DetileHash(i + float3(1,0,0)), f.x), lerp(DetileHash(i + float3(0,1,0)), DetileHash(i + float3(1,1,0)), f.x), f.y),
+                        lerp(lerp(DetileHash(i + float3(0,0,1)), DetileHash(i + float3(1,0,1)), f.x), lerp(DetileHash(i + float3(0,1,1)), DetileHash(i + float3(1,1,1)), f.x), f.y), f.z);
+        }
         ENDHLSL
 
         Pass
@@ -77,6 +87,16 @@ Shader "Ominous/Video Lit"
             half4 Frag(Varyings i) : SV_Target
             {
                 half3 tex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv).rgb;
+                if (_Detile > 0.001)
+                {
+                    // Mezcla la textura con una copia girada y a otra escala según una máscara de ruido grande,
+                    // y varía un poco el tono: el ojo deja de ver la misma mancha repetida cada metro.
+                    float2 uv2 = float2(i.uv.y, -i.uv.x) * 0.61 + float2(0.37, 0.71);
+                    half3 tex2 = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv2).rgb;
+                    float mask = smoothstep(0.3, 0.7, DetileNoise(i.positionWS * 0.55));
+                    tex = lerp(tex, tex2, mask * _Detile);
+                    tex *= lerp(1.0, lerp(0.82, 1.12, DetileNoise(i.positionWS * 0.21 + 7.3)), _Detile);
+                }
                 half3 albedo = tex * _BaseColor.rgb;
                 float3 n = normalize(i.normalWS);
                 float3 v = normalize(GetCameraPositionWS() - i.positionWS);
