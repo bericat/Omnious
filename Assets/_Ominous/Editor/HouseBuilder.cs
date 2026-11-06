@@ -113,6 +113,11 @@ namespace Ominous.EditorTools
                 ?? AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Models/Texturas/{source.name}.jpg");
             Color color = source.HasProperty("_BaseColor") ? source.GetColor("_BaseColor") : source.HasProperty("_Color") ? source.GetColor("_Color") : Color.white;
             Material mat;
+            if (source.name.Contains("Luna"))
+            {
+                modelMaterials[name] = mirror;
+                return mirror;
+            }
             if (source.name.Contains("Pantalla"))
             {
                 // La pantalla de la tele usa el material de siempre, que es el que parpadea.
@@ -818,7 +823,7 @@ namespace Ominous.EditorTools
         {
             // Recibidor
             var mat = new MeshKit().Box(new Vector3(0, 0.008f, 0), new Vector3(0.8f, 0.016f, 0.5f), concreteIn);
-            Put("Felpudo", mat, f, 6f, 0.42f, 0, false);
+            if (Model("Felpudo", f, 6f, 0.42f, 0f, collider: false) == null) Put("Felpudo", mat, f, 6f, 0.42f, 0, false);
             var table = new MeshKit();
             table.Box(new Vector3(0, 0.4f, 0), new Vector3(1f, 0.8f, 0.34f), woodDark);
             table.Box(new Vector3(0, 0.82f, 0), new Vector3(1.04f, 0.03f, 0.38f), woodLight);
@@ -832,7 +837,7 @@ namespace Ominous.EditorTools
             hanger.Cylinder(new Vector3(0, 0.03f, 0), 0.02f, 0.02f, 1.7f, 6, woodDark);
             foreach (float a in new[] { 0f, 1.57f, 3.14f, 4.71f }) hanger.Box(new Vector3(Mathf.Cos(a) * 0.1f, 1.63f, Mathf.Sin(a) * 0.1f), new Vector3(0.2f, 0.02f, 0.02f), woodDark);
             hanger.Box(new Vector3(0.1f, 1.35f, 0), new Vector3(0.1f, 0.65f, 0.34f), blanket);
-            Put("Perchero", hanger, f, 5.28f, 0.5f);
+            if (Model("Perchero", f, 5.28f, 0.5f, 0f) == null) Put("Perchero", hanger, f, 5.28f, 0.5f);
             var front = Door(d, "PuertaEntrada", 6.45f, 0f, true, 95f, false);
             front.transform.rotation = Quaternion.Euler(0, 270, 0);
             // La bisagra de esta puerta está en el lado este: el marco va centrado en el hueco.
@@ -848,7 +853,7 @@ namespace Ominous.EditorTools
             clock.Box(new Vector3(0, 0, -0.018f), new Vector3(0.27f, 0.27f, 0.004f), paper);
             clock.Box(new Vector3(0, 0.05f, -0.023f), new Vector3(0.012f, 0.1f, 0.003f), plastic);
             clock.Box(new Vector3(0.04f, 0, -0.024f), new Vector3(0.08f, 0.012f, 0.003f), plastic);
-            Put("Reloj", clock, f, 6.3f, 5.92f, 0f, false, 1.9f);
+            if (Model("Reloj", f, 6.3f, 5.92f, 0f, null, 1.9f, collider: false) == null) Put("Reloj", clock, f, 6.3f, 5.92f, 0f, false, 1.9f);
             Picture(f, "CuadroPasillo1", paintA, 4.7f, 1.6f, 5.92f, 0f);
             Picture(f, "CuadroPasillo2", paintB, 9.9f, 1.6f, 5.92f, 0f, 0.5f, 0.62f);
             Door(d, "PuertaFondoPasillo", 0f, 4.75f, false, 0f, true);
@@ -918,7 +923,7 @@ namespace Ominous.EditorTools
             var mirrorKit = new MeshKit();
             mirrorKit.Box(Vector3.zero, new Vector3(0.015f, 0.7f, 0.55f), chrome);
             mirrorKit.Box(new Vector3(-0.009f, 0, 0), new Vector3(0.004f, 0.66f, 0.51f), mirror);
-            Put("Espejo", mirrorKit, f, 9.92f, 7.2f, 0, false, 1.5f);
+            if (Model("Espejo", f, 9.92f, 7.2f, 0f, null, 1.5f, collider: false) == null) Put("Espejo", mirrorKit, f, 9.92f, 7.2f, 0, false, 1.5f);
             if (Model("Vater", f, 9.4f, 9.55f, 180f) == null) Put("Vater", Vater(), f, 9.4f, 9.55f, 180f);
             var towel = new MeshKit();
             towel.Box(new Vector3(0, 1.32f, 0), new Vector3(0.02f, 0.02f, 0.55f), chrome);
@@ -932,19 +937,19 @@ namespace Ominous.EditorTools
 
         static void BuildLaundry(Transform f, Transform d, Transform lights)
         {
-            Put("Lavadora", Lavadora(true), f, 10.38f, 9.05f, 90f);
-            Put("Secadora", Lavadora(false), f, 10.38f, 8.4f, 90f);
+            if (Model("Lavadora", f, 10.38f, 9.05f, 90f) == null) Put("Lavadora", Lavadora(true), f, 10.38f, 9.05f, 90f);
+            if (Model("Secadora", f, 10.38f, 8.4f, 90f) == null) Put("Secadora", Lavadora(false), f, 10.38f, 8.4f, 90f);
             var shelf = new MeshKit();
             shelf.Box(new Vector3(0, 0, 0), new Vector3(0.3f, 0.025f, 1.5f), woodLight);
             shelf.Box(new Vector3(0, 0.35f, 0), new Vector3(0.3f, 0.025f, 1.5f), woodLight);
             shelf.Box(new Vector3(0.01f, 0.1f, -0.45f), new Vector3(0.14f, 0.18f, 0.2f), blanket);
             shelf.Box(new Vector3(0.01f, 0.13f, 0f), new Vector3(0.12f, 0.24f, 0.09f), ceramic);
             shelf.Box(new Vector3(0.01f, 0.45f, 0.35f), new Vector3(0.16f, 0.17f, 0.26f), paper);
-            Put("Baldas", shelf, f, 10.21f, 8.7f, 0, false, 1.55f);
+            if (Model("Baldas", f, 10.21f, 8.7f, 0f, null, 1.55f, collider: false) == null) Put("Baldas", shelf, f, 10.21f, 8.7f, 0, false, 1.55f);
             var basket = new MeshKit();
             basket.Cylinder(Vector3.zero, 0.19f, 0.24f, 0.55f, 8, woodLight);
             basket.Cylinder(new Vector3(0, 0.55f, 0), 0.2f, 0.12f, 0.1f, 8, sheet);
-            Put("Cesto", basket, f, 13.45f, 9.45f);
+            if (Model("Cesto", f, 13.45f, 9.45f, 0f) == null) Put("Cesto", basket, f, 13.45f, 9.45f);
             var shoes = new MeshKit();
             foreach (float x in new[] { -0.07f, 0.07f })
             {
@@ -967,7 +972,7 @@ namespace Ominous.EditorTools
             shelves.Box(new Vector3(-0.3f, 0.47f, 0), new Vector3(0.42f, 0.31f, 0.3f), paper);
             shelves.Cylinder(new Vector3(0.35f, 0.965f, 0), 0.09f, 0.09f, 0.2f, 8, metal);
             shelves.Box(new Vector3(-0.35f, 1.1f, 0), new Vector3(0.35f, 0.27f, 0.32f), blanket);
-            Put("EstanteriaGaraje", shelves, f, 18.72f, 2.4f, 270f);
+            if (Model("EstanteriaGaraje", f, 18.72f, 2.4f, 270f) == null) Put("EstanteriaGaraje", shelves, f, 18.72f, 2.4f, 270f);
             Model("CajaLatas", f, 18.55f, 3.75f, 80f);
             RoomGarageWall(f);
             RoomLight(lights, "Garaje", 16.5f, 2.2f, new Vector3(14.07f, 1.2f, 3.3f), 0f, new Color(0.94f, 0.97f, 0.9f), 3.4f, false, 7f);
@@ -979,15 +984,15 @@ namespace Ominous.EditorTools
             var box = new MeshKit();
             box.Box(Vector3.zero, new Vector3(0.4f, 0.55f, 0.08f), metal);
             box.Box(new Vector3(0.14f, 0, -0.045f), new Vector3(0.02f, 0.08f, 0.012f), chrome);
-            Put("CuadroElectrico", box, f, 14.8f, 4.28f, 0f, true, 1.05f);
+            if (Model("CuadroElectrico", f, 14.8f, 4.28f, 0f, null, 1.05f) == null) Put("CuadroElectrico", box, f, 14.8f, 4.28f, 0f, true, 1.05f);
             var cans = new MeshKit();
             foreach (var (x, z, h) in new[] { (0f, 0f, 0.22f), (0.26f, 0.04f, 0.22f), (0.12f, 0.22f, 0.18f), (0.14f, 0f, 0.0f) })
                 if (h > 0f) cans.Cylinder(new Vector3(x, 0, z), 0.1f, 0.1f, h, 8, metal);
-            Put("LatasPintura", cans, f, 14.55f, 3.92f);
+            if (Model("LatasPintura", f, 14.55f, 3.92f, 0f) == null) Put("LatasPintura", cans, f, 14.55f, 3.92f);
             var ladder = new MeshKit();
             foreach (float x in new[] { -0.2f, 0.2f }) ladder.Box(new Vector3(x, 1.1f, 0), new Vector3(0.05f, 2.2f, 0.05f), woodLight);
             for (int i = 0; i < 7; i++) ladder.Box(new Vector3(0, 0.25f + i * 0.3f, 0), new Vector3(0.4f, 0.03f, 0.04f), woodLight);
-            Put("Escalera", ladder, f, 15.6f, 4.22f);
+            if (Model("Escalera", f, 15.6f, 4.22f, 0f) == null) Put("Escalera", ladder, f, 15.6f, 4.22f);
         }
 
         static void BuildExterior(Transform street, Transform lights)
