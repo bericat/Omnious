@@ -65,12 +65,12 @@ namespace Ominous
         bool CanUseFinal(string id) => id switch
         {
             "llamar" => Current == Step.BucleLlamar,
-            _ => false,
+            _ => CanUseDark(id),
         };
 
         bool OnUseFinal(string id)
         {
-            if (id != "llamar") return false;
+            if (id != "llamar") return OnUseDark(id);
             Set(Step.BucleFinal);
             FirstPersonController.SetBlocked(this, true);
             GameDirector.Instance.SetObjective("");

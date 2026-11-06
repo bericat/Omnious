@@ -1412,8 +1412,8 @@ namespace Ominous.EditorTools
             var box = new MeshKit();
             box.Box(Vector3.zero, new Vector3(0.4f, 0.55f, 0.08f), metal);
             box.Box(new Vector3(0.14f, 0, -0.045f), new Vector3(0.02f, 0.08f, 0.012f), chrome);
-            // El diferencial está en la colada (OSCURIDAD.md): pared norte, junto a la puerta.
-            var breaker = Model("CuadroElectrico", f, 10.6f, 9.93f, 0f, null, 1.35f) ?? Put("CuadroElectrico", box, f, 10.6f, 9.93f, 0f, true, 1.35f);
+            // El diferencial (OSCURIDAD.md): en el garaje, detrás de las latas de pintura, como dice Chevas en la visita 2.
+            var breaker = Model("CuadroElectrico", f, 14.8f, 4.28f, 0f, null, 1.05f) ?? Put("CuadroElectrico", box, f, 14.8f, 4.28f, 0f, true, 1.05f);
             GameObjectUtility.SetStaticEditorFlags(breaker, 0);
             breaker.AddComponent<BreakerBox>();
             var cans = new MeshKit();
@@ -1742,6 +1742,38 @@ namespace Ominous.EditorTools
             var keysGo = Model("Llaves", t, 6.8f, 1.7f, 30f, "LlavesCuenco", 0.854f, collider: false)
                 ?? Instance("LlavesCuenco", keys, t, new Vector3(6.8f, 0.85f, 1.7f), 30f, false);
             keysGo.SetActive(false);
+            Use("linterna", "Coger la linterna", new Vector3(8.75f, 0.78f, 0.7f), new Vector3(0.45f, 0.16f, 0.1f), t);
+            // Oscuridad: línea de luz bajo la estantería del pasillo y puntos de luz en la pared del dormitorio.
+            var glowMat = new Material(plastic) { name = "BrilloOscuridad" };
+            glowMat.SetTexture("_BaseMap", null);
+            glowMat.SetColor("_BaseColor", Color.black);
+            glowMat.SetColor("_EmissionColor", new Color(1f, 0.78f, 0.45f) * 4f);
+            AssetDatabase.DeleteAsset("Assets/_Ominous/Materials/BrilloOscuridad.mat");
+            AssetDatabase.CreateAsset(glowMat, "Assets/_Ominous/Materials/BrilloOscuridad.mat");
+            // Luz que se escapa: cuadros planos sin sombrear, que brillan aunque la casa esté a oscuras.
+            GameObject Glow(string name, Vector3 pos, Quaternion rot, Vector2 size, Color color)
+            {
+                var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                q.name = name;
+                Object.DestroyImmediate(q.GetComponent<Collider>());
+                q.transform.SetParent(t);
+                q.transform.SetPositionAndRotation(pos, rot);
+                q.transform.localScale = new Vector3(size.x, size.y, 1f);
+                var m = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { name = name };
+                m.SetColor("_BaseColor", color);
+                string mp = $"Assets/_Ominous/Materials/{name}.mat";
+                AssetDatabase.DeleteAsset(mp);
+                AssetDatabase.CreateAsset(m, mp);
+                q.GetComponent<MeshRenderer>().sharedMaterial = m;
+                q.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                q.SetActive(false);
+                return q;
+            }
+            // Delante de la base de la estantería (su frente está en z 4,8): una rendija de luz cálida.
+            var lineGo = Glow("LineaLuzEstanteria", new Vector3(7.6f, 0.006f, 4.83f), Quaternion.Euler(90f, 0f, 0f), new Vector2(0.78f, 0.035f), new Color(0.75f, 0.55f, 0.3f));
+            var dots = new System.Collections.Generic.List<GameObject>();
+            foreach (var (dy, dz) in new[] { (1.59f, 7.43f), (1.66f, 7.9f), (1.52f, 8.05f) })
+                dots.Add(Glow("PuntoLuzPared", new Vector3(5.925f, dy, dz), Quaternion.Euler(0f, 90f, 0f), new Vector2(0.035f, 0.035f), new Color(1f, 0.82f, 0.5f)));
             Use("cuenco", "Dejar las llaves", new Vector3(6.8f, 0.87f, 1.7f), new Vector3(0.26f, 0.14f, 0.26f), t);
             Use("vaso", "Beber agua", new Vector3(9.1f, 1.0f, 0.5f), new Vector3(0.3f, 0.3f, 0.3f), t);
             Use("grifo", "Mirar el grifo", new Vector3(9.5f, 0.95f, 7.2f), new Vector3(0.45f, 0.3f, 0.5f), t);
@@ -1776,6 +1808,8 @@ namespace Ominous.EditorTools
 
             var dir = story.AddComponent<StoryDirector>();
             dir.keysInBowl = keysGo;
+            dir.lightUnderShelf = lineGo;
+            dir.wallDots = dots.ToArray();
             BuildAct2(dir, t);
             BuildAct3(dir, t);
             dir.frontDoor = GameObject.Find("PuertaEntrada").GetComponent<Door>();

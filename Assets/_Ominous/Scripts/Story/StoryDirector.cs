@@ -112,6 +112,7 @@ namespace Ominous
             RegisterAct2Commands(r);
             RegisterAct3Commands(r);
             RegisterFinalCommands(r);
+            StartDark();
         }
 
         Vector3 SoundPosition(string name) => name.StartsWith("llamada") ? frontDoor.transform.position + Vector3.up * 1.2f : player.transform.position;
@@ -365,6 +366,7 @@ namespace Ominous
             UpdateAct2();
             UpdateAct3();
             UpdateFinal();
+            UpdateDark();
             if ((Current == Step.EsperaPuerta || Current == Step.EsperaV2 || Current == Step.EsperaV3) && !DialogueManager.Instance.IsBusy && !peeping)
             {
                 knockTimer += Time.deltaTime;
