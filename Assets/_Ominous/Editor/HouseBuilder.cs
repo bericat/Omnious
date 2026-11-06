@@ -194,7 +194,7 @@ namespace Ominous.EditorTools
             if (asset == null) return null;
             var go = (GameObject)PrefabUtility.InstantiatePrefab(asset, parent);
             go.name = name;
-            go.transform.rotation = Quaternion.Euler(0, yaw, 0);
+            go.transform.rotation = Quaternion.Euler(0, yaw, 0) * asset.transform.rotation;
             var rs = go.GetComponentsInChildren<Renderer>();
             if (rs.Length == 0) return go;
             var b = rs[0].bounds;
@@ -203,6 +203,166 @@ namespace Ominous.EditorTools
             go.transform.position += at - new Vector3(b.center.x, onWall ? b.center.y : b.min.y, b.center.z);
             foreach (var t in go.GetComponentsInChildren<Transform>()) Static(t.gameObject);
             return go;
+        }
+
+        /// <summary>
+        /// Coloca un modelo descargado (o solo algunas de sus piezas) con el centro de su base en "at".
+        /// Las piezas cuyo nombre empieza por "exclude" se quitan. Todas usan la textura indicada, de la misma carpeta.
+        /// </summary>
+        static GameObject PackPlace(string path, string[] keep, string exclude, Transform parent, Vector3 at, float yaw, float scale, string texture, string name)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (asset == null) return null;
+            if (AssetImporter.GetAtPath(path) is ModelImporter importer && !importer.generateSecondaryUV)
+            {
+                importer.generateSecondaryUV = true;
+                importer.SaveAndReimport();
+            }
+            Material mat = null;
+            if (texture != null)
+            {
+                string dir = System.IO.Path.GetDirectoryName(path).Replace('\\', '/');
+                string matPath = $"Assets/_Ominous/Materials/Modelos/{System.IO.Path.GetFileNameWithoutExtension(texture)}.mat";
+                if (!modelMaterials.TryGetValue(matPath, out mat) || mat == null)
+                {
+                    mat = new Material(woodDark) { name = System.IO.Path.GetFileNameWithoutExtension(texture) };
+                    mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{texture}"));
+                    mat.SetTextureScale("_BaseMap", Vector2.one);
+                    mat.SetColor("_BaseColor", Color.white);
+                    AssetDatabase.DeleteAsset(matPath);
+                    AssetDatabase.CreateAsset(mat, matPath);
+                    modelMaterials[matPath] = mat;
+                }
+            }
+            var go = (GameObject)Object.Instantiate(asset, parent);
+            go.name = name;
+            foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
+            {
+                bool drop = (keep != null && System.Array.IndexOf(keep, r.name) < 0) || (exclude != null && r.name.StartsWith(exclude));
+                if (drop) { r.enabled = false; Object.DestroyImmediate(r.GetComponent<MeshFilter>()); Object.DestroyImmediate(r); continue; }
+                if (mat != null) r.sharedMaterials = System.Array.ConvertAll(r.sharedMaterials, _ => mat);
+            }
+            // Se respeta el giro que trae el modelo (los de Blender vienen tumbados 90° en X).
+            go.transform.localScale = asset.transform.localScale * scale;
+            go.transform.rotation = Quaternion.Euler(0, yaw, 0) * asset.transform.rotation;
+            var rs = go.GetComponentsInChildren<MeshRenderer>();
+            if (rs.Length == 0) { Object.DestroyImmediate(go); return null; }
+            var b = rs[0].bounds;
+            foreach (var r in rs) b.Encapsulate(r.bounds);
+            go.transform.position += at - new Vector3(b.center.x, b.min.y, b.center.z);
+            foreach (var t in go.GetComponentsInChildren<Transform>()) Static(t.gameObject);
+            var box = go.AddComponent<BoxCollider>();
+            box.center = go.transform.InverseTransformPoint(b.center + (at - new Vector3(b.center.x, b.min.y, b.center.z)));
+            var local = go.transform.InverseTransformVector(b.size);
+            box.size = new Vector3(Mathf.Abs(local.x), Mathf.Abs(local.y), Mathf.Abs(local.z));
+            return go;
+        }
+
+        /// <summary>Texturas propias del corcho: notas y periódico con la historia, fotos de la casa.</summary>
+        static void CorkMaterials(GameObject cork)
+        {
+            const string dir = "Assets/_Ominous/Art/Externos/Corcho";
+            Material Make(string n, string tex, Color tint)
+            {
+                string path = $"Assets/_Ominous/Materials/Modelos/{n}.mat";
+                if (modelMaterials.TryGetValue(path, out var m) && m != null) return m;
+                m = new Material(plastic) { name = n };
+                m.SetTexture("_BaseMap", tex == null ? null : AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{tex}"));
+                m.SetTextureScale("_BaseMap", Vector2.one);
+                m.SetColor("_BaseColor", tint);
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(m, path);
+                modelMaterials[path] = m;
+                return m;
+            }
+            var notes = Make("Corcho_Notas", "Corcho_Notas.png", Color.white);
+            var photos = Make("Corcho_Fotos", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/Corcho_Fotos.png") != null ? "Corcho_Fotos.png" : "polaroid.png", Color.white);
+            var paper = Make("Corcho_Periodico", "Corcho_Periodico.png", Color.white);
+            var pin = Make("Corcho_Chincheta", null, new Color(0.55f, 0.08f, 0.06f));
+            foreach (var r in cork.GetComponentsInChildren<MeshRenderer>())
+                r.sharedMaterials = System.Array.ConvertAll(r.sharedMaterials, m =>
+                    m == null ? notes : m.name.Contains("newspaper") ? paper : m.name.Contains("Polaroid") ? photos : m.name.Contains("Pin") ? pin : notes);
+        }
+
+        /// <summary>
+        /// Niebla de la calle: grandes nubes semitransparentes que flotan despacio a ras de suelo
+        /// y que la luz de las farolas atraviesa. Da sensación de volumen sin coste de verdad volumétrica.
+        /// </summary>
+        static void BuildStreetFog(Transform street)
+        {
+            string texPath = "Assets/_Ominous/Art/Textures/NieblaParticula.png";
+            var tex = new Texture2D(128, 128, TextureFormat.RGBA32, false);
+            for (int y = 0; y < 128; y++)
+                for (int x = 0; x < 128; x++)
+                {
+                    float u = (x + 0.5f) / 128f - 0.5f, v = (y + 0.5f) / 128f - 0.5f;
+                    float r = Mathf.Sqrt(u * u + v * v) * 2f;
+                    float n = Mathf.PerlinNoise(x * 0.06f, y * 0.06f) * 0.6f + Mathf.PerlinNoise(x * 0.15f + 9f, y * 0.15f) * 0.4f;
+                    float a = Mathf.Clamp01(1f - r) * Mathf.Clamp01(1f - r) * Mathf.Lerp(0.5f, 1f, n);
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                }
+            System.IO.File.WriteAllBytes(texPath, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(texPath, ImportAssetOptions.ForceSynchronousImport);
+            var imp = (TextureImporter)AssetImporter.GetAtPath(texPath);
+            imp.alphaIsTransparency = true;
+            imp.wrapMode = TextureWrapMode.Clamp;
+            imp.SaveAndReimport();
+            string matPath = "Assets/_Ominous/Materials/NieblaCalle.mat";
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")) { name = "NieblaCalle" };
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend", 0f);
+            mat.SetFloat("_SoftParticlesEnabled", 1f);
+            mat.SetVector("_SoftParticleFadeParams", new Vector4(0f, 1.5f, 0f, 0f));
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.EnableKeyword("_SOFTPARTICLES_ON");
+            mat.SetOverrideTag("RenderType", "Transparent");
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite", 0);
+            mat.renderQueue = 3000;
+            mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(texPath));
+            mat.SetColor("_BaseColor", new Color(0.42f, 0.46f, 0.34f, 0.16f));
+            AssetDatabase.DeleteAsset(matPath);
+            AssetDatabase.CreateAsset(mat, matPath);
+
+            var go = new GameObject("NieblaCalle");
+            go.transform.SetParent(street);
+            go.transform.position = new Vector3(8f, 0.9f, -4f);
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.loop = true;
+            main.prewarm = true;
+            main.duration = 30f;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(24f, 36f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.05f, 0.2f);
+            main.startSize = new ParticleSystem.MinMaxCurve(5f, 11f);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.maxParticles = 140;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.scalingMode = ParticleSystemScalingMode.Shape;
+            var emission = ps.emission;
+            emission.rateOverTime = 4.5f;
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(50f, 1.2f, 34f);
+            var col = ps.colorOverLifetime;
+            col.enabled = true;
+            var grad = new Gradient();
+            grad.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.25f), new GradientAlphaKey(1f, 0.75f), new GradientAlphaKey(0f, 1f) });
+            col.color = grad;
+            var rot = ps.rotationOverLifetime;
+            rot.enabled = true;
+            rot.z = new ParticleSystem.MinMaxCurve(-0.05f, 0.05f);
+            var pr = go.GetComponent<ParticleSystemRenderer>();
+            pr.sharedMaterial = mat;
+            pr.renderMode = ParticleSystemRenderMode.Billboard;
+            pr.sortMode = ParticleSystemSortMode.Distance;
+            pr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            pr.receiveShadows = false;
+            pr.maxParticleSize = 3f;
         }
 
         static Material ModelMaterial(Material source, bool exterior)
@@ -1007,13 +1167,17 @@ namespace Ominous.EditorTools
             var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/_Ominous/Art/Superficies/{name}.jpg");
             if (tex == null) return null;
             string path = $"Assets/_Ominous/Materials/Modelos/Superficie_{name}.mat";
+            // Una misma superficie puede pedirse dos veces (suelo y paredes): se reutiliza, no se rehace.
+            if (modelMaterials.TryGetValue(path, out var made) && made != null) return made;
             System.IO.Directory.CreateDirectory("Assets/_Ominous/Materials/Modelos");
             var mat = new Material(template) { name = name };
             mat.SetTexture("_BaseMap", tex);
             mat.SetTextureScale("_BaseMap", Vector2.one);
             mat.SetColor("_BaseColor", Color.white);
+            mat.SetFloat("_Detile", 1f);   // papel, suelos y techos: sin repetición visible
             AssetDatabase.DeleteAsset(path);
             AssetDatabase.CreateAsset(mat, path);
+            modelMaterials[path] = mat;
             return mat;
         }
 
@@ -1108,6 +1272,12 @@ namespace Ominous.EditorTools
                 GameObjectUtility.SetStaticEditorFlags(closet, 0);
                 closet.AddComponent<MeshCollider>();
             }
+            var nightstand = GameObject.Find("Mesilla");
+            if (nightstand != null)
+            {
+                float top = nightstand.GetComponentInChildren<Renderer>().bounds.max.y;
+                PackPlace("Assets/_Ominous/Art/Externos/LamparaMesa/LamparaMesa.fbx", null, null, f, new Vector3(0.3f, top, 7.0f), 90f, 1f, "LamparaMesa_Color.png", "LamparaMesilla");
+            }
             if (Model("Comoda", f, 3.2f, 9.72f, 180f, "ComodaDormitorio") == null) Put("ComodaDormitorio", ComodaSimple(), f, 3.2f, 9.72f, 180f);
             var rugKit = new MeshKit().Box(new Vector3(0, 0.006f, 0), new Vector3(1.6f, 0.012f, 1.1f), sheet);
             Put("AlfombraDormitorio", rugKit, f, 2.9f, 7.5f, 0, false);
@@ -1163,8 +1333,12 @@ namespace Ominous.EditorTools
         static void BuildGarage(Transform f, Transform d, Transform lights)
         {
             var carBox = new Vector3(1.68f, 1.41f, 4.25f);
-            if (ExternalCar("LandCruiser", f, 16.6f, 2.2f, 0f, "CocheChevas", 0f, false) == null && Model("CocheRojo", f, 16.6f, 2.2f, 0f, "CocheChevas", 0f, false, carBox) == null)
-                Put("CocheChevas", Coche(carRed, glass, tireIn), f, 16.6f, 2.2f, 0f);
+            // El coche de Chevas ya no está en el garaje (Toni): queda aparcado fuera, en la entrada.
+            if (ExternalCar("LandCruiser", f, 16.5f, -2.5f, 0f, "CocheChevas", -0.04f, true) == null)
+                Put("CocheChevas", Coche(carRed, glass, tireIn), f, 16.5f, -2.5f, 0f);
+            // En su sitio, trastos: el armario viejo de Toni y cajas.
+            PackPlace("Assets/_Ominous/Art/Externos/ArmarioPSX/ArmarioPSX.fbx", null, null, f, new Vector3(17.3f, 0f, 4.0f), 180f, 1f, "ArmarioPSX_Color.jpg", "ArmarioGaraje");
+            PackProp("cardboard_box_1", f, new Vector3(14.55f, 0f, 1.0f), -10f);
             var shelves = new MeshKit();
             foreach (float y in new[] { 0.3f, 0.95f, 1.6f }) shelves.Box(new Vector3(0, y, 0), new Vector3(1.4f, 0.03f, 0.42f), woodLight);
             foreach (float x in new[] { -0.68f, 0.68f }) shelves.Box(new Vector3(x, 0.95f, -0.18f), new Vector3(0.04f, 1.9f, 0.04f), metal);
@@ -1235,12 +1409,19 @@ namespace Ominous.EditorTools
             Instance("Farola", Farola(), street, new Vector3(2f, 0, -2.6f));
             Inst("Farola", 13f, -6.1f, 180f);
             Inst("Farola", 26f, -2.6f, 0f);
-            Instance("Arbol", Arbol(), street, new Vector3(-1.6f, 0, -1.2f));
-            Inst("Arbol", 1.5f, -7.5f, 0f);
-            Inst("Arbol", 21f, -1.6f, 30f);
-            Inst("Arbol", 6f, 15.5f, 60f);
-            Inst("Arbol", 13f, 19f, 110f);
-            Inst("Arbol", -6f, 9f, 200f);
+            // Árboles secos del pack de Toni (FlunkedPunk, CC BY); si no está, los provisionales.
+            var deadTrees = new[] { "Tree 1", "Tree2", "Tree3" };
+            var treeSpots = new[] { (-1.6f, -1.2f, 0f), (1.5f, -7.5f, 0f), (21f, -1.6f, 30f), (6f, 15.5f, 60f), (13f, 19f, 110f), (-6f, 9f, 200f), (24f, 8f, 140f), (-9f, -8f, 80f) };
+            for (int i = 0; i < treeSpots.Length; i++)
+            {
+                var (tx, tz, tyaw) = treeSpots[i];
+                var tree = PackPlace("Assets/_Ominous/Art/Externos/Arboles/DeadTreePack.fbx", new[] { deadTrees[i % 3] }, null, street,
+                    new Vector3(tx, -0.05f, tz), tyaw, 0.42f + 0.08f * (i % 3), "Corteza_Color.jpg", "ArbolSeco");
+                if (tree != null) continue;
+                if (i == 0) Instance("Arbol", Arbol(), street, new Vector3(tx, 0, tz));
+                else Inst("Arbol", tx, tz, tyaw);
+            }
+            BuildStreetFog(street);
             var streetCarBox = new Vector3(1.68f, 1.41f, 4.25f);
             if (ExternalCar("GMCSierra", street, 11.2f, -3.45f, 90f, "CocheAzul", -0.04f, true) == null && Model("CocheAzul", street, 11.2f, -3.45f, 90f, null, -0.04f, true, streetCarBox) == null)
                 Instance("CocheAzul", Coche(carBlue, carGlass, tire), street, new Vector3(11.2f, -0.04f, -3.45f), 90f);
@@ -1633,7 +1814,10 @@ namespace Ominous.EditorTools
                 photos.Box(new Vector3(x, y, 0), new Vector3(0.22f, 0.3f, 0.006f), paper);
                 photos.Box(new Vector3(x, y, -0.004f), new Vector3(0.18f, 0.13f, 0.002f), plastic);
             }
-            Instance("FotosSotano", photos, root, o + new Vector3(3f, 1.2f, 6.07f), 180f, false);
+            // Corcho con notas, fotos y periódico de nuestra historia (pack de vanillao03, CC BY, con texturas propias).
+            var cork = PackPlace("Assets/_Ominous/Art/Externos/Corcho/Corcho.fbx", null, "Wall", root, o + new Vector3(3f, 0.9f, 6.09f), 0f, 1.5f, null, "CorchoSotano");
+            if (cork == null) Instance("FotosSotano", photos, root, o + new Vector3(3f, 1.2f, 6.07f), 180f, false);
+            else CorkMaterials(cork);
             var note = new MeshKit().Box(Vector3.zero, new Vector3(0.14f, 0.012f, 0.2f), paper);
             Instance("Libreta", note, root, o + new Vector3(0.34f, 0.55f, 9.15f), 10f, false);
             void UseAt(string id, string prompt, Vector3 p, Vector3 size)
