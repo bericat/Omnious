@@ -34,7 +34,7 @@ import comun as c  # noqa: E402
 import hornear  # noqa: E402
 
 (MADERA, MADERA_CLARA, ESMALTE, METAL, CHAPA, OXIDO, NEGRO, CRISTAL_OSC, TELA, TELA2, CARTON, MIMBRE,
- PAPEL, COCO, PINTURA_B, PINTURA_V) = range(16)
+ PAPEL, COCO, PINTURA_B, PINTURA_V, ESFERA) = range(17)
 
 
 def materiales():
@@ -64,6 +64,9 @@ def materiales():
            suciedad=0.6, manchas=0.7, mugre=1.0, color_sucio=(0.08, 0.06, 0.03), polvo=0.0),
         hs("PinturaB", (0.55, 0.53, 0.46), rugosidad=0.5, suciedad=0.8, manchas=0.6, mugre=0.8, chorretones=0.8),
         hs("PinturaV", (0.12, 0.20, 0.13), rugosidad=0.5, suciedad=0.8, manchas=0.6, mugre=0.8, chorretones=0.8),
+        # Esfera del reloj: clara para que se lean las agujas con poca luz (el reloj parado es una pista)
+        hs("Esfera", (0.80, 0.76, 0.62), rugosidad=0.6, suciedad=0.3, manchas=0.3, polvo=0.0, mugre=0.3,
+           chorretones=0.0, color_sucio=(0.45, 0.40, 0.30), brillo=1.0, saturacion=0.8),
     ]
 
 
@@ -235,7 +238,7 @@ def reloj(hora=3.0, minuto=0.0):
     """Esfera vista desde +Y de Blender (-Z de Unity): las 3 quedan a la derecha del que mira (-x de Blender)."""
     bm = bmesh.new()
     cil(bm, (0, 0, 0), 0.16, 0.04, MADERA, lados=24, rot=FRENTE)
-    cil(bm, (0, 0.021, 0), 0.135, 0.004, PAPEL, lados=24, rot=FRENTE)
+    cil(bm, (0, 0.021, 0), 0.135, 0.004, ESFERA, lados=24, rot=FRENTE)
 
     def radial(ang, r, ancho, largo, y, mat):
         a = math.radians(ang)
@@ -243,7 +246,7 @@ def reloj(hora=3.0, minuto=0.0):
                    rot=Matrix.Rotation(-a, 3, "Y"))
     for k in range(12):
         radial(k * 30, 0.115, 0.004, 0.02 if k % 3 == 0 else 0.01, 0.024, NEGRO)
-    radial(minuto * 6, 0.045, 0.008, 0.09, 0.026, NEGRO)                                   # minutero
+    radial(minuto * 6, 0.045, 0.009, 0.09, 0.026, NEGRO)                                   # minutero
     radial((hora % 12 + minuto / 60) * 30, 0.03, 0.01, 0.06, 0.027, NEGRO)                 # horaria
     cil(bm, (0, 0.028, 0), 0.008, 0.004, METAL, lados=8, rot=FRENTE)
     return bm
