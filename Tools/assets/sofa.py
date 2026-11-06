@@ -27,6 +27,8 @@ TELA, PATA, COJIN = range(3)
 def caja(bm, centro, tam, mat, biselado=0.006, segmentos=1, rot=None):
     c.marcar(bm)
     vs = c.caja(bm, (0, 0, 0), tam)
+    if c.PSX:
+        biselado, segmentos = min(biselado, c.PSX_BISEL), 1
     if biselado:
         aristas = list({e for v in vs for e in v.link_edges})
         bmesh.ops.bevel(bm, geom=aristas, offset=biselado, segments=segmentos, profile=0.5,
@@ -43,7 +45,7 @@ def cojin(bm, centro, tam, mat, abombado=0.10, rot=None, semilla=0, n=7.0, hundi
     """Cojín: caja con las esquinas redondeadas, las caras grandes abombadas y algo hundido por el uso."""
     c.marcar(bm)
     r = bmesh.ops.create_cube(bm, size=2.0)
-    bmesh.ops.subdivide_edges(bm, edges=list({e for v in r["verts"] for e in v.link_edges}), cuts=7, use_grid_fill=True)
+    bmesh.ops.subdivide_edges(bm, edges=list({e for v in r["verts"] for e in v.link_edges}), cuts=3 if c.PSX else 7, use_grid_fill=True)
     nuevos = c.nuevos(bm)
     hx, hy, hz = tam[0] / 2, tam[1] / 2, tam[2] / 2
     # eje más fino = dirección del abombado

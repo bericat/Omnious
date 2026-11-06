@@ -18,6 +18,12 @@ MODELOS = os.path.join(RAIZ, "Assets", "_Ominous", "Art", "Models")
 TEXTURAS = os.path.join(MODELOS, "Texturas")
 CC0 = os.path.join(RAIZ, "Assets", "_Ominous", "Art", "CC0")
 
+# Estilo PSX (Toni, 2026-11-06): pocos polígonos, sin biseles redondeados y texturas de poca resolución.
+# OMINOUS_PSX=0 vuelve al estilo anterior.
+PSX = os.environ.get("OMINOUS_PSX", "1") != "0"
+PSX_LADOS = 10        # máximo de lados de los sólidos de revolución
+PSX_BISEL = 0.012     # bisel máximo, en un solo segmento (canto achaflanado)
+
 
 def cc0(carpeta, mapa="Color", no_color=False):
     """Carga un mapa de una textura CC0 de Assets/_Ominous/Art/CC0/<carpeta>/ (Color, NormalGL, Roughness, AO, Opacity).
@@ -139,6 +145,8 @@ def nuevos(bm):
 
 def caja(bm, centro, tam, biselado=0.0, segmentos=1):
     """Añade una caja (centro y tamaño en metros) a un bmesh, con bisel opcional."""
+    if PSX:
+        biselado, segmentos = min(biselado, PSX_BISEL), 1
     r = bmesh.ops.create_cube(bm, size=1.0)
     vs = r["verts"]
     bmesh.ops.scale(bm, vec=tam, verts=vs)
@@ -152,6 +160,8 @@ def caja(bm, centro, tam, biselado=0.0, segmentos=1):
 
 def torno(bm, perfil, lados=24, desde=(0, 0, 0)):
     """Sólido de revolución alrededor de Z. perfil = [(radio, altura), ...] de abajo arriba."""
+    if PSX:
+        lados = min(lados, PSX_LADOS)
     anillos = []
     for r, z in perfil:
         anillo = []
@@ -231,6 +241,8 @@ def caja_mat(bm, centro, tam, mat, biselado=0.0, segmentos=1, rot=None):
     """Caja con bisel opcional, girada (rot, Matrix 3x3) y con el material 'mat'. Devuelve sus vértices."""
     marcar(bm)
     vs = caja(bm, (0, 0, 0), tam)
+    if PSX:
+        biselado, segmentos = min(biselado, PSX_BISEL), 1
     if biselado:
         bmesh.ops.bevel(bm, geom=list({e for v in vs for e in v.link_edges}), offset=biselado,
                         segments=segmentos, profile=0.5, affect="EDGES", clamp_overlap=True)

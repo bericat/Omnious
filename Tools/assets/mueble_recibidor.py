@@ -6,7 +6,8 @@ El cuenco es un objeto aparte (Cuenco), apoyado en la encimera a 0,2 m a la dere
 del centro en coordenadas locales de Unity (x = +0,2), como el cuenco provisional.
 
 Uso:  python Tools/assets/mueble_recibidor.py
-Salida: Assets/_Ominous/Art/Models/MuebleRecibidor.fbx y sus texturas en Models/Texturas.
+Salida: Assets/_Ominous/Art/Models/MuebleRecibidor.fbx y sus texturas horneadas (MuebleRecibidor.jpg y Cuenco.jpg)
+en Models/Texturas, estilo PSX.
 """
 import math
 import os
@@ -17,6 +18,7 @@ import bmesh
 
 sys.path.insert(0, os.path.dirname(__file__))
 import comun as c  # noqa: E402
+import hornear  # noqa: E402
 
 ANCHO, FONDO = 1.0, 0.34
 Z_ZOCALO, Z_CUERPO = 0.06, 0.80
@@ -98,16 +100,17 @@ def cuenco(mat):
 
 def main():
     c.escena_vacia()
-    tex_osc = c.textura_madera("MuebleRecibidor_MaderaOscura", (0.24, 0.15, 0.09), semilla=11)
-    tex_cla = c.textura_madera("MuebleRecibidor_MaderaClara", (0.40, 0.29, 0.19), semilla=12, vetas=18)
-    tex_cer = c.textura_ceramica("Cuenco_Ceramica", (0.70, 0.66, 0.56), semilla=13)
+    hs = hornear.material_sucio
     mats = [
-        c.material("MuebleRecibidor_MaderaOscura", tex_osc, rugosidad=0.55),
-        c.material("MuebleRecibidor_MaderaClara", tex_cla, rugosidad=0.45),
-        c.material("MuebleRecibidor_Pomo", color=(0.42, 0.33, 0.18), rugosidad=0.4, metal=1.0),
+        hornear.madera_vieja("MaderaOscura", "oscura", desgaste=0.5),
+        hornear.madera_vieja("MaderaClara", "gris", escala=0.7, semilla=2.0),
+        hs("Pomo", (0.36, 0.27, 0.12), rugosidad=0.35, metal=1.0, suciedad=0.8, manchas=0.4),
     ]
     m = mueble(mats)
-    b = cuenco(c.material("Cuenco_Ceramica", tex_cer, rugosidad=0.25))
+    hornear.atlas(m, "MuebleRecibidor", tam=1024, margen=0.003)
+    b = cuenco(hs("CuencoLoza", (0.42, 0.36, 0.26), rugosidad=0.25, suciedad=0.9, manchas=0.5, polvo=0.3,
+                  mugre=0.6, color_sucio=(0.15, 0.11, 0.07)))
+    hornear.atlas(b, "Cuenco", tam=512, margen=0.006)
     # En Unity x = -x de Blender: el cuenco va a x = +0,2 en Unity.
     b.location = (-0.2, 0.0, Z_CUERPO + ENCIMERA[2])
     ruta = c.exportar_fbx("MuebleRecibidor", [m, b])

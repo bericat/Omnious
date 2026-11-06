@@ -21,8 +21,10 @@ venv/bin/python Tools/assets/vista_previa.py Assets/_Ominous/Art/Models/MuebleRe
 Cada script dice en su cabecera qué genera, sus medidas y dónde está el origen. Algunos:
 `bano.py` (Vater, Lavabo, Banera), `lampara_techo.py` (cuelga del techo: origen arriba), `aparador.py`,
 `puertas.py` (PuertaHoja con el origen en la bisagra y PuertaMarco en el centro del hueco), `llaves.py`,
-`tele_programa.py` (atlas de 16 fotogramas de la tele; necesita Pillow) y `superficies.py`
-(texturas de 1 m x 1 m para paredes, suelos y techo en `Assets/_Ominous/Art/Superficies/`).
+`tele_programa.py` (atlas de 16 fotogramas de la tele; necesita Pillow), `superficies.py`
+(texturas de 4 m x 4 m, tiling 0,25, para paredes, suelos, techo y fachada en `Assets/_Ominous/Art/Superficies/`),
+`vida.py` (objetos de casa habitada y del exterior) y `laminas.py` (foto de boda, calendario y notas del corcho).
+Dónde colocar cada objeto nuevo: `COLOCACION_PSX.md`.
 
 ## Convenciones
 - FBX en `Assets/_Ominous/Art/Models/`, texturas en `Assets/_Ominous/Art/Models/Texturas/` (con LFS).
@@ -31,6 +33,10 @@ Cada script dice en su cabecera qué genera, sus medidas y dónde está el orige
 - En Blender se modela con Z arriba y el frente a -Y; la x de Unity es la x de Blender cambiada de signo.
 - UV a escala real: una textura cubre 1 m x 1 m.
 - Estilo: realista y con poco detalle, colores apagados (cámara doméstica de principios de los 2000).
+
+## Estilo PSX
+`comun.PSX` (activo por defecto; `OMINOUS_PSX=0` lo quita) limita los biseles a un chaflán y los tornos a
+10 lados, y `hornear.atlas` reduce la textura horneada a 1/8 (mínimo 128 px). En Unity, filtro Point.
 
 ## Estilo (referencia: Fears to Fathom)
 Objetos realistas, usados y sucios. `hornear.py` lo hace en dos pasos:

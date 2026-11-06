@@ -3,7 +3,7 @@ del fondo falso. Madera oscura gastada, telas apagadas y sucias.
 
 Sustituyen a las mallas provisionales de HouseBuilder con la misma huella y orientación (frente a +Z
 en Unity; aquí, en Blender, a -Y), origen en el suelo en el centro. x de Unity = -x de Blender.
-- Cama: 1,5 x 2,0 m; el cabecero está en +Z de Unity (como la provisional), colchón a 0,49 m.
+- Cama: 1,5 x 2,0 m (1,58 con los postes); cabecero en arco en +Z de Unity (como la provisional), colchón a 0,49 m.
 - Mesilla / MesillaLampara: 0,45 x 0,54 x 0,40 m, cajón delante. La lamparita tiene "Bombilla" aparte.
 - Comoda: 0,95 x 0,76 x 0,42 m, tres cajones.
 - Armario: 1,4 x 2,1 x 0,58 m, hueco por dentro (se entra). Cuatro objetos, como las piezas de ahora:
@@ -38,7 +38,7 @@ def materiales():
         hs("Metal", (0.42, 0.40, 0.36), rugosidad=0.35, metal=1.0, suciedad=0.8, manchas=0.4),
         hs("Sabana", (0.45, 0.42, 0.35), rugosidad=0.9, suciedad=0.7, manchas=0.6, escala_manchas=4, mugre=0.6,
            color_sucio=(0.20, 0.16, 0.10), polvo=0.0),
-        hs("Colcha", (0.22, 0.14, 0.10), rugosidad=0.95, imagen=c.cc0("Tapiceria_Fabric080"), escala=0.5, veta=1.1,
+        hs("Colcha", (0.26, 0.11, 0.07), rugosidad=0.95, imagen=c.cc0("Tapiceria_Fabric080"), escala=0.5, veta=1.1,
            suciedad=0.6, manchas=0.5, mugre=0.7, color_sucio=(0.08, 0.06, 0.04), polvo=0.0),
         hs("Almohada", (0.42, 0.40, 0.33), rugosidad=0.9, imagen=c.cc0("Tapiceria_Fabric083"), escala=0.3,
            veta=0.6, suciedad=0.6, manchas=0.7, color_sucio=(0.22, 0.17, 0.10), polvo=0.0),
@@ -53,7 +53,7 @@ def cojin(bm, centro, tam, mat, n=4.0, abombado=0.02, rot=None):
     """Caja de esquinas redondeadas (superelipsoide), algo abombada."""
     c.marcar(bm)
     r = bmesh.ops.create_cube(bm, size=2.0)
-    bmesh.ops.subdivide_edges(bm, edges=list({e for v in r["verts"] for e in v.link_edges}), cuts=5,
+    bmesh.ops.subdivide_edges(bm, edges=list({e for v in r["verts"] for e in v.link_edges}), cuts=3 if c.PSX else 5,
                               use_grid_fill=True)
     nv = c.nuevos(bm)
     fino = min(range(3), key=lambda i: tam[i])
@@ -78,30 +78,84 @@ def cil(bm, centro, r, alto, mat, lados=12, r2=None):
     c.asignar(bm, {f for v in nv for f in v.link_faces}, mat)
 
 
+def rejilla(bm, filas, cols, punto, mat):
+    """Malla de filas x cols cuadros; punto(u, v) -> (x, y, z) con u, v de 0 a 1."""
+    vs = [[bm.verts.new(punto(i / cols, j / filas)) for i in range(cols + 1)] for j in range(filas + 1)]
+    caras = [bm.faces.new((vs[j][i], vs[j][i + 1], vs[j + 1][i + 1], vs[j + 1][i]))
+             for j in range(filas) for i in range(cols)]
+    c.asignar(bm, caras, mat)
+
+
+def bulto(x, y, k=1.0):
+    """Arrugas suaves y deterministas para la ropa de cama (unos cm)."""
+    return k * (0.010 * math.sin(x * 7.1 + y * 2.3) + 0.007 * math.sin(y * 9.7 - x * 3.1)
+                + 0.005 * math.sin(x * 17.0 + y * 13.0))
+
+
+def cabecero(bm, y, alto, arco, grosor=0.05):
+    """Tablero con el borde de arriba en arco y un cuarterón en relieve hacia el colchón."""
+    hacia = 1 if y < 0 else -1          # dirección hacia el colchón
+    n = 10
+    pts = [(-0.74, 0.25), (0.74, 0.25)]
+    pts += [(0.74 - 1.48 * k / n, alto + arco * math.sin(math.pi * k / n)) for k in range(n + 1)]
+    zc = (0.25 + alto) / 2
+    for esc, y_cara, g, mat in ((1.0, y - hacia * grosor / 2, grosor, MADERA),
+                                (0.8, y + hacia * grosor / 2, 0.012, PUERTA)):
+        c.marcar(bm)
+        vs = [bm.verts.new((px * esc, y_cara, zc + (pz - zc) * esc)) for px, pz in pts]
+        f = bm.faces.new(vs)
+        r = bmesh.ops.extrude_face_region(bm, geom=[f])
+        bmesh.ops.translate(bm, vec=(0, hacia * g, 0),
+                            verts=[v for v in r["geom"] if isinstance(v, bmesh.types.BMVert)])
+        c.asignar(bm, {f for v in c.nuevos(bm) for f in v.link_faces}, mat)
+    # Postes con bola
+    for x in (-0.77, 0.77):
+        c.caja_mat(bm, (x, y, (alto + 0.1) / 2), (0.075, 0.075, alto + 0.1), MADERA, 0.008)
+        c.marcar(bm)
+        bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=5, radius=0.05)
+        nv = c.nuevos(bm)
+        bmesh.ops.translate(bm, verts=nv, vec=(x, y, alto + 0.14))
+        c.asignar(bm, {f for v in nv for f in v.link_faces}, MADERA)
+
+
 def cama():
+    """Cama de matrimonio de madera oscura con cabecero en arco, colcha de felpilla caída y dos almohadas."""
     bm = bmesh.new()
     cm = c.caja_mat
     W, L = 1.5, 2.0
-    # Bastidor, patas, cabecero (en -Y de Blender = +Z de Unity) y piecero bajo
-    cm(bm, (0, 0, 0.17), (W, L, 0.22), MADERA, 0.006)
-    for x in (-0.7, 0.7):
-        for y in (-0.95, 0.95):
-            cm(bm, (x, y, 0.03), (0.07, 0.07, 0.06), MADERA, 0.004)
-    cm(bm, (0, -1.0, 0.55), (W, 0.05, 1.10), MADERA, 0.008)
-    cm(bm, (0, -1.0, 1.11), (W + 0.06, 0.08, 0.04), MADERA, 0.008)
-    for k in range(4):
-        cm(bm, (-0.54 + k * 0.36, -0.966, 0.72), (0.26, 0.02, 0.50), PUERTA, 0.004)   # cuarterones (hacia el colchón)
-    cm(bm, (0, 1.0, 0.36), (W, 0.05, 0.36), MADERA, 0.006)
-    # Colchón con la sábana, colcha que cae por los lados y almohadas
-    cojin(bm, (0, 0, 0.38), (1.44, 1.94, 0.20), SABANA, n=6, abombado=0.01)
-    cm(bm, (0, 0.2, 0.495), (1.52, 1.56, 0.04), COLCHA, 0.01)
+    cabecero(bm, -0.985, 0.95, 0.20)
+    cabecero(bm, 0.985, 0.50, 0.08)
     for s in (-1, 1):
-        cm(bm, (s * 0.765, 0.2, 0.34), (0.025, 1.56, 0.30), COLCHA, 0.005)
-    cm(bm, (0, 0.985, 0.34), (1.55, 0.025, 0.30), COLCHA, 0.005)
-    cm(bm, (0, -0.52, 0.52), (1.50, 0.18, 0.06), COLCHA, 0.02)        # embozo doblado
-    for x, rz in ((0.36, 4), (-0.36, -6)):
-        cojin(bm, (x, -0.76, 0.56), (0.62, 0.42, 0.13), ALMOHADA, n=3, abombado=0.06,
-              rot=Matrix.Rotation(math.radians(rz), 3, "Z") @ Matrix.Rotation(math.radians(-8), 3, "X"))
+        cm(bm, (s * 0.74, 0, 0.25), (0.04, 1.9, 0.16), MADERA, 0.006)          # largueros
+    cm(bm, (0, 0, 0.20), (1.44, 1.9, 0.06), MADERA, 0)                          # somier
+    # Colchón con la sábana
+    cojin(bm, (0, 0, 0.36), (1.42, 1.90, 0.22), SABANA, n=5, abombado=0.01)
+    # Colcha: arriba desde las almohadas hasta los pies, cae por los lados y por los pies con pliegues
+    y0, y1, zt = -0.50, 0.95, 0.485
+
+    def arriba(u, v):
+        x, y = -0.72 + 1.44 * u, y0 + (y1 - y0) * v
+        borde = min(u, 1 - u, v * 3, 1 - v) * 4
+        return (x, y, zt + max(0.0, bulto(x, y)) * min(1.0, borde) + 0.008)
+    rejilla(bm, 10, 8, arriba, COLCHA)
+    for s in (-1, 1):
+        def lado(u, v, s=s):
+            y = y0 + (y1 - y0) * u
+            z = zt + 0.008 - (zt - 0.13) * v
+            pl = 0.018 * v * math.sin(u * 23.0 + s) + bulto(y, z, 0.5)
+            return (s * (0.725 + 0.02 * v + pl), y, z)
+        rejilla(bm, 3, 12, lado, COLCHA)
+
+    def pies(u, v):
+        x = -0.72 + 1.44 * u
+        z = zt + 0.008 - (zt - 0.13) * v
+        return (x, y1 + 0.005 + 0.02 * v + 0.018 * v * math.sin(u * 19.0), z)
+    rejilla(bm, 3, 8, pies, COLCHA)
+    # Embozo de la sábana doblado sobre la colcha y almohadas apoyadas en el cabecero
+    cm(bm, (0, y0 + 0.06, zt + 0.025), (1.46, 0.14, 0.035), SABANA, 0.01)
+    for x, rz in ((0.35, 4), (-0.36, -5)):
+        cojin(bm, (x, -0.76, 0.56), (0.64, 0.40, 0.15), ALMOHADA, n=2.6, abombado=0.05,
+              rot=Matrix.Rotation(math.radians(rz), 3, "Z") @ Matrix.Rotation(math.radians(-14), 3, "X"))
     return bm
 
 
@@ -234,7 +288,7 @@ def main(nombre):
         f, tam = PIEZAS[nombre]
         ob = c.objeto(nombre, f(), mats)
         for p in ob.data.polygons:
-            p.use_smooth = p.material_index in (SABANA, ALMOHADA, LATON) and len(p.vertices) == 4
+            p.use_smooth = p.material_index in (SABANA, ALMOHADA, LATON, COLCHA) and len(p.vertices) == 4
         usados = sorted({p.material_index for p in ob.data.polygons})
         viejos, idx = list(ob.data.materials), {o: n for n, o in enumerate(usados)}
         nuevos = [idx[p.material_index] for p in ob.data.polygons]

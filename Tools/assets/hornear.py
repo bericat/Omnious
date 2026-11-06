@@ -284,6 +284,8 @@ def atlas(ob, nombre, tam=2048, sin_hornear=(), margen=0.004, poco_detalle=(), f
             mat.node_tree.nodes.active = t
     bpy.ops.object.bake(type="DIFFUSE", pass_filter={"COLOR"}, use_clear=True)
 
+    if c.PSX:
+        img = reducir_psx(img, tam)
     os.makedirs(c.TEXTURAS, exist_ok=True)
     # JPG para no gastar la cuota de LFS (1 GB en el plan gratuito)
     ruta = os.path.join(c.TEXTURAS, nombre + ".jpg")
@@ -310,6 +312,21 @@ def atlas(ob, nombre, tam=2048, sin_hornear=(), margen=0.004, poco_detalle=(), f
     for p, i in zip(me.polygons, indices):
         p.material_index = i
     return ruta
+
+
+def reducir_psx(img, tam):
+    """Textura de poca resolución como las de PSX: se promedia a un octavo del tamaño horneado, con un
+    mínimo de 128 (2048 -> 256, 1024 y 512 -> 128) y se sustituye en los materiales. En Unity: filtro Point."""
+    import numpy as np
+    nuevo = min(tam, max(128, tam // 8))
+    f = tam // nuevo
+    px = np.empty(tam * tam * 4, dtype=np.float32)
+    img.pixels.foreach_get(px)
+    px = px.reshape(tam // f, f, tam // f, f, 4).mean(axis=(1, 3))
+    peq = bpy.data.images.new(img.name + "_psx", nuevo, nuevo, alpha=False)
+    peq.pixels.foreach_set(px.ravel())
+    img.user_remap(peq)
+    return peq
 
 
 # Tonos de madera de las referencias de Toni: gastada, apagada, entre gris y marrón

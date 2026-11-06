@@ -19,6 +19,12 @@ for img in bpy.data.images:
     ruta = os.path.join(textura_dir, os.path.basename(img.filepath))
     if os.path.exists(ruta):
         img.filepath = ruta
+# Como en Unity con filtro Point (estilo PSX)
+for m in bpy.data.materials:
+    if m.use_nodes:
+        for n in m.node_tree.nodes:
+            if n.type == "TEX_IMAGE":
+                n.interpolation = "Closest"
 
 s = bpy.context.scene
 s.render.engine = "CYCLES"
