@@ -1,6 +1,6 @@
 """Alfombra, manta, lámpara de pie y cortina del salón, con el mismo envejecido que el resto.
 
-- Alfombra.fbx: alfombra de dibujo oriental, gastada y con flecos (2,4 x 1,7 m, como la provisional).
+- Alfombra.fbx: ya no sale de aquí (ver recibidor_salon.py).
 - Manta.fbx: manta de lana doblada sobre el cojín izquierdo del sofá (misma posición que la provisional,
   origen en el suelo; asiento del sofá nuevo a 0,46 m).
 - Lampara.fbx: lámpara de pie de latón con pantalla de tela (1,66 m). La bombilla es un objeto
@@ -216,7 +216,9 @@ def cortina():
     return c.exportar_fbx("Cortina", [ob]), ob
 
 
-PIEZAS = {"Alfombra": alfombra, "Manta": manta, "Lampara": lampara, "Cortina": cortina}
+# La Alfombra del salón se hace ahora en recibidor_salon.py (persa roja y azul de la referencia de Toni);
+# la función alfombra() de aquí queda como la versión anterior.
+PIEZAS = {"Manta": manta, "Lampara": lampara, "Cortina": cortina}
 
 
 def main():

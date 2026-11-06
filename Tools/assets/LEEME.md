@@ -23,7 +23,8 @@ Cada script dice en su cabecera qué genera, sus medidas y dónde está el orige
 `puertas.py` (PuertaHoja con el origen en la bisagra y PuertaMarco en el centro del hueco), `llaves.py`,
 `tele_programa.py` (atlas de 16 fotogramas de la tele; necesita Pillow), `superficies.py`
 (texturas de 4 m x 4 m, tiling 0,25, para paredes, suelos, techo y fachada en `Assets/_Ominous/Art/Superficies/`),
-`vida.py` (objetos de casa habitada y del exterior) y `laminas.py` (foto de boda, calendario y notas del corcho).
+`vida.py` (objetos de casa habitada y del exterior), `recibidor_salon.py` (alfombras persas, planta grande,
+perchero de pared, cuadros de paisaje, estantería de libros, taza y mando, según la referencia de Toni) y `laminas.py` (foto de boda, calendario y notas del corcho).
 Dónde colocar cada objeto nuevo: `COLOCACION_PSX.md`.
 
 ## Convenciones

@@ -430,10 +430,117 @@ def teja():
     guardar_jpg("Teja", envejecer(img, rng, 0.2, 0.15, 0.3))
 
 
+# ---------------------------------------------------------------- recibidor y salón (referencia de Toni)
+
+def suelo_madera():
+    """Tarima oscura y gastada: tablas de ~9 cm a lo largo de X, de 0,5 a 1,4 m, cada una con un trozo distinto
+    de la veta de Wood092 y su propio tono. Sin repetición visible en los 4 m."""
+    rng = np.random.default_rng(81)
+    yy, xx = malla()
+    filas = 44                                   # 4 m / 44 = 9,1 cm por tabla
+    alto = T / filas
+    fila = np.floor(yy / alto).astype(int)
+    fy = (yy % alto) / alto
+    # Cortes de cada fila, periódicos en X
+    ident = np.zeros((T, T), int)
+    inicio = np.zeros((T, T))
+    n = 0
+    for r in range(filas):
+        o = rng.uniform(0, T)
+        cortes = [o]
+        while cortes[-1] < o + T - 0.5 * PM:
+            cortes.append(cortes[-1] + rng.uniform(0.5, 1.4) * PM)
+        cortes[-1] = o + T
+        sel = fila == r
+        x = xx[sel]
+        xr = (x - o) % T + o
+        k = np.searchsorted(cortes, xr, side="right") - 1
+        ident[sel] = n + k
+        inicio[sel] = np.array(cortes)[k]
+        n += len(cortes)
+    # Veta: Wood092 girada (la veta va a lo largo de la tabla), un trozo al azar por tabla
+    img92 = c.cc0("Mueble_Wood092")
+    w, h = img92.size
+    px = np.empty(w * h * 4, dtype=np.float32)
+    img92.pixels.foreach_get(px)
+    lum = (px.reshape(h, w, 4)[..., :3] @ np.array((0.2126, 0.7152, 0.0722), dtype=np.float32)).T
+    lum = lum / lum.mean()
+    sx, sy = rng.integers(0, w, n), rng.integers(0, h, n)
+    lx = ((xx - inicio) % T * 2).astype(int)                   # 2 px de la foto por px (la foto cubre ~0,5 m)
+    ly = (fy * alto * 2).astype(int)
+    veta = lum[(sy[ident] + ly) % lum.shape[0], (sx[ident] + lx) % lum.shape[1]]
+    veta = 1 + (veta - 1) * 1.6
+    tono = rng.normal(1.0, 0.13, n)[ident]
+    calido = rng.normal(0.0, 0.04, n)[ident]
+    base = np.array((0.20, 0.13, 0.08))
+    img = base * (tono * np.clip(veta, 0.4, 1.8))[..., None]
+    img *= np.stack([1 + calido, np.ones_like(calido), 1 - calido], axis=-1)
+    # Juntas: entre filas y en los cortes
+    junta = (fy < 0.06) | (fy > 0.96)
+    corte = ((xx - inicio) % T) < 1.2
+    img *= np.where(junta | corte, 0.45, 1.0)[..., None]
+    # Barniz gastado en los caminos de paso y suciedad en las juntas
+    paso = ruido(rng, (2, 1, 0.5, 0.25))
+    gast = np.clip((paso - 0.5) / 0.25, 0, 1) * 0.5
+    img = img * (1 - gast[..., None]) + gast[..., None] * np.array((0.26, 0.20, 0.14)) * (0.8 + 0.4 * veta)[..., None]
+    img *= (1 - 0.25 * np.clip((ruido(rng, (0.05, 0.02, 0.01)) - 0.6) / 0.2, 0, 1))[..., None]   # rayones y mugre
+    guardar_jpg("SueloMadera", envejecer(img, rng, 0.16, 0.0, 0.5))
+
+
+def papel_rayas():
+    """Papel del recibidor: rayas verticales beis y oliva con florecitas en las rayas claras (repetición de 12,5 cm)."""
+    rng = np.random.default_rng(83)
+    yy, xx = malla()
+    p = T / 32                                   # 32 rayas en 4 m
+    u = xx % p
+    col = np.floor(xx / p)
+    beis = np.array((0.47, 0.40, 0.27))
+    oliva = np.array((0.28, 0.26, 0.17))
+    filete = np.array((0.20, 0.17, 0.10))
+    img = np.broadcast_to(beis, (T, T, 3)).copy()
+    oscura = (u > p * 0.62)
+    img[oscura] = oliva
+    img[np.abs(u - p * 0.62) < 0.9] = filete
+    img[np.abs(u - p * 0.97) < 0.7] = filete
+    # Florecitas y hojas en una guirnalda que ondula dentro de la raya clara, desplazada en cada columna
+    q = PM / 6                                   # una flor cada 17 cm
+    fase = (col % 2) * q / 2 + (col % 3) * 3
+    v = (yy + fase) % q
+    cx = p * 0.30 + 3.0 * np.sin((yy + fase) / q * 2 * np.pi)
+    du, dv = u - cx, v - q / 2
+    r = np.hypot(du, dv)
+    a = np.arctan2(dv, du)
+    flor = r < 4.2 * (0.6 + 0.4 * np.abs(np.cos(2.5 * a)))
+    hojas = ((np.abs(du + 3.5) < 2.0) & (np.abs(dv - 6) < 3.5)) | ((np.abs(du - 3.5) < 2.0) & (np.abs(dv + 6) < 3.5))
+    tallo = (np.abs(u - (p * 0.30 + 3.0 * np.sin((yy + fase) / q * 2 * np.pi))) < 0.7) & ~oscura
+    img[(hojas | tallo) & ~oscura] = np.array((0.32, 0.30, 0.20))
+    img[flor & ~oscura] = np.array((0.52, 0.34, 0.24))
+    img[(r < 1.4) & ~oscura] = np.array((0.58, 0.50, 0.30))
+    # Motas en la raya oscura
+    motas = (ruido(rng, (0.012, 0.006)) > 0.66) & oscura
+    img[motas] = img[motas] * 1.18
+    img = juntas_tiras(suavizar(img))
+    guardar_jpg("PapelRayas", envejecer(img, rng, 0.22, 0.3))
+
+
+def papel_salon():
+    """Papel del salón: oliva-marrón oscuro, moteado, con un damasco casi invisible."""
+    rng = np.random.default_rng(85)
+    tile = suavizar(repetir_motivo(motivo_damasco(PM // 2)), 2)    # motivo de 50 cm
+    fondo = np.array((0.25, 0.23, 0.15))
+    img = fondo * (1 + 0.10 * tile)[..., None]
+    mot = ruido(rng, (0.03, 0.012, 0.006))
+    img *= (0.72 + 0.56 * mot)[..., None]
+    img *= np.stack([1 + 0.04 * mot, np.ones_like(mot), 1 - 0.06 * mot], axis=-1)
+    img = juntas_tiras(img)
+    guardar_jpg("PapelSalon", envejecer(img, rng, 0.2, 0.25))
+
+
 TEXTURAS = {"PapelDamasco": papel_damasco, "Moqueta": moqueta, "Gotele": gotele, "PapelPasillo": papel_pasillo,
             "PapelDormitorio": papel_dormitorio, "SueloCocina": suelo_cocina, "AzulejoCocina": azulejo_cocina,
             "Hormigon": hormigon, "FachadaMadera": fachada_madera, "FachadaEnfoscado": fachada_enfoscado,
-            "ZocaloPiedra": zocalo_piedra, "Teja": teja}
+            "ZocaloPiedra": zocalo_piedra, "Teja": teja,
+            "SueloMadera": suelo_madera, "PapelRayas": papel_rayas, "PapelSalon": papel_salon}
 
 
 if __name__ == "__main__":

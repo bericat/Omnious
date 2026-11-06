@@ -1,4 +1,4 @@
-"""Sofá del salón: tapizado entero, brazos enrollados y tela de espiga marrón oliva, viejo y hundido.
+"""Sofá del salón: tapizado entero, brazos enrollados y tela marrón gastada (referencia de Toni), viejo y hundido.
 
 Sustituye a la malla provisional Sofa de SalonBuilder/HouseBuilder y mantiene su huella:
 2,0 x 0,86 m, respaldo hasta 0,94 m, frente hacia +Z en Unity, origen en el suelo en el centro.
@@ -123,11 +123,11 @@ def main():
     c.escena_vacia()
     hs = hornear.material_sucio
     mats = [
-        hs("Tela", (0.16, 0.13, 0.08), rugosidad=0.95, imagen=tela_espiga(), escala=0.4, veta=0.9,
-           suciedad=0.6, polvo=0.3, manchas=0.5, color_sucio=(0.06, 0.05, 0.03), mugre=0.8, escala_manchas=4,
-           desgaste=0.3, color_desgaste=(0.24, 0.21, 0.15)),
+        hs("Tela", (0.22, 0.11, 0.05), rugosidad=0.95, saturacion=0.95, imagen=tela_espiga(), escala=0.4, veta=0.35,
+           suciedad=0.7, polvo=0.3, manchas=0.6, color_sucio=(0.07, 0.04, 0.02), mugre=0.9, escala_manchas=4,
+           desgaste=0.45, color_desgaste=(0.30, 0.21, 0.14)),
         hornear.madera_vieja("Pata", "oscura", polvo=0.8),
-        hs("Cojin", (0.22, 0.16, 0.08), rugosidad=0.95, imagen=c.cc0("Tapiceria_Fabric083"), escala=0.3, veta=1.0,
+        hs("Cojin", (0.26, 0.15, 0.07), rugosidad=0.95, saturacion=0.95, imagen=c.cc0("Tapiceria_Fabric083"), escala=0.3, veta=0.5,
            suciedad=0.6, manchas=0.5, color_sucio=(0.07, 0.05, 0.03), mugre=0.6),
     ]
     ob = sofa(mats)
