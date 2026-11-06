@@ -32,7 +32,7 @@ Material:
     - _AmbientBoost: 1
     - _Exterior: 0
     - _RoomAO: 0
-    - _Sheen: 0.3
+    - _Sheen: 0.14
     - _Stable: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

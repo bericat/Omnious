@@ -118,6 +118,9 @@ namespace Ominous.EditorTools
         }
 
         /// <summary>Marco y cortinas de una ventana.</summary>
+        static readonly System.Collections.Generic.List<(Vector3, float)> curtainSpots = new();
+        static bool curtainModel => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Ominous/Art/Models/Cortina.fbx") != null;
+
         static void WindowDressing(MeshKit kit, Vector3 center, float width, float height, bool alongX, float inward)
         {
             const float bar = 0.05f, depth = 0.19f;
@@ -132,8 +135,19 @@ namespace Ominous.EditorTools
             kit.Box(center, H(width, 0.03f, 0.03f), frame);
             kit.Box(center - normal * (inward * 0.01f), H(width, height, 0.005f), glass);
             Vector3 inner = normal * (inward * 0.14f);
-            kit.Box(center + inner + along * (width * 0.5f + 0.02f) - Vector3.up * 0.1f, H(0.28f, height + 0.25f, 0.05f), curtain);
-            kit.Box(center + inner - along * (width * 0.5f + 0.02f) - Vector3.up * 0.1f, H(0.28f, height + 0.25f, 0.05f), curtain);
+            if (curtainModel)
+            {
+                // Las cortinas van como modelo aparte: aquí solo se apunta dónde.
+                float yaw = alongX ? (inward > 0 ? 0f : 180f) : (inward > 0 ? 90f : 270f);
+                Vector3 top = center + inner + Vector3.up * (height * 0.5f + 0.1f);
+                curtainSpots.Add((top + along * (width * 0.5f + 0.02f), yaw));
+                curtainSpots.Add((top - along * (width * 0.5f + 0.02f), yaw));
+            }
+            else
+            {
+                kit.Box(center + inner + along * (width * 0.5f + 0.02f) - Vector3.up * 0.1f, H(0.28f, height + 0.25f, 0.05f), curtain);
+                kit.Box(center + inner - along * (width * 0.5f + 0.02f) - Vector3.up * 0.1f, H(0.28f, height + 0.25f, 0.05f), curtain);
+            }
             kit.Box(center + inner + Vector3.up * (height * 0.5f + 0.1f), H(width + 0.7f, 0.03f, 0.03f), metal);
         }
 

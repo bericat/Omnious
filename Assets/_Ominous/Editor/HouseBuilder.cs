@@ -67,7 +67,7 @@ namespace Ominous.EditorTools
         /// rehacen con el sombreado del juego y la textura que se llama igual en Art/Models/Texturas.
         /// </summary>
         static GameObject Model(string file, Transform parent, float x, float z, float yaw, string name = null,
-            float y = 0f, bool exterior = false, Vector3? boxSize = null)
+            float y = 0f, bool exterior = false, Vector3? boxSize = null, bool collider = true)
         {
             string path = $"Assets/_Ominous/Art/Models/{file}.fbx";
             if (AssetImporter.GetAtPath(path) is not ModelImporter importer) return null;
@@ -91,6 +91,7 @@ namespace Ominous.EditorTools
                 first = false;
             }
             Static(go);
+            if (!collider) return go;
             var box = go.AddComponent<BoxCollider>();
             box.center = bounds.center;
             box.size = boxSize ?? bounds.size;
@@ -127,12 +128,15 @@ namespace Ominous.EditorTools
                 string n = source.name;
                 var template = n.Contains("Madera") ? woodDark : n.Contains("Ceramica") ? ceramic
                     : n.Contains("Cromo") || n.Contains("Tapacubos") || n.Contains("Pomo") ? chrome
-                    : n.Contains("Neumatico") ? tire : n.Contains("Pintura") ? carRed : n.Contains("Sofa") ? sofa : plastic;
+                    : n.Contains("Neumatico") ? tire : n.Contains("Pintura") ? carRed : n.Contains("Sofa") ? sofa
+                    : n.Contains("Alfombra") ? rug : n.Contains("Cortina") ? curtain : n.Contains("Manta") ? cushion : tex != null ? woodDark : plastic;
                 mat = new Material(template) { name = name };
                 mat.SetTexture("_BaseMap", tex);
                 mat.SetTextureScale("_BaseMap", Vector2.one);
                 mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(color.r, color.g, color.b, 1f));
                 if (mat.HasProperty("_Exterior")) mat.SetFloat("_Exterior", exterior ? 1f : 0f);
+                // La bombilla de la lámpara brilla sola.
+                if (n.Contains("Bombilla") && mat.HasProperty("_EmissionColor")) mat.SetColor("_EmissionColor", new Color(1f, 0.72f, 0.42f) * 2.2f);
             }
             AssetDatabase.DeleteAsset(path);
             AssetDatabase.CreateAsset(mat, path);
@@ -496,6 +500,7 @@ namespace Ominous.EditorTools
         {
             OminousSetup.Configure();
             modelMaterials.Clear();
+            curtainSpots.Clear();
             Materials();
             HouseMaterials();
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -629,6 +634,9 @@ namespace Ominous.EditorTools
             Win(8.4f, 10, 0.8f, 0.7f, 1.8f, true, -1f, false);
             Win(12f, 10, 1f, 1f, 1.6f, true, -1f, false);
             Win(14, 8.1f, 1.4f, 1.05f, 1.575f, false, -1f, false);
+            // Cortinas definitivas: un panel a cada lado de cada ventana con cortina.
+            if (curtainModel)
+                foreach (var (pos, yaw) in curtainSpots) Model("Cortina", house, pos.x, pos.z, yaw, "Cortina", pos.y, collider: false);
             go = Instance("Casa_Ventanas", windows, house, Vector3.zero, 0, false); Static(go);
             foreach (var (x, z, sx, sz) in new[] { (1.6f, 0f, 1.4f, 0.2f), (3.7f, 0f, 1.4f, 0.2f), (0f, 2.5f, 0.2f, 1.4f), (10.2f, 0f, 1.4f, 0.2f), (2.2f, 10f, 1.4f, 0.2f), (4.2f, 10f, 1.4f, 0.2f), (8.4f, 10f, 0.8f, 0.2f), (12f, 10f, 1f, 0.2f), (14f, 8.1f, 0.2f, 1.4f) })
                 Blocker(house, new Vector3(x, 1.3f, z), new Vector3(sx, 2.6f, sz));
@@ -691,9 +699,9 @@ namespace Ominous.EditorTools
 
         static void BuildSalon(Transform f, Transform lights)
         {
-            Put("Alfombra", Alfombra(), f, 2.15f, 2.45f, 0, false);
+            if (Model("Alfombra", f, 2.15f, 2.45f, 0f, collider: false) == null) Put("Alfombra", Alfombra(), f, 2.15f, 2.45f, 0, false);
             if (Model("Sofa", f, 2.15f, 1.45f, 0f, null, 0f, false, new Vector3(2.0f, 0.94f, 0.86f)) == null) Put("Sofa", Sofa(), f, 2.15f, 1.45f);
-            Put("Manta", Manta(), f, 1.6f, 1.45f, 0, false);
+            if (Model("Manta", f, 1.6f, 1.45f, 0f, collider: false) == null) Put("Manta", Manta(), f, 1.6f, 1.45f, 0, false);
             // La tele definitiva mira a +Z: va girada. Su pantalla es un objeto aparte para el parpadeo.
             var tele = Model("Tele", f, 2.15f, 4.08f, 180f);
             Renderer teleScreen = null;
@@ -712,8 +720,10 @@ namespace Ominous.EditorTools
             }
             if (Model("MesaBaja", f, 2.15f, 2.75f, 0f) == null) Put("MesaBaja", MesaBaja(), f, 2.15f, 2.75f);
             if (Model("Estanteria", f, 4.2f, 4.17f, 180f, "EstanteriaSalon") == null) Put("EstanteriaSalon", Estanteria(), f, 4.2f, 4.17f);
-            var lampMesh = Put("Lampara", Lampara(), f, 0.4f, 0.5f);
-            GameObjectUtility.SetStaticEditorFlags(lampMesh, StaticEditorFlags.BatchingStatic);
+            var lampMesh = Model("Lampara", f, 0.4f, 0.5f, 0f) ?? Put("Lampara", Lampara(), f, 0.4f, 0.5f);
+            foreach (var t in lampMesh.GetComponentsInChildren<Transform>()) GameObjectUtility.SetStaticEditorFlags(t.gameObject, StaticEditorFlags.BatchingStatic);
+            // Vitrina contra la pared este del salón, entre la ventana y la puerta, mirando a la habitación.
+            Model("Vitrina", f, 4.78f, 0.75f, 270f);
             Picture(f, "CuadroSalon", paintA, 0.08f, 1.65f, 3.75f, 90f);
 
             var tvFillLight = Point("LuzTeleResplandor", lights, new Vector3(2.15f, 1f, 3.65f), new Color(0.72f, 0.8f, 0.95f), 0.5f, 3f);
